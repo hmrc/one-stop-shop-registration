@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.onestopshopregistration.controllers
+package uk.gov.hmrc.onestopshopregistration.models
 
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import play.api.libs.json.{JsObject, Json}
 
-@Singleton()
-class MicroserviceHelloWorldController @Inject()(cc: ControllerComponents)
-    extends BackendController(cc) {
+case class Registration(
+                      registeredCompanyName: String,
+                      data: JsObject = Json.obj()
+                      )
 
-  def hello(): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok("Hello world"))
-  }
+case object Registration {
+  implicit val format = Json.format[Registration]
 }

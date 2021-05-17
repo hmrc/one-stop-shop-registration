@@ -16,6 +16,8 @@ object AppDependencies {
     "org.scalatest"           %% "scalatest"                  % "3.2.5"             % Test,
     "com.typesafe.play"       %% "play-test"                  % PlayVersion.current % Test,
     "com.vladsch.flexmark"    %  "flexmark-all"               % "0.36.8"            % "test, it",
-    "org.scalatestplus.play"  %% "scalatestplus-play"         % "5.1.0"             % "test, it"
+    "org.scalatestplus.play"  %% "scalatestplus-play"         % "5.1.0"             % "test, it",
+    "org.scalatestplus"       %% "mockito-3-4"                % "3.2.7.0"           % "test, it",
+    "org.mockito"             %% "mockito-scala"              % "1.16.0"            % "test, it"
   )
 }
