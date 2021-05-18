@@ -16,9 +16,8 @@
 
 package repositories
 
-import akka.actor.TypedActor.dispatcher
 import org.mockito.MockitoSugar
-import org.mongodb.scala.model.Filters
+import scala.concurrent.ExecutionContext.Implicits.global
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
