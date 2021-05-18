@@ -18,10 +18,7 @@ package uk.gov.hmrc.onestopshopregistration.models
 
 import play.api.libs.json.{JsObject, Json}
 
-case class Registration(
-                      registeredCompanyName: String,
-                      data: JsObject = Json.obj()
-                      )
+case class Registration(registeredCompanyName: String)
 
 case object Registration {
   implicit val format = Json.format[Registration]

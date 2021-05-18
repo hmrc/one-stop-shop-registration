@@ -40,7 +40,7 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       mongoComponent = mongoComponent
   )
 
-  private val registration = Registration("registeredCompanyName", Json.obj("foo" -> "bar"))
+  private val registration = Registration("foo")
 
   ".insert" - {
     "must insert a registration" in {
@@ -54,4 +54,14 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       updatedRecord mustEqual expectedResult
     }
   }
+
+  ".get" - {
+    "when there is a Registration record for this id" in {
+      insert(registration).futureValue
+      val result = repository.get("foo")
+
+      result.value mustEqual registration
+    }
+  }
+
 }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.onestopshopregistration.repositories
 
-import org.mongodb.scala.model.ReplaceOptions
+import org.mongodb.scala.model.Filters
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.onestopshopregistration.models.Registration
@@ -34,18 +34,14 @@ class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit 
   ) {
 
   def insert(registration: Registration): Future[Boolean] = {
-    //    val updatedAnswers = registration copy()
-    //
-    //    collection
-    //      .replaceOne(
-    //        filter      = byId(updatedAnswers.id),
-    //        replacement = updatedAnswers,
-    //        options     = ReplaceOptions().upsert(true)
-    //      )
-    //      .toFuture
-    //      .map(_ => true)
-    //  }
-Future.successful(true)
+
+    collection.insertOne(registration).toFuture.map(_ => true)
+
+    Future.successful(true)
+  }
+
+  def get(name: String): Future[Option[Registration]] = {
+    collection.find(Filters.equal("registeredCompanyName", name)).headOption
   }
 }
 
