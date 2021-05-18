@@ -43,15 +43,15 @@ class RegistrationRepositorySpec extends AnyFreeSpec
 
   private val registration = Registration("registeredCompanyName", Json.obj("foo" -> "bar"))
 
-  ".set" - {
-    "must set the last updated time on the supplied user answers to `now`, and save them" in {
+  ".insert" - {
+    "must insert a registration" in {
 
       val expectedResult = registration copy()
 
-      val setResult     = repository.set(registration).futureValue
-      val updatedRecord = find(Filters.equal("_registeredCompanyName", registration.registeredCompanyName)).futureValue.headOption.value
+      val insertResult     = repository.insert(registration).futureValue
+      val updatedRecord = findAll().futureValue.headOption.value
 
-      setResult mustEqual true
+      insertResult mustEqual true
       updatedRecord mustEqual expectedResult
     }
   }

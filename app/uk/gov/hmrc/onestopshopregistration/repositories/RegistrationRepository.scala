@@ -33,19 +33,19 @@ class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit 
     indexes        = Seq.empty
   ) {
 
-  def set(registration: Registration): Future[Boolean] = {
-
-    val updatedAnswers = registration copy()
-
-    collection
-      .replaceOne(
-        filter      = byId(updatedAnswers.id),
-        replacement = updatedAnswers,
-        options     = ReplaceOptions().upsert(true)
-      )
-      .toFuture
-      .map(_ => true)
+  def insert(registration: Registration): Future[Boolean] = {
+    //    val updatedAnswers = registration copy()
+    //
+    //    collection
+    //      .replaceOne(
+    //        filter      = byId(updatedAnswers.id),
+    //        replacement = updatedAnswers,
+    //        options     = ReplaceOptions().upsert(true)
+    //      )
+    //      .toFuture
+    //      .map(_ => true)
+    //  }
+Future.successful(true)
   }
-
 }
 
