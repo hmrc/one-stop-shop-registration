@@ -21,18 +21,22 @@ import uk.gov.hmrc.onestopshopregistration.models.Registration
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future.successful
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RegistrationService @Inject() (
   registrationRepository: RegistrationRepository
-) {
+)(implicit mat: Materializer) {
+
+  implicit val ec: ExecutionContext = mat.executionContext
 
 
+  def get(fieldName: String, value: String): Future[Option[Registration]] = {
+    registrationRepository.get(fieldName, value)
+  }
 
-
-
-
+  def insert(registration: Registration): Future[Boolean] = {
+    registrationRepository.insert(registration)
+  }
 
 }

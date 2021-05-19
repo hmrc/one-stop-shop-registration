@@ -18,72 +18,62 @@ package uk.gov.hmrc.onestopshopregistration.service
 
 import akka.http.scaladsl.util.FastFuture.successful
 import org.mockito.Mockito._
-import org.mockito.stubbing.ScalaFirstStubbing.toScalaFirstStubbing
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.onestopshopregistration.models.{BusinessAddress, BusinessContactDetails, Registration}
+import uk.gov.hmrc.onestopshopregistration.models.Registration
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
+import utils.RegistrationData
 
-import java.time.LocalDate
 
 class RegistrationServiceSpec extends AnyFreeSpec
   with Matchers with MockitoSugar {
 
   private val registration1          = mock[Registration]
-  private val registration1saved     = mock[Registration]
   private val registrationRepository = mock[RegistrationRepository]
 
-  private val service =
-    new RegistrationService(
-      registrationRepository
-    )
+  private val service = new RegistrationService(registrationRepository)
 
-  private val registration =
-    Registration(
-      "foo",
-      true,
-      Some(List("single", "double")),
-      true,
-      "GB123456789",
-      LocalDate.now(),
-      "AA1 1AA",
-      true,
-      Some(Map("France" -> "FR123456789", "Spain" -> "ES123456789")),
-      new BusinessAddress(
-        "123 Street",
-        Some("Street"),
-        "City",
-        Some("county"),
-        "AA12 1AB"
-      ),
-      new BusinessContactDetails(
-        "Joe Bloggs",
-        "01112223344",
-        "email@email.com",
-        "web.com"
-      )
-    )
+  private val registration: Registration = RegistrationData.createNewRegistration()
+
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
   "insert()" - {
 
     "return the case after it is inserted in the database collection" in {
-      when(registrationRepository.insert(registration1)).thenReturn(successful(registration1saved))
+      when(registrationRepository.insert(registration1)).thenReturn(successful(true))
 
-      await(registrationRepository.insert(registration1)) shouldBe registration1saved
+      await(service.insert(registration1)) shouldBe true
     }
 
-//    "propagate any error" in {
-//      when(registrationRepository.insert(registration1)).thenThrow(emulatedFailure)
-//
-//      val caught = intercept[RuntimeException] {
-//        await(registrationRepository.insert(registration1))
-//      }
-//      caught shouldBe emulatedFailure
+    "propagate any error" in {
+      when(registrationRepository.insert(registration1)).thenThrow(emulatedFailure)
+
+      val caught = intercept[RuntimeException] {
+        await(registrationRepository.insert(registration1))
+      }
+      caught shouldBe emulatedFailure
+    }
+  }
+
+  "get()" - {
+
+    "return the expected cases" in {
+      when(registrationRepository.get(registration.registeredCompanyName, "foo")).thenReturn(successful(Some(registration1)))
+
+        await(service.get(registration.registeredCompanyName, "foo")) shouldBe Some(registration1)
     }
 
+    "propagate any error" in {
+      when(registrationRepository.get(registration.registeredCompanyName, "foo")).thenThrow(emulatedFailure)
+
+      val caught = intercept[RuntimeException] {
+        await(service.get(registration.registeredCompanyName, "foo"))
+      }
+      caught shouldBe emulatedFailure
+    }
+  }
 }

@@ -22,6 +22,8 @@ lazy val microservice = Project(appName, file("."))
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(itSettings): _*)
+  .configs(Test)
+  .settings(inConfig(Test)(testSettings): _*)
   .settings(publishingSettings: _*)
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
@@ -34,6 +36,18 @@ lazy val itSettings = Defaults.itSettings ++ Seq(
   ),
   unmanagedResourceDirectories := Seq(
     baseDirectory.value / "it" / "resources"
+  ),
+  parallelExecution := false,
+  fork := true,
+  javaOptions ++= Seq(
+    "-Dconfig.resource=it.application.conf"
+  )
+)
+
+lazy val testSettings = Defaults.testSettings ++ Seq(
+  unmanagedSourceDirectories := Seq(
+    baseDirectory.value / "test",
+    baseDirectory.value / "test/utils"
   ),
   parallelExecution := false,
   fork := true,
