@@ -17,18 +17,16 @@
 package repositories
 
 import org.mockito.MockitoSugar
-
-import scala.concurrent.ExecutionContext.Implicits.global
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import uk.gov.hmrc.onestopshopregistration.models.{BusinessAddress, BusinessContactDetails, Registration}
+import uk.gov.hmrc.onestopshopregistration.models.Registration
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
 import utils.RegistrationData
 
-import java.time.LocalDate
+import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class RegistrationRepositorySpec extends AnyFreeSpec
@@ -47,7 +45,6 @@ class RegistrationRepositorySpec extends AnyFreeSpec
     "must insert a registration" in {
 
       val registration = RegistrationData.createNewRegistration()
-
       val insertResult  = repository.insert(registration).futureValue
       val updatedRecord = findAll().futureValue.headOption.value
 
