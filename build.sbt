@@ -25,8 +25,6 @@ lazy val microservice = Project(appName, file("."))
   .configs(Test)
   .settings(inConfig(Test)(testSettings): _*)
   .settings(publishingSettings: _*)
-  .configs(IntegrationTest)
-  .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
 
 
@@ -50,8 +48,5 @@ lazy val testSettings = Defaults.testSettings ++ Seq(
     baseDirectory.value / "test/utils"
   ),
   parallelExecution := false,
-  fork := true,
-  javaOptions ++= Seq(
-    "-Dconfig.resource=it.application.conf"
-  )
+  fork := true
 )

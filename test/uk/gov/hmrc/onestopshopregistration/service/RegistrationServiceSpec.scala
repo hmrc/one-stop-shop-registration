@@ -23,13 +23,14 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.onestopshopregistration.base.BaseSpec
 import uk.gov.hmrc.onestopshopregistration.models.Registration
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
 import utils.RegistrationData
 
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class RegistrationServiceSpec extends AnyFreeSpec
-  with Matchers with MockitoSugar {
+class RegistrationServiceSpec extends BaseSpec {
 
   private val registration1          = mock[Registration]
   private val registrationRepository = mock[RegistrationRepository]
@@ -43,10 +44,13 @@ class RegistrationServiceSpec extends AnyFreeSpec
 
   "insert()" - {
 
-    "return the case after it is inserted in the database collection" in {
+    "return true after it is inserted in the database collection" in {
       when(registrationRepository.insert(registration1)).thenReturn(successful(true))
 
-      await(service.insert(registration1)) shouldBe true
+      await(service.insert(registration1)) mustEqual true
+
+      // This is equivalent, possibly with slightly nicer error messages when the future fails
+      //service.insert(registration1).futureValue mustEqual true
     }
 
     "propagate any error" in {
@@ -55,7 +59,7 @@ class RegistrationServiceSpec extends AnyFreeSpec
       val caught = intercept[RuntimeException] {
         await(registrationRepository.insert(registration1))
       }
-      caught shouldBe emulatedFailure
+      caught mustBe emulatedFailure
     }
   }
 
@@ -64,7 +68,7 @@ class RegistrationServiceSpec extends AnyFreeSpec
     "return the expected cases" in {
       when(registrationRepository.get(registration.registeredCompanyName, "foo")).thenReturn(successful(Some(registration1)))
 
-        await(service.get(registration.registeredCompanyName, "foo")) shouldBe Some(registration1)
+      await(service.get(registration.registeredCompanyName, "foo")) mustBe Some(registration1)
     }
 
     "propagate any error" in {
@@ -73,7 +77,7 @@ class RegistrationServiceSpec extends AnyFreeSpec
       val caught = intercept[RuntimeException] {
         await(service.get(registration.registeredCompanyName, "foo"))
       }
-      caught shouldBe emulatedFailure
+      caught mustBe emulatedFailure
     }
   }
 }

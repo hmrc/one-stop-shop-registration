@@ -32,9 +32,18 @@ class RegistrationController @Inject() (
   registrationService: RegistrationService
 ) extends BackendController(cc) {
 
+  def foo(): Action[Registration] = Action(parse.json[Registration]).async {
+    implicit request =>
+      registrationService
+        .insert(request.body)
+        .map(_ => Created)
+  }
 
   def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
       withJsonBody[Registration] { registrationRequest: Registration =>
+//        registrationService
+//          .insert(registrationRequest)
+//          .map(_ => Created)
         for {
           r <- registrationService.insert(registrationRequest)
       } yield Created(Json.toJson(r))
@@ -42,6 +51,8 @@ class RegistrationController @Inject() (
   }
 
 }
+
+
 
 //Action[JsValue] = Action.async(parse.json) { implicit request =>
 //  withJsonBody[NewCaseRequest] { caseRequest: NewCaseRequest =>

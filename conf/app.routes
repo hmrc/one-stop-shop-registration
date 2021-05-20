@@ -1,3 +1,5 @@
 # microservice specific routes
 
 GET        /hello-world             uk.gov.hmrc.onestopshopregistration.controllers.MicroserviceHelloWorldController.hello
+
+POST       /create                  uk.gov.hmrc.onestopshopregistration.controllers.RegistrationController.create

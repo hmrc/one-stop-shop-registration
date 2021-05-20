@@ -40,7 +40,6 @@ class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit 
 
   def insert(registration: Registration): Future[Boolean] = {
     collection.insertOne(registration).toFuture.map(_ => true)
-    Future.successful(true)
   }
 
   def get(fieldName: String, value: String): Future[Option[Registration]] = {

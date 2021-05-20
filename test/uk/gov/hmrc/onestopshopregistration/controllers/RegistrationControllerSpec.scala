@@ -16,43 +16,70 @@
 
 package uk.gov.hmrc.onestopshopregistration.controllers
 
+import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.when
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status.CREATED
-import play.api.libs.json.Json.toJson
-import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.onestopshopregistration.models.Registration
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import uk.gov.hmrc.onestopshopregistration.base.BaseSpec
 import uk.gov.hmrc.onestopshopregistration.service.RegistrationService
-import uk.gov.hmrc.play.test.UnitSpec
 import utils.RegistrationData
 
-import scala.concurrent.Future.successful
+import scala.concurrent.Future
 
-class RegistrationControllerSpec extends AnyFreeSpec
-  with Matchers with MockitoSugar with UnitSpec {
 
-  private val fakeRequest = FakeRequest("GET", "/")
+class RegistrationControllerSpec extends BaseSpec {
 
-  private val registrationService = mock[RegistrationService]
+  "create" - {
 
-  private val registrationController = new RegistrationController(Helpers.stubControllerComponents(), registrationService)
+    "must return 201 when given a valid payload and when the registration is created successfully" in {
 
-  private val newRegistration: Registration = RegistrationData.createNewRegistration()
+      val registration = RegistrationData.createNewRegistration()
 
-  "create()" - {
+      val mockService = mock[RegistrationService]
+      when(mockService.insert(any())) thenReturn Future.successful(true)
 
-    "return 201 when the registration has been created successfully" in {
-      when(registrationService.insert(newRegistration)).thenReturn(successful(true))
+      val app =
+        new GuiceApplicationBuilder()
+          .overrides(bind[RegistrationService].toInstance(mockService))
+          .build()
 
-      val result = await(registrationController.create()(fakeRequest.withBody(toJson(newRegistration))))
+      running(app) {
 
-      status(result) shouldEqual CREATED
-      jsonBodyOf(result) shouldEqual successful(newRegistration)
+        val request =
+          FakeRequest(POST, routes.RegistrationController.create().url)
+            .withJsonBody(Json.toJson(registration))
+
+        val result = route(app, request).value
+
+        status(result) mustEqual CREATED
+      }
     }
   }
+
+
+//  private val fakeRequest = FakeRequest("GET", "/")
+//
+//  private val registrationService = mock[RegistrationService]
+//
+//  private val registrationController = new RegistrationController(Helpers.stubControllerComponents(), registrationService)
+//
+//  private val newRegistration: Registration = RegistrationData.createNewRegistration()
+//
+//  "create()" - {
+//
+//    "return 201 when the registration has been created successfully" in {
+//      when(registrationService.insert(newRegistration)).thenReturn(successful(true))
+//
+//      val result = await(registrationController.create()(fakeRequest.withBody(toJson(newRegistration))))
+//
+//      status(result) shouldEqual CREATED
+//      jsonBodyOf(result) shouldEqual successful(newRegistration)
+//    }
+//  }
 
 
 }
