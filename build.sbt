@@ -51,7 +51,7 @@ lazy val itSettings = Defaults.itSettings ++ Seq(
 lazy val testSettings = Defaults.testSettings ++ Seq(
   unmanagedSourceDirectories := Seq(
     baseDirectory.value / "test",
-    baseDirectory.value / "test/utils"
+    baseDirectory.value / "test" / "utils"
   ),
   parallelExecution := false,
   fork := true
