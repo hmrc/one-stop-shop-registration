@@ -22,10 +22,10 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import uk.gov.hmrc.onestopshopregistration.models.Registration
+import uk.gov.hmrc.onestopshopregistration.models.{BusinessAddress, BusinessContactDetails, Registration}
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
-import utils.RegistrationData
 
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
@@ -41,10 +41,34 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       mongoComponent = mongoComponent
   )
 
+  private val registration = Registration(
+    "foo",
+    true,
+    Some(List("single", "double")),
+    true,
+    "GB123456789",
+    LocalDate.now(),
+    "AA1 1AA",
+    true,
+    Some(Map("France" -> "FR123456789", "Spain" -> "ES123456789")),
+    new BusinessAddress(
+      "123 Street",
+      Some("Street"),
+      "City",
+      Some("county"),
+      "AA12 1AB"
+    ),
+    new BusinessContactDetails(
+      "Joe Bloggs",
+      "01112223344",
+      "email@email.com",
+  "web.com"
+    )
+  )
+
   ".insert" - {
     "must insert a registration" in {
 
-      val registration = RegistrationData.createNewRegistration()
       val insertResult  = repository.insert(registration).futureValue
       val updatedRecord = findAll().futureValue.headOption.value
 
