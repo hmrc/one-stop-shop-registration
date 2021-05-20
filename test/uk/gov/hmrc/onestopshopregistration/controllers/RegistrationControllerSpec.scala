@@ -58,66 +58,29 @@ class RegistrationControllerSpec extends BaseSpec {
         status(result) mustEqual CREATED
       }
     }
+
+    "must return 400 when the JSON request payload is not a Registration" in {
+
+      val invalidRegistration = RegistrationData.createInvalidRegistration()
+
+      val mockService = mock[RegistrationService]
+      when(mockService.insert(any())) thenReturn Future.successful(false)
+
+      val app =
+        new GuiceApplicationBuilder()
+          .overrides(bind[RegistrationService].toInstance(mockService))
+          .build()
+
+      running(app) {
+
+        val request =
+          FakeRequest(POST, routes.RegistrationController.create().url)
+            .withJsonBody(Json.toJson(invalidRegistration))
+
+        val result = route(app, request).value
+
+        status(result) mustEqual BAD_REQUEST
+      }
+    }
   }
-
-
-//  private val fakeRequest = FakeRequest("GET", "/")
-//
-//  private val registrationService = mock[RegistrationService]
-//
-//  private val registrationController = new RegistrationController(Helpers.stubControllerComponents(), registrationService)
-//
-//  private val newRegistration: Registration = RegistrationData.createNewRegistration()
-//
-//  "create()" - {
-//
-//    "return 201 when the registration has been created successfully" in {
-//      when(registrationService.insert(newRegistration)).thenReturn(successful(true))
-//
-//      val result = await(registrationController.create()(fakeRequest.withBody(toJson(newRegistration))))
-//
-//      status(result) shouldEqual CREATED
-//      jsonBodyOf(result) shouldEqual successful(newRegistration)
-//    }
-//  }
-
-
 }
-
-//"create()" should {
-//
-//  "return 201 when the case has been created successfully" in {
-//  when(caseService.nextCaseReference(ApplicationType.BTI)).thenReturn(successful("1"))
-//  when(caseService.insert(any[Case])).thenReturn(successful(c1))
-//  when(caseService.addInitialSampleStatusIfExists(any[Case])).thenReturn(Future.successful((): Unit))
-//
-//  val result = await(controller.create()(fakeRequest.withBody(toJson(newCase))))
-//
-//  status(result) shouldEqual CREATED
-//  jsonBodyOf(result) shouldEqual toJson(c1)
-//}
-//
-//  "return 400 when the JSON request payload is not a Case" in {
-//  val body   = """{"a":"b"}"""
-//  val result = await(controller.create()(fakeRequest.withBody(toJson(body))))
-//
-//  status(result) shouldEqual BAD_REQUEST
-//}
-//
-//  "return 500 when an error occurred" in {
-//  val error = new DatabaseException {
-//  override def originalDocument: Option[BSONDocument] = None
-//  override def code: Option[Int]                      = Some(11000)
-//  override def message: String                        = "duplicate value for db index"
-//}
-//
-//  when(caseService.nextCaseReference(ApplicationType.BTI)).thenReturn(successful("1"))
-//  when(caseService.insert(any[Case])).thenReturn(failed(error))
-//
-//  val result = await(controller.create()(fakeRequest.withBody(toJson(newCase))))
-//
-//  status(result) shouldEqual INTERNAL_SERVER_ERROR
-//  jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
-//}
-//
-//}

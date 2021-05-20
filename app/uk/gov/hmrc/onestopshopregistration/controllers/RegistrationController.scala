@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.onestopshopregistration.controllers
 
-import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.onestopshopregistration.models.Registration
@@ -32,37 +31,11 @@ class RegistrationController @Inject() (
   registrationService: RegistrationService
 ) extends BackendController(cc) {
 
-  def foo(): Action[Registration] = Action(parse.json[Registration]).async {
+  def create(): Action[Registration] = Action(parse.json[Registration]).async {
     implicit request =>
       registrationService
         .insert(request.body)
         .map(_ => Created)
   }
 
-  def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
-      withJsonBody[Registration] { registrationRequest: Registration =>
-//        registrationService
-//          .insert(registrationRequest)
-//          .map(_ => Created)
-        for {
-          r <- registrationService.insert(registrationRequest)
-      } yield Created(Json.toJson(r))
-    }
-  }
-
 }
-
-
-
-//Action[JsValue] = Action.async(parse.json) { implicit request =>
-//  withJsonBody[NewCaseRequest] { caseRequest: NewCaseRequest =>
-//  for {
-//  r <- caseService.nextCaseReference(caseRequest.application.`type`)
-//  c <- caseService.insert(caseRequest.toCase(r))
-//  _ <- caseService.addInitialSampleStatusIfExists(c)
-//} yield Created(Json.toJson(c)(RESTFormatters.formatCase))
-//} recover recovery map { result =>
-//  logger.debug(s"Case creation Result : $result");
-//  result
-//}
-//}

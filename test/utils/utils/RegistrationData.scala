@@ -21,6 +21,8 @@ object RegistrationData {
       createBusinessContactDetails()
     )
 
+  def createInvalidRegistration():String = """{"invalidName":"invalid"}"""
+
   private def createBusinessAddress(): BusinessAddress =
     BusinessAddress(
       "123 Street",

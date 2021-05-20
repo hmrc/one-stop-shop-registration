@@ -17,27 +17,20 @@
 package uk.gov.hmrc.onestopshopregistration.service
 
 import akka.http.scaladsl.util.FastFuture.successful
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.scalatestplus.mockito.MockitoSugar
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.onestopshopregistration.base.BaseSpec
 import uk.gov.hmrc.onestopshopregistration.models.Registration
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
-import utils.RegistrationData
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RegistrationServiceSpec extends BaseSpec {
 
-  private val registration1          = mock[Registration]
+  private val registration           = mock[Registration]
   private val registrationRepository = mock[RegistrationRepository]
 
   private val service = new RegistrationService(registrationRepository)
-
-  private val registration: Registration = RegistrationData.createNewRegistration()
 
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
@@ -45,39 +38,21 @@ class RegistrationServiceSpec extends BaseSpec {
   "insert()" - {
 
     "return true after it is inserted in the database collection" in {
-      when(registrationRepository.insert(registration1)).thenReturn(successful(true))
 
-      await(service.insert(registration1)) mustEqual true
+      when(registrationRepository.insert(any())).thenReturn(successful(true))
 
-      // This is equivalent, possibly with slightly nicer error messages when the future fails
-      //service.insert(registration1).futureValue mustEqual true
+      service.insert(registration).futureValue mustEqual true
     }
 
     "propagate any error" in {
-      when(registrationRepository.insert(registration1)).thenThrow(emulatedFailure)
+      when(registrationRepository.insert(any())).thenThrow(emulatedFailure)
 
       val caught = intercept[RuntimeException] {
-        await(registrationRepository.insert(registration1))
+        service.insert(registration).futureValue
       }
+
       caught mustBe emulatedFailure
     }
   }
-
-  "get()" - {
-
-    "return the expected cases" in {
-      when(registrationRepository.get(registration.registeredCompanyName, "foo")).thenReturn(successful(Some(registration1)))
-
-      await(service.get(registration.registeredCompanyName, "foo")) mustBe Some(registration1)
-    }
-
-    "propagate any error" in {
-      when(registrationRepository.get(registration.registeredCompanyName, "foo")).thenThrow(emulatedFailure)
-
-      val caught = intercept[RuntimeException] {
-        await(service.get(registration.registeredCompanyName, "foo"))
-      }
-      caught mustBe emulatedFailure
-    }
-  }
+  
 }
