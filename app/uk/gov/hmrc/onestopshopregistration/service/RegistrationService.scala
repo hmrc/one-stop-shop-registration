@@ -27,10 +27,6 @@ class RegistrationService @Inject() (
   registrationRepository: RegistrationRepository
 )(implicit ec: ExecutionContext) {
 
-  def get(fieldName: String, value: String): Future[Option[Registration]] = {
-    registrationRepository.get(fieldName, value)
-  }
-
   def insert(registration: Registration): Future[Boolean] = {
     registrationRepository.insert(registration)
   }
