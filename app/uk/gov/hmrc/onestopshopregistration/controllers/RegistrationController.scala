@@ -22,14 +22,14 @@ import uk.gov.hmrc.onestopshopregistration.models.Registration
 import uk.gov.hmrc.onestopshopregistration.service.RegistrationService
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
 
 @Singleton
 class RegistrationController @Inject() (
   cc: ControllerComponents,
   registrationService: RegistrationService
-) extends BackendController(cc) {
+)(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def create(): Action[Registration] = Action(parse.json[Registration]).async {
     implicit request =>

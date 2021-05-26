@@ -41,22 +41,23 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       mongoComponent = mongoComponent
   )
 
-  private val registration = Registration(
-    "foo",
-    true,
-    Some(List("single", "double")),
-    true,
-    "GB123456789",
-    LocalDate.now(),
-    "AA1 1AA",
-    true,
-    Some(Map("France" -> "FR123456789", "Spain" -> "ES123456789")),
-    new BusinessAddress(
-      "123 Street",
-      Some("Street"),
-      "City",
-      Some("county"),
-      "AA12 1AB"
+  private val registration =
+    Registration(
+      "foo",
+      true,
+      Some(List("single", "double")),
+      true,
+      "GB123456789",
+      LocalDate.now(),
+      "AA1 1AA",
+      true,
+      Some(Map("France" -> "FR123456789", "Spain" -> "ES123456789")),
+      new BusinessAddress(
+        "123 Street",
+        Some("Street"),
+        "City",
+        Some("county"),
+        "AA12 1AB"
     ),
     new BusinessContactDetails(
       "Joe Bloggs",
@@ -67,6 +68,7 @@ class RegistrationRepositorySpec extends AnyFreeSpec
   )
 
   ".insert" - {
+
     "must insert a registration" in {
 
       val insertResult  = repository.insert(registration).futureValue
@@ -75,5 +77,6 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       insertResult mustEqual true
       updatedRecord mustEqual registration
     }
+
   }
 }

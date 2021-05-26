@@ -19,15 +19,9 @@ package uk.gov.hmrc.onestopshopregistration.service
 import akka.http.scaladsl.util.FastFuture.successful
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.scalatestplus.mockito.MockitoSugar
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.onestopshopregistration.base.BaseSpec
 import uk.gov.hmrc.onestopshopregistration.models.Registration
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
-import utils.RegistrationData
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -37,19 +31,20 @@ class RegistrationServiceSpec extends BaseSpec {
   private val registrationRepository = mock[RegistrationRepository]
 
   private val service = new RegistrationService(registrationRepository)
-  
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
   "insert()" - {
 
     "return true after it is inserted in the database collection" in {
+
       when(registrationRepository.insert(any())).thenReturn(successful(true))
 
       service.insert(registration).futureValue mustEqual true
     }
 
     "propagate any error" in {
+
       when(registrationRepository.insert(any())).thenThrow(emulatedFailure)
 
       val caught = intercept[RuntimeException] {
