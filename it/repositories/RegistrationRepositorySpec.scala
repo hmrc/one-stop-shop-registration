@@ -59,11 +59,11 @@ class RegistrationRepositorySpec extends AnyFreeSpec
         Some("county"),
         "AA12 1AB"
     ),
+      List("website1", "website2"),
     new BusinessContactDetails(
       "Joe Bloggs",
       "01112223344",
-      "email@email.com",
-  "web.com"
+      "email@email.com"
     )
   )
 

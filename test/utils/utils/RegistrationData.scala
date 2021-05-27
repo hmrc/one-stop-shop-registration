@@ -18,6 +18,7 @@ object RegistrationData {
       true,
       Some(Map("France" -> "FR123456789", "Spain" -> "ES123456789")),
       createBusinessAddress(),
+      List("website1", "website2"),
       createBusinessContactDetails()
     )
 
@@ -36,7 +37,6 @@ object RegistrationData {
     BusinessContactDetails(
       "Joe Bloggs",
       "01112223344",
-      "email@email.com",
-      "web.com"
+      "email@email.com"
     )
 }

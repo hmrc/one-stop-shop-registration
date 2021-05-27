@@ -31,6 +31,7 @@ case class Registration(
  vatRegisteredInEu: Boolean,
  euVatDetails: Option[Map[String, String]],
  businessAddress: BusinessAddress,
+ websites: List[String],
  businessContactDetails: BusinessContactDetails
 )
 

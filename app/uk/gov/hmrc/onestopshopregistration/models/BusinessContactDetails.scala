@@ -21,8 +21,7 @@ import play.api.libs.json._
 case class BusinessContactDetails (
   fullName: String,
   telephoneNumber: String,
-  emailAddress: String,
-  websiteAddress: String
+  emailAddress: String
 )
 
 object BusinessContactDetails {
