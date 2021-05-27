@@ -22,11 +22,37 @@ lazy val microservice = Project(appName, file("."))
     ),
     ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;" +
       ".*Routes.*;",
-    ScoverageKeys.coverageMinimum := 78,
+    ScoverageKeys.coverageMinimumStmtTotal := 78,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
   )
-  .settings(publishingSettings: _*)
   .configs(IntegrationTest)
-  .settings(integrationTestSettings(): _*)
+  .settings(inConfig(IntegrationTest)(itSettings): _*)
+  .configs(Test)
+  .settings(inConfig(Test)(testSettings): _*)
+  .settings(publishingSettings: _*)
   .settings(resolvers += Resolver.jcenterRepo)
+
+
+lazy val itSettings = Defaults.itSettings ++ Seq(
+  unmanagedSourceDirectories := Seq(
+    baseDirectory.value / "it"
+  ),
+  unmanagedResourceDirectories := Seq(
+    baseDirectory.value / "it" / "resources"
+  ),
+  parallelExecution := false,
+  fork := true,
+  javaOptions ++= Seq(
+    "-Dconfig.resource=it.application.conf"
+  )
+)
+
+lazy val testSettings = Defaults.testSettings ++ Seq(
+  unmanagedSourceDirectories := Seq(
+    baseDirectory.value / "test",
+    baseDirectory.value / "test" / "utils"
+  ),
+  parallelExecution := false,
+  fork := true
+)

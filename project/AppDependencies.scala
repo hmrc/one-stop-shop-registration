@@ -11,11 +11,15 @@ object AppDependencies {
   )
 
   val test = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-test-play-28"     % "5.2.0"             % Test,
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"    % "0.50.0"            % Test,
-    "org.scalatest"           %% "scalatest"                  % "3.2.5"             % Test,
-    "com.typesafe.play"       %% "play-test"                  % PlayVersion.current % Test,
+    "uk.gov.hmrc"             %% "bootstrap-test-play-28"     % "5.2.0"             % "test, it",
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"    % "0.50.0"            % "test, it",
+    "org.scalatest"           %% "scalatest"                  % "3.2.5"             % "test, it",
+    "com.typesafe.play"       %% "play-test"                  % PlayVersion.current % "test, it",
     "com.vladsch.flexmark"    %  "flexmark-all"               % "0.36.8"            % "test, it",
-    "org.scalatestplus.play"  %% "scalatestplus-play"         % "5.1.0"             % "test, it"
+    "org.scalatestplus.play"  %% "scalatestplus-play"         % "5.1.0"             % "test, it",
+    "org.scalatestplus"       %% "mockito-3-4"                % "3.2.7.0"           % "test, it",
+    "org.mockito"             %% "mockito-scala"              % "1.16.0"            % "test, it",
+    "uk.gov.hmrc"             %% "hmrctest"                   % "3.9.0-play-26"     % "test, it"
+
   )
 }
