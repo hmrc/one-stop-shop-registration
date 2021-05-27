@@ -16,26 +16,17 @@
 
 package uk.gov.hmrc.onestopshopregistration.models
 
-import play.api.libs.json.Json
+sealed trait StartDateOption
 
-import java.time.LocalDate
+object StartDateOption extends Enumerable.Implicits {
 
-case class Registration(
- registeredCompanyName: String,
- hasTradingName: Boolean,
- tradingNames: Option[List[String]],
- partOfVatGroup: Boolean,
- ukVatNumber: String,
- ukVatEffectiveDate: LocalDate,
- ukVatRegisteredPostcode: String,
- vatRegisteredInEu: Boolean,
- euVatDetails: Option[Map[String, String]],
- startDate: StartDate,
- businessAddress: BusinessAddress,
- websites: List[String],
- businessContactDetails: BusinessContactDetails
-)
+  case object NextPeriod extends WithName("nextPeriod") with StartDateOption
+  case object EarlierDate extends WithName("earlierDate") with StartDateOption
 
-case object Registration {
-  implicit val format = Json.format[Registration]
+  val values: Seq[StartDateOption] = Seq(
+    NextPeriod, EarlierDate
+  )
+
+  implicit val enumerable: Enumerable[StartDateOption] =
+    Enumerable(values.map(v => v.toString -> v): _*)
 }
