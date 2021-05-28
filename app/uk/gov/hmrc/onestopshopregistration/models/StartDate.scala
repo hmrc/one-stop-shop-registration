@@ -20,10 +20,10 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
-case class StartDate(option: StartDateOption, date: LocalDate)
+case class StartDate(localDate: LocalDate)
 
 object StartDate {
 
-  implicit val format: OFormat[StartDate] = Json.format[StartDate]
+ implicit val format: OFormat[StartDate] = Json.format[StartDate]
 }
 

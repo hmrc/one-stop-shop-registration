@@ -22,7 +22,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import uk.gov.hmrc.onestopshopregistration.models.{BusinessAddress, BusinessContactDetails, Registration, StartDate, StartDateOption}
+import uk.gov.hmrc.onestopshopregistration.models.{BusinessAddress, BusinessContactDetails, Registration, StartDate}
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
 
 import java.time.LocalDate
@@ -52,7 +52,7 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       "AA1 1AA",
       true,
       Some(Map("France" -> "FR123456789", "Spain" -> "ES123456789")),
-      StartDate(StartDateOption.NextPeriod, LocalDate.now()),
+      StartDate(LocalDate.now()),
       new BusinessAddress(
         "123 Street",
         Some("Street"),
