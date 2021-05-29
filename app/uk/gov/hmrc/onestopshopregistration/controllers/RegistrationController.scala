@@ -18,6 +18,7 @@ package uk.gov.hmrc.onestopshopregistration.controllers
 
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.onestopshopregistration.models.InsertResult.{AlreadyExists, InsertSucceeded}
 import uk.gov.hmrc.onestopshopregistration.models.Registration
 import uk.gov.hmrc.onestopshopregistration.service.RegistrationService
 
@@ -35,6 +36,9 @@ class RegistrationController @Inject() (
     implicit request =>
       registrationService
         .insert(request.body)
-        .map(_ => Created)
+        .map {
+          case InsertSucceeded => Created
+          case AlreadyExists   => Conflict
+        }
   }
 }

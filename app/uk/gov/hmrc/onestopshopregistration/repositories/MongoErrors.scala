@@ -14,20 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.onestopshopregistration.service
+package uk.gov.hmrc.onestopshopregistration.repositories
 
-import uk.gov.hmrc.onestopshopregistration.models.{InsertResult, Registration}
-import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
-
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
-@Singleton
-class RegistrationService @Inject() (
-  registrationRepository: RegistrationRepository
-)(implicit ec: ExecutionContext) {
-
-  def insert(registration: Registration): Future[InsertResult] = {
-    registrationRepository.insert(registration)
+object MongoErrors {
+  object Duplicate {
+    def unapply(ex: Exception): Option[Exception] =
+      if (ex.getMessage.contains("E11000")) Some(ex) else None
   }
 }

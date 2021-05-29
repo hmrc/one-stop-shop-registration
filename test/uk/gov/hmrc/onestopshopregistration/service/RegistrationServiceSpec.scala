@@ -20,6 +20,7 @@ import akka.http.scaladsl.util.FastFuture.successful
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import uk.gov.hmrc.onestopshopregistration.base.BaseSpec
+import uk.gov.hmrc.onestopshopregistration.models.InsertResult.InsertSucceeded
 import uk.gov.hmrc.onestopshopregistration.models.Registration
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
 
@@ -36,11 +37,11 @@ class RegistrationServiceSpec extends BaseSpec {
 
   "insert()" - {
 
-    "return true after it is inserted in the database collection" in {
+    "must return the result provided by the repository" in {
 
-      when(registrationRepository.insert(any())).thenReturn(successful(true))
+      when(registrationRepository.insert(any())).thenReturn(successful(InsertSucceeded))
 
-      service.insert(registration).futureValue mustEqual true
+      service.insert(registration).futureValue mustEqual InsertSucceeded
     }
 
     "propagate any error" in {

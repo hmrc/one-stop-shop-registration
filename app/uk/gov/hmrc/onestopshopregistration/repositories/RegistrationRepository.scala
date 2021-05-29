@@ -19,7 +19,9 @@ package uk.gov.hmrc.onestopshopregistration.repositories
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.onestopshopregistration.models.Registration
+import uk.gov.hmrc.onestopshopregistration.models.InsertResult.{AlreadyExists, InsertSucceeded}
+import uk.gov.hmrc.onestopshopregistration.models.{InsertResult, Registration}
+import uk.gov.hmrc.onestopshopregistration.repositories.MongoErrors.Duplicate
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,13 +35,21 @@ class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit 
     indexes        = Seq(
       IndexModel(
         Indexes.ascending("vrn"),
-        IndexOptions().name("vrnIndex").unique(true).sparse(false)
+        IndexOptions()
+          .name("vrnIndex")
+          .unique(true)
       )
     )
   ) {
 
-  def insert(registration: Registration): Future[Boolean] = {
-    collection.insertOne(registration).toFuture.map(_ => true)
+  def insert(registration: Registration): Future[InsertResult] = {
+    collection
+      .insertOne(registration)
+      .toFuture
+      .map(_ => InsertSucceeded)
+      .recover {
+        case Duplicate(_) => AlreadyExists
+      }
   }
 
   def get(fieldName: String, value: String): Future[Option[Registration]] = {
