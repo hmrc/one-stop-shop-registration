@@ -22,12 +22,11 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import uk.gov.hmrc.onestopshopregistration.models.{BusinessAddress, BusinessContactDetails, Registration}
+import uk.gov.hmrc.onestopshopregistration.models._
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
-
 
 class RegistrationRepositorySpec extends AnyFreeSpec
   with Matchers
@@ -45,13 +44,14 @@ class RegistrationRepositorySpec extends AnyFreeSpec
     Registration(
       "foo",
       true,
-      Some(List("single", "double")),
+      List("single", "double"),
       true,
       "GB123456789",
       LocalDate.now(),
       "AA1 1AA",
       true,
-      Some(Map("France" -> "FR123456789", "Spain" -> "ES123456789")),
+      List(EuVatDetails(Country("FR", "France"), "FR123")),
+      LocalDate.now(),
       new BusinessAddress(
         "123 Street",
         Some("Street"),
