@@ -37,8 +37,6 @@ class RegistrationControllerSpec extends BaseSpec {
 
     "must return 201 when given a valid payload and when the registration is created successfully" in {
 
-      val registration = RegistrationData.createNewRegistration()
-
       val mockService = mock[RegistrationService]
       when(mockService.insert(any())) thenReturn Future.successful(true)
 
@@ -51,7 +49,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
         val request =
           FakeRequest(POST, routes.RegistrationController.create().url)
-            .withJsonBody(Json.toJson(registration))
+            .withJsonBody(Json.toJson(RegistrationData.registration))
 
         val result = route(app, request).value
 
@@ -60,8 +58,6 @@ class RegistrationControllerSpec extends BaseSpec {
     }
 
     "must return 400 when the JSON request payload is not a registration" in {
-
-      val registration = RegistrationData.createInvalidRegistration()
 
       val mockService = mock[RegistrationService]
       when(mockService.insert(any())) thenReturn Future.successful(false)
@@ -75,7 +71,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
         val request =
           FakeRequest(POST, routes.RegistrationController.create().url)
-            .withJsonBody(Json.toJson(registration))
+            .withJsonBody(Json.toJson(RegistrationData.invalidRegistration))
 
         val result = route(app, request).value
 

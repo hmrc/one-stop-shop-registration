@@ -32,8 +32,8 @@ class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit 
     domainFormat   = Registration.format,
     indexes        = Seq(
       IndexModel(
-        Indexes.ascending("ukVatNumber"),
-        IndexOptions().name("ukVatNumberIndex")
+        Indexes.ascending("vrn"),
+        IndexOptions().name("vrnIndex").unique(true).sparse(false)
       )
     )
   ) {
