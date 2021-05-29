@@ -1,6 +1,6 @@
 package utils
 
-import uk.gov.hmrc.onestopshopregistration.models.{BusinessAddress, BusinessContactDetails, Registration, StartDate}
+import uk.gov.hmrc.onestopshopregistration.models._
 
 import java.time.LocalDate
 
@@ -10,14 +10,14 @@ object RegistrationData {
     Registration(
       "foo",
       true,
-      Some(List("single", "double")),
+      List("single", "double"),
       true,
       "GB123456789",
       LocalDate.now(),
       "AA1 1AA",
       true,
-      Some(Map("France" -> "FR123456789", "Spain" -> "ES123456789")),
-      StartDate(LocalDate.now()),
+      List(EuVatDetails(Country("FR", "France"), "FR123")),
+      LocalDate.now,
       createBusinessAddress(),
       List("website1", "website2"),
       createBusinessContactDetails()

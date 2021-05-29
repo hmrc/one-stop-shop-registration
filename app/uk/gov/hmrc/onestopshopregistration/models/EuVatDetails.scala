@@ -18,12 +18,10 @@ package uk.gov.hmrc.onestopshopregistration.models
 
 import play.api.libs.json.{Json, OFormat}
 
-import java.time.LocalDate
+case class EuVatDetails(vatRegisteredEuMemberState: Country, euVatNumber: String)
 
-case class StartDate(localDate: LocalDate)
+object EuVatDetails {
 
-object StartDate {
-
- implicit val format: OFormat[StartDate] = Json.format[StartDate]
+  implicit val format: OFormat[EuVatDetails] =
+    Json.format[EuVatDetails]
 }
-
