@@ -17,6 +17,7 @@
 package uk.gov.hmrc.onestopshopregistration.repositories
 
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes}
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.onestopshopregistration.models.InsertResult.{AlreadyExists, InsertSucceeded}
@@ -42,6 +43,8 @@ class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit 
     )
   ) {
 
+  import uk.gov.hmrc.mongo.play.json.Codecs.toBson
+
   def insert(registration: Registration): Future[InsertResult] = {
     collection
       .insertOne(registration)
@@ -52,8 +55,8 @@ class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit 
       }
   }
 
-  def get(fieldName: String, value: String): Future[Option[Registration]] = {
-    collection.find(Filters.equal(fieldName, value)).headOption
+  def get(vrn: Vrn): Future[Option[Registration]] = {
+    collection.find(Filters.equal("vrn", toBson(vrn))).headOption
   }
 }
 

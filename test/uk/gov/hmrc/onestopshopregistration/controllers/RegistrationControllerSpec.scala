@@ -42,7 +42,7 @@ class RegistrationControllerSpec extends BaseSpec {
       when(mockService.insert(any())) thenReturn Future.successful(InsertSucceeded)
 
       val app =
-        new GuiceApplicationBuilder()
+        applicationBuilder
           .overrides(bind[RegistrationService].toInstance(mockService))
           .build()
 
@@ -60,9 +60,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
     "must return 400 when the JSON request payload is not a registration" in {
 
-      val app =
-        new GuiceApplicationBuilder()
-          .build()
+      val app = applicationBuilder.build()
 
       running(app) {
 
@@ -82,7 +80,7 @@ class RegistrationControllerSpec extends BaseSpec {
       when(mockService.insert(any())) thenReturn Future.successful(AlreadyExists)
 
       val app =
-        new GuiceApplicationBuilder()
+        applicationBuilder
           .overrides(bind[RegistrationService].toInstance(mockService))
           .build()
 
@@ -95,6 +93,46 @@ class RegistrationControllerSpec extends BaseSpec {
         val result = route(app, request).value
 
         status(result) mustEqual CONFLICT
+      }
+    }
+  }
+
+  "get" - {
+
+    "must return OK and a registration when one is found" in {
+
+      val mockService = mock[RegistrationService]
+      when(mockService.get(any())) thenReturn Future.successful(Some(RegistrationData.registration))
+
+      val app =
+        applicationBuilder
+          .overrides(bind[RegistrationService].toInstance(mockService))
+          .build()
+
+      running(app) {
+        val request = FakeRequest(GET, routes.RegistrationController.get().url)
+        val result = route(app, request).value
+
+        status(result) mustEqual OK
+        contentAsJson(result) mustEqual Json.toJson(RegistrationData.registration)
+      }
+    }
+
+    "must return NOT_FOUND when a registration is not found" - {
+
+      val mockService = mock[RegistrationService]
+      when(mockService.get(any())) thenReturn Future.successful(None)
+
+      val app =
+        applicationBuilder
+          .overrides(bind[RegistrationService].toInstance(mockService))
+          .build()
+
+      running(app) {
+        val request = FakeRequest(GET, routes.RegistrationController.get().url)
+        val result = route(app, request).value
+
+        status(result) mustEqual NOT_FOUND
       }
     }
   }

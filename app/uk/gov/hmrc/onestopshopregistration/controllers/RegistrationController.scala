@@ -16,23 +16,24 @@
 
 package uk.gov.hmrc.onestopshopregistration.controllers
 
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.onestopshopregistration.controllers.actions.AuthAction
 import uk.gov.hmrc.onestopshopregistration.models.InsertResult.{AlreadyExists, InsertSucceeded}
 import uk.gov.hmrc.onestopshopregistration.models.Registration
 import uk.gov.hmrc.onestopshopregistration.service.RegistrationService
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-
-@Singleton
 class RegistrationController @Inject() (
   cc: ControllerComponents,
-  registrationService: RegistrationService
+  registrationService: RegistrationService,
+  auth: AuthAction
 )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
-  def create(): Action[Registration] = Action(parse.json[Registration]).async {
+  def create(): Action[Registration] = auth(parse.json[Registration]).async {
     implicit request =>
       registrationService
         .insert(request.body)
@@ -40,5 +41,13 @@ class RegistrationController @Inject() (
           case InsertSucceeded => Created
           case AlreadyExists   => Conflict
         }
+  }
+
+  def get: Action[AnyContent] = auth.async {
+    implicit request =>
+      registrationService.get(request.vrn) map {
+        case Some(registration) => Ok(Json.toJson(registration))
+        case None               => NotFound
+      }
   }
 }

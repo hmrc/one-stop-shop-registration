@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.onestopshopregistration.service
 
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.onestopshopregistration.models.{InsertResult, Registration}
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
 
@@ -30,4 +31,7 @@ class RegistrationService @Inject() (
   def insert(registration: Registration): Future[InsertResult] = {
     registrationRepository.insert(registration)
   }
+
+  def get(vrn: Vrn): Future[Option[Registration]] =
+    registrationRepository.get(vrn)
 }
