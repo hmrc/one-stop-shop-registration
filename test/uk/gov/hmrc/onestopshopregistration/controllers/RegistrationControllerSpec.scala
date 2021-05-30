@@ -42,7 +42,7 @@ class RegistrationControllerSpec extends BaseSpec {
       when(mockService.insert(any())) thenReturn Future.successful(InsertSucceeded)
 
       val app =
-        new GuiceApplicationBuilder()
+        applicationBuilder
           .overrides(bind[RegistrationService].toInstance(mockService))
           .build()
 
@@ -60,9 +60,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
     "must return 400 when the JSON request payload is not a registration" in {
 
-      val app =
-        new GuiceApplicationBuilder()
-          .build()
+      val app = applicationBuilder.build()
 
       running(app) {
 
@@ -82,7 +80,7 @@ class RegistrationControllerSpec extends BaseSpec {
       when(mockService.insert(any())) thenReturn Future.successful(AlreadyExists)
 
       val app =
-        new GuiceApplicationBuilder()
+        applicationBuilder
           .overrides(bind[RegistrationService].toInstance(mockService))
           .build()
 
