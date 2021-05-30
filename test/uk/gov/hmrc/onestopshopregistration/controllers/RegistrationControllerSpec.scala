@@ -25,6 +25,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.onestopshopregistration.base.BaseSpec
+import uk.gov.hmrc.onestopshopregistration.models.InsertResult.{AlreadyExists, InsertSucceeded}
 import uk.gov.hmrc.onestopshopregistration.service.RegistrationService
 import utils.RegistrationData
 
@@ -37,10 +38,8 @@ class RegistrationControllerSpec extends BaseSpec {
 
     "must return 201 when given a valid payload and when the registration is created successfully" in {
 
-      val registration = RegistrationData.createNewRegistration()
-
       val mockService = mock[RegistrationService]
-      when(mockService.insert(any())) thenReturn Future.successful(true)
+      when(mockService.insert(any())) thenReturn Future.successful(InsertSucceeded)
 
       val app =
         new GuiceApplicationBuilder()
@@ -51,7 +50,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
         val request =
           FakeRequest(POST, routes.RegistrationController.create().url)
-            .withJsonBody(Json.toJson(registration))
+            .withJsonBody(Json.toJson(RegistrationData.registration))
 
         val result = route(app, request).value
 
@@ -61,10 +60,26 @@ class RegistrationControllerSpec extends BaseSpec {
 
     "must return 400 when the JSON request payload is not a registration" in {
 
-      val registration = RegistrationData.createInvalidRegistration()
+      val app =
+        new GuiceApplicationBuilder()
+          .build()
+
+      running(app) {
+
+        val request =
+          FakeRequest(POST, routes.RegistrationController.create().url)
+            .withJsonBody(Json.toJson(RegistrationData.invalidRegistration))
+
+        val result = route(app, request).value
+
+        status(result) mustEqual BAD_REQUEST
+      }
+    }
+
+    "must return Conflict when trying to insert a duplicate" in {
 
       val mockService = mock[RegistrationService]
-      when(mockService.insert(any())) thenReturn Future.successful(false)
+      when(mockService.insert(any())) thenReturn Future.successful(AlreadyExists)
 
       val app =
         new GuiceApplicationBuilder()
@@ -75,11 +90,11 @@ class RegistrationControllerSpec extends BaseSpec {
 
         val request =
           FakeRequest(POST, routes.RegistrationController.create().url)
-            .withJsonBody(Json.toJson(registration))
+            .withJsonBody(Json.toJson(RegistrationData.registration))
 
         val result = route(app, request).value
 
-        status(result) mustEqual BAD_REQUEST
+        status(result) mustEqual CONFLICT
       }
     }
   }

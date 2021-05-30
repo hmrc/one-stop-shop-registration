@@ -38,7 +38,8 @@ lazy val microservice = Project(appName, file("."))
 
 lazy val itSettings = Defaults.itSettings ++ Seq(
   unmanagedSourceDirectories := Seq(
-    baseDirectory.value / "it"
+    baseDirectory.value / "it",
+    baseDirectory.value / "test" / "utils"
   ),
   unmanagedResourceDirectories := Seq(
     baseDirectory.value / "it" / "resources"

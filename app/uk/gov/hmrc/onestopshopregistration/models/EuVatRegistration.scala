@@ -16,16 +16,15 @@
 
 package uk.gov.hmrc.onestopshopregistration.models
 
-import play.api.libs.json._
+import play.api.libs.json.{Json, OFormat}
 
-case class BusinessAddress (
- line1: String,
- line2: Option[String],
- townOrCity: String,
- county: Option[String],
- postCode: String
-)
+final case class EuVatRegistration(
+                                    country: Country,
+                                    vatNumber: String,
+                                    fixedEstablishment: Option[FixedEstablishment]
+                                  )
 
-object BusinessAddress {
-  implicit val format = Json.format[BusinessAddress]
+object EuVatRegistration {
+
+  implicit val format: OFormat[EuVatRegistration] = Json.format[EuVatRegistration]
 }

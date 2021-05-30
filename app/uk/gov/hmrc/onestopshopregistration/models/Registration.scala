@@ -17,23 +17,22 @@
 package uk.gov.hmrc.onestopshopregistration.models
 
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.domain.Vrn
 
 import java.time.LocalDate
 
 case class Registration(
- registeredCompanyName: String,
- hasTradingName: Boolean,
- tradingNames: List[String],
- partOfVatGroup: Boolean,
- ukVatNumber: String,
- ukVatEffectiveDate: LocalDate,
- ukVatRegisteredPostcode: String,
- vatRegisteredInEu: Boolean,
- euVatDetails: List[EuVatDetails],
- startDate: LocalDate,
- businessAddress: BusinessAddress,
- websites: List[String],
- businessContactDetails: BusinessContactDetails
+                         vrn: Vrn,
+                         registeredCompanyName: String,
+                         tradingNames: Seq[String],
+                         partOfVatGroup: Boolean,
+                         vatEffectiveDate: LocalDate,
+                         vatRegisteredPostcode: String,
+                         euVatRegistrations: Seq[EuVatRegistration],
+                         businessAddress: Address,
+                         contactDetails: BusinessContactDetails,
+                         websites: Seq[String],
+                         startDate: LocalDate
 )
 
 case object Registration {

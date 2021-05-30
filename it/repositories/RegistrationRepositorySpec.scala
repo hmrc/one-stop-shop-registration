@@ -21,16 +21,18 @@ import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepositorySupport}
+import uk.gov.hmrc.onestopshopregistration.models.InsertResult.{AlreadyExists, InsertSucceeded}
 import uk.gov.hmrc.onestopshopregistration.models._
 import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
+import utils.RegistrationData
 
-import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RegistrationRepositorySpec extends AnyFreeSpec
   with Matchers
   with DefaultPlayMongoRepositorySupport[Registration]
+  with CleanMongoCollectionSupport
   with ScalaFutures
   with IntegrationPatience
   with OptionValues
@@ -40,43 +42,24 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       mongoComponent = mongoComponent
   )
 
-  private val registration =
-    Registration(
-      "foo",
-      true,
-      List("single", "double"),
-      true,
-      "GB123456789",
-      LocalDate.now(),
-      "AA1 1AA",
-      true,
-      List(EuVatDetails(Country("FR", "France"), "FR123")),
-      LocalDate.now(),
-      new BusinessAddress(
-        "123 Street",
-        Some("Street"),
-        "City",
-        Some("county"),
-        "AA12 1AB"
-    ),
-      List("website1", "website2"),
-    new BusinessContactDetails(
-      "Joe Bloggs",
-      "01112223344",
-      "email@email.com"
-    )
-  )
-
   ".insert" - {
 
     "must insert a registration" in {
 
-      val insertResult  = repository.insert(registration).futureValue
+
+      val insertResult  = repository.insert(RegistrationData.registration).futureValue
       val updatedRecord = findAll().futureValue.headOption.value
 
-      insertResult mustEqual true
-      updatedRecord mustEqual registration
+      insertResult mustEqual InsertSucceeded
+      updatedRecord mustEqual RegistrationData.registration
     }
 
+    "must not allow duplicate registrations to be inserted" in {
+
+      repository.insert(RegistrationData.registration).futureValue
+      val secondResult = repository.insert(RegistrationData.registration).futureValue
+
+      secondResult mustEqual AlreadyExists
+    }
   }
 }

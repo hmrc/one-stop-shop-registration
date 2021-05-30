@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.onestopshopregistration.service
+package uk.gov.hmrc.onestopshopregistration.models
 
-import uk.gov.hmrc.onestopshopregistration.models.{InsertResult, Registration}
-import uk.gov.hmrc.onestopshopregistration.repositories.RegistrationRepository
+import play.api.libs.json._
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+case class Address(
+ line1: String,
+ line2: Option[String],
+ townOrCity: String,
+ county: Option[String],
+ postCode: String
+)
 
-@Singleton
-class RegistrationService @Inject() (
-  registrationRepository: RegistrationRepository
-)(implicit ec: ExecutionContext) {
-
-  def insert(registration: Registration): Future[InsertResult] = {
-    registrationRepository.insert(registration)
-  }
+object Address {
+  implicit val format = Json.format[Address]
 }
