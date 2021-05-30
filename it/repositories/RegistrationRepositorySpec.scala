@@ -46,7 +46,6 @@ class RegistrationRepositorySpec extends AnyFreeSpec
 
     "must insert a registration" in {
 
-
       val insertResult  = repository.insert(RegistrationData.registration).futureValue
       val updatedRecord = findAll().futureValue.headOption.value
 
@@ -60,6 +59,25 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       val secondResult = repository.insert(RegistrationData.registration).futureValue
 
       secondResult mustEqual AlreadyExists
+    }
+  }
+
+  ".get" - {
+
+    "must find a record when one exists" in {
+
+      insert(RegistrationData.registration).futureValue
+
+      val result = repository.get(RegistrationData.registration.vrn).futureValue
+
+      result.value mustEqual RegistrationData.registration
+    }
+
+    "must return None when no registration exists" in {
+
+      val result = repository.get(RegistrationData.registration.vrn).futureValue
+
+      result must not be defined
     }
   }
 }
