@@ -96,4 +96,44 @@ class RegistrationControllerSpec extends BaseSpec {
       }
     }
   }
+
+  "get" - {
+
+    "must return OK and a registration when one is found" in {
+
+      val mockService = mock[RegistrationService]
+      when(mockService.get(any())) thenReturn Future.successful(Some(RegistrationData.registration))
+
+      val app =
+        applicationBuilder
+          .overrides(bind[RegistrationService].toInstance(mockService))
+          .build()
+
+      running(app) {
+        val request = FakeRequest(GET, routes.RegistrationController.get().url)
+        val result = route(app, request).value
+
+        status(result) mustEqual OK
+        contentAsJson(result) mustEqual Json.toJson(RegistrationData.registration)
+      }
+    }
+
+    "must return NOT_FOUND when a registration is not found" - {
+
+      val mockService = mock[RegistrationService]
+      when(mockService.get(any())) thenReturn Future.successful(None)
+
+      val app =
+        applicationBuilder
+          .overrides(bind[RegistrationService].toInstance(mockService))
+          .build()
+
+      running(app) {
+        val request = FakeRequest(GET, routes.RegistrationController.get().url)
+        val result = route(app, request).value
+
+        status(result) mustEqual NOT_FOUND
+      }
+    }
+  }
 }

@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.onestopshopregistration.controllers
 
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.onestopshopregistration.controllers.actions.AuthAction
 import uk.gov.hmrc.onestopshopregistration.models.InsertResult.{AlreadyExists, InsertSucceeded}
 import uk.gov.hmrc.onestopshopregistration.models.Registration
@@ -40,5 +41,13 @@ class RegistrationController @Inject() (
           case InsertSucceeded => Created
           case AlreadyExists   => Conflict
         }
+  }
+
+  def get: Action[AnyContent] = auth.async {
+    implicit request =>
+      registrationService.get(request.vrn) map {
+        case Some(registration) => Ok(Json.toJson(registration))
+        case None               => NotFound
+      }
   }
 }
