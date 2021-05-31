@@ -32,7 +32,8 @@ case class Registration(
                          businessAddress: Address,
                          contactDetails: BusinessContactDetails,
                          websites: Seq[String],
-                         startDate: LocalDate
+                         startDate: LocalDate,
+                         currentCountryOfRegistration: Option[Country]
 )
 
 case object Registration {
