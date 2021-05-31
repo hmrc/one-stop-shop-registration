@@ -33,6 +33,7 @@ class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit 
     collectionName = "registrations",
     mongoComponent = mongoComponent,
     domainFormat   = Registration.format,
+    replaceIndexes = true,
     indexes        = Seq(
       IndexModel(
         Indexes.ascending("vrn"),

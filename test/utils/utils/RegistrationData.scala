@@ -29,7 +29,8 @@ object RegistrationData {
         "email@email.com"
       ),
       websites = List("website1", "website2"),
-      startDate = LocalDate.now
+      startDate = LocalDate.now,
+      currentCountryOfRegistration = Some(Country("FR", "France"))
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""
