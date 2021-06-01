@@ -1,7 +1,7 @@
 package utils
 
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.onestopshopregistration.models._
+import models._
 
 import java.time.LocalDate
 
