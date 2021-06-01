@@ -17,13 +17,13 @@
 package uk.gov.hmrc.onestopshopregistration.models.des
 
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Json, OWrites, Reads, __}
+import play.api.libs.json.{Json, OFormat, OWrites, Reads, __}
 
 import java.time.LocalDate
 
 case class VatCustomerInfo(
                             registrationDate: LocalDate,
-                            postCode: String
+                            address: DesAddress
                           )
 
 object VatCustomerInfo {
@@ -31,9 +31,23 @@ object VatCustomerInfo {
   val desReads: Reads[VatCustomerInfo] =
     (
       (__ \ "approvedInformation" \ "customerDetails" \ "effectiveRegistrationDate").read[LocalDate] and
-      (__ \ "approvedInformation" \ "PPOB" \ "address" \ "postCode").read[String]
+      (__ \ "approvedInformation" \ "PPOB" \ "address" ).read[DesAddress]
     )(VatCustomerInfo.apply _)
 
   implicit val writes: OWrites[VatCustomerInfo] =
     Json.writes[VatCustomerInfo]
+}
+
+case class DesAddress(
+                       line1: String,
+                       line2: Option[String],
+                       line3: Option[String],
+                       line4: Option[String],
+                       postCode: String
+                     )
+
+object DesAddress {
+
+  implicit val format: OFormat[DesAddress] =
+    Json.format[DesAddress]
 }

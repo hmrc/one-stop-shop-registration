@@ -20,7 +20,11 @@ class VatInfoControllerSpec extends BaseSpec {
 
     "must return OK and vat information when the connector returns vat info" in {
 
-      val vatInfo = VatCustomerInfo(LocalDate.now, "AA11 1AA")
+      val vatInfo = VatCustomerInfo(
+        registrationDate = LocalDate.now,
+        address = DesAddress("line1", None, None, None, "AA11 1AA")
+      )
+
       val mockConnector = mock[DesConnector]
       when(mockConnector.getVatCustomerDetails(any())) thenReturn Future.successful(Right(vatInfo))
 
