@@ -1,5 +1,4 @@
 import play.sbt.PlayImport.PlayKeys
-import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import scoverage.ScoverageKeys
 
@@ -47,7 +46,8 @@ lazy val itSettings = Defaults.itSettings ++ Seq(
   parallelExecution := false,
   fork := true,
   javaOptions ++= Seq(
-    "-Dconfig.resource=it.application.conf"
+    "-Dconfig.resource=it.application.conf",
+    "-Dlogger.resource=logback-it.xml"
   )
 )
 
@@ -57,5 +57,8 @@ lazy val testSettings = Defaults.testSettings ++ Seq(
     baseDirectory.value / "test" / "utils"
   ),
   parallelExecution := false,
-  fork := true
+  fork := true,
+  javaOptions ++= Seq(
+    "-Dlogger.resource=logback-test.xml"
+  )
 )
