@@ -34,6 +34,6 @@ object VatCustomerInfo {
       (__ \ "approvedInformation" \ "PPOB" \ "address" \ "postCode").read[String]
     )(VatCustomerInfo.apply _)
 
-  val writes: OWrites[VatCustomerInfo] =
+  implicit val writes: OWrites[VatCustomerInfo] =
     Json.writes[VatCustomerInfo]
 }

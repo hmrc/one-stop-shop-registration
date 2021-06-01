@@ -3,3 +3,5 @@
 POST       /create                  uk.gov.hmrc.onestopshopregistration.controllers.RegistrationController.create
 
 GET        /registration            uk.gov.hmrc.onestopshopregistration.controllers.RegistrationController.get
+
+GET        /vat-information         uk.gov.hmrc.onestopshopregistration.controllers.VatInfoController.get
