@@ -30,7 +30,10 @@ object RegistrationData {
       ),
       websites = List("website1", "website2"),
       startDate = LocalDate.now,
-      currentCountryOfRegistration = Some(Country("FR", "France"))
+      currentCountryOfRegistration = Some(Country("FR", "France")),
+      previousRegistrations = Seq(
+        PreviousRegistration(Country("DE", "Germany"), "DE123")
+      )
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""
