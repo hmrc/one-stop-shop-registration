@@ -31,7 +31,7 @@ object VatCustomerInfo {
   val desReads: Reads[VatCustomerInfo] =
     (
       (__ \ "approvedInformation" \ "customerDetails" \ "effectiveRegistrationDate").read[LocalDate] and
-      (__ \ "approvedInformation" \ "PPOB" \ "address" ).read[DesAddress]
+      (__ \ "approvedInformation" \ "PPOB" \ "address").read[DesAddress]
     )(VatCustomerInfo.apply _)
 
   implicit val writes: OWrites[VatCustomerInfo] =

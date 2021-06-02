@@ -28,9 +28,9 @@ class DesConnector @Inject()(des: DesConfig, httpClient: HttpClient)
                             (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   implicit val hc: HeaderCarrier =
-    HeaderCarrier(authorization = Some(Authorization(s"Bearer ${des.bearerToken}")))
+    HeaderCarrier(authorization = Some(Authorization(s"Bearer ${des.authorizationToken}")))
       .withExtraHeaders("Environment" -> des.environment)
 
   def getVatCustomerDetails(vrn: Vrn): Future[VatCustomerInfoResponse] =
-    httpClient.GET[VatCustomerInfoResponse](s"${des.baseUrl}/vat/customer/vrn/${vrn.value}/information")
+    httpClient.GET[VatCustomerInfoResponse](s"${des.baseUrl}vat/customer/vrn/${vrn.value}/information")
 }

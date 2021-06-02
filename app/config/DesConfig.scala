@@ -23,6 +23,6 @@ import javax.inject.Inject
 class DesConfig @Inject()(config: Configuration) {
 
   val baseUrl: Service    = config.get[Service]("microservice.services.des")
-  val bearerToken: String = config.get[String]("microservice.services.des.bearerToken")
+  val authorizationToken: String = config.get[String]("microservice.services.des.authorizationToken")
   val environment: String = config.get[String]("microservice.services.des.environment")
 }
