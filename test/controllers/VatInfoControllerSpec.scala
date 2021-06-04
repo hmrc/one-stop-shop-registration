@@ -23,7 +23,8 @@ class VatInfoControllerSpec extends BaseSpec {
       val vatInfo = VatCustomerInfo(
         registrationDate = Some(LocalDate.now),
         address          = DesAddress("line1", None, None, None, None, Some("AA11 1AA"), "GB"),
-        partOfVatGroup   = Some(false)
+        partOfVatGroup   = Some(false),
+        organisationName = Some("Foo")
       )
 
       val mockConnector = mock[DesConnector]
