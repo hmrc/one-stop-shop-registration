@@ -31,13 +31,15 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
           """{
             |  "approvedInformation": {
             |    "customerDetails": {
-            |      "effectiveRegistrationDate": "2000-01-01"
+            |      "effectiveRegistrationDate": "2000-01-01",
+            |      "partyType": "Z2"
             |    },
             |    "PPOB": {
             |      "address": {
             |        "line1": "line 1",
             |        "line2": "line 2",
-            |        "postCode": "AA11 1AA"
+            |        "postCode": "AA11 1AA",
+            |        "countryCode": "GB"
             |      }
             |    }
             |  }
@@ -53,8 +55,9 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
           val expectedResult = VatCustomerInfo(
-            registrationDate = LocalDate.of(2000, 1, 1),
-            address          = DesAddress("line 1", Some("line 2"), None, None, "AA11 1AA")
+            registrationDate = Some(LocalDate.of(2000, 1, 1)),
+            address          = DesAddress("line 1", Some("line 2"), None, None, None, Some("AA11 1AA"), "GB"),
+            partOfVatGroup   = Some(true)
           )
 
           result mustEqual Right(expectedResult)

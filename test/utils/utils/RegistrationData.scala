@@ -21,7 +21,9 @@ object RegistrationData {
           Some("Street"),
           Some("City"),
           Some("county"),
-          "AA12 1AB"
+          None,
+          Some("AA12 1AB"),
+          "GB",
         ),
         partOfVatGroup = true,
         source = UserEntered
