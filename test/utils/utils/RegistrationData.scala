@@ -1,7 +1,9 @@
 package utils
 
+import models.VatDetailSource.UserEntered
 import uk.gov.hmrc.domain.Vrn
 import models._
+import models.des.DesAddress
 
 import java.time.LocalDate
 
@@ -12,17 +14,21 @@ object RegistrationData {
       vrn = Vrn("123456789"),
       registeredCompanyName = "foo",
       tradingNames = List("single", "double"),
-      partOfVatGroup = true,
-      vatEffectiveDate = LocalDate.now(),
-      vatRegisteredPostcode = "AA1 1AA",
-      euVatRegistrations = Seq(EuVatRegistration(Country("FR", "France"), "FR123", None)),
-      businessAddress = new Address(
-        "123 Street",
-        Some("Street"),
-        "City",
-        Some("county"),
-        "AA12 1AB"
+      vatDetails = VatDetails(
+        registrationDate = LocalDate.now,
+        address = DesAddress(
+          "123 Street",
+          Some("Street"),
+          Some("City"),
+          Some("county"),
+          None,
+          Some("AA12 1AB"),
+          "GB",
+        ),
+        partOfVatGroup = true,
+        source = UserEntered
       ),
+      euVatRegistrations = Seq(EuVatRegistration(Country("FR", "France"), "FR123", None)),
       contactDetails =     new BusinessContactDetails(
         "Joe Bloggs",
         "01112223344",

@@ -16,23 +16,44 @@
 
 package models.des
 
+import models.des.PartyType.{OtherPartyType, VatGroup}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, OFormat, OWrites, Reads, __}
 
 import java.time.LocalDate
 
 case class VatCustomerInfo(
-                            registrationDate: LocalDate,
-                            address: DesAddress
+                            address: DesAddress,
+                            registrationDate: Option[LocalDate],
+                            partOfVatGroup: Option[Boolean],
+                            organisationName: Option[String]
                           )
 
 object VatCustomerInfo {
 
+  private def fromDesPayload(
+                              address: DesAddress,
+                              registrationDate: Option[LocalDate],
+                              partyType: Option[PartyType],
+                              organisationName: Option[String]
+                            ): VatCustomerInfo =
+    VatCustomerInfo(
+      address          = address,
+      registrationDate = registrationDate,
+      partOfVatGroup   = partyType map {
+        case VatGroup       => true
+        case OtherPartyType => false
+      },
+      organisationName = organisationName
+    )
+
   val desReads: Reads[VatCustomerInfo] =
     (
-      (__ \ "approvedInformation" \ "customerDetails" \ "effectiveRegistrationDate").read[LocalDate] and
-      (__ \ "approvedInformation" \ "PPOB" \ "address").read[DesAddress]
-    )(VatCustomerInfo.apply _)
+      (__ \ "approvedInformation" \ "PPOB" \ "address").read[DesAddress] and
+      (__ \ "approvedInformation" \ "customerDetails" \ "effectiveRegistrationDate").readNullable[LocalDate] and
+      (__ \ "approvedInformation" \ "customerDetails" \ "partyType").readNullable[PartyType] and
+      (__ \ "approvedInformation" \ "customerDetails" \ "organisationName").readNullable[String]
+    )(VatCustomerInfo.fromDesPayload _)
 
   implicit val writes: OWrites[VatCustomerInfo] =
     Json.writes[VatCustomerInfo]
@@ -43,7 +64,9 @@ case class DesAddress(
                        line2: Option[String],
                        line3: Option[String],
                        line4: Option[String],
-                       postCode: String
+                       line5: Option[String],
+                       postCode: Option[String],
+                       countryCode: String
                      )
 
 object DesAddress {
