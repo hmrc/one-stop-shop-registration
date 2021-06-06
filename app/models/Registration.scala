@@ -31,7 +31,8 @@ case class Registration(
                          websites: Seq[String],
                          startDate: LocalDate,
                          currentCountryOfRegistration: Option[Country],
-                         previousRegistrations: Seq[PreviousRegistration]
+                         previousRegistrations: Seq[PreviousRegistration],
+                         bankDetails: BankDetails
                        )
 
 case object Registration {
