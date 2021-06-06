@@ -47,7 +47,7 @@ object RegistrationData {
       previousRegistrations = Seq(
         PreviousRegistration(Country("DE", "Germany"), "DE123")
       ),
-      bankDetails = BankDetails("Account name", "12345678", "GB1234578")
+      bankDetails = BankDetails("Account name", Some("12345678"), "GB1234578")
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""
