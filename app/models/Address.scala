@@ -18,14 +18,62 @@ package models
 
 import play.api.libs.json._
 
-case class Address(
- line1: String,
- line2: Option[String],
- townOrCity: String,
- county: Option[String],
- postCode: String
-)
+sealed trait Address
 
 object Address {
-  implicit val format = Json.format[Address]
+  def reads: Reads[Address] =
+    UkAddress.reads.widen[Address] orElse
+      DesAddress.format.widen[Address]
+
+  def writes: Writes[Address] = Writes {
+    case u: UkAddress => Json.toJson(u)(UkAddress.writes)
+    case d: DesAddress => Json.toJson(d)(DesAddress.format)
+  }
+
+  implicit def format: Format[Address] = Format(reads, writes)
+}
+
+case class UkAddress(
+                      line1: String,
+                      line2: Option[String],
+                      townOrCity: String,
+                      county: Option[String],
+                      postCode: String
+                    ) extends Address {
+
+  val countryCode: String = "GB"
+}
+
+object UkAddress {
+  implicit val reads: Reads[UkAddress] = Json.reads[UkAddress]
+
+  implicit val writes: OWrites[UkAddress] = new OWrites[UkAddress] {
+
+    override def writes(o: UkAddress): JsObject = {
+      val line2Obj = o.line2.map(x => Json.obj("line2" -> x)).getOrElse(Json.obj())
+      val countyObj = o.county.map(x => Json.obj("county" -> x)).getOrElse(Json.obj())
+
+      Json.obj(
+        "line1" -> o.line1,
+        "townOrCity" -> o.townOrCity,
+        "postCode" -> o.postCode,
+        "countryCode" -> o.countryCode
+      ) ++ line2Obj ++ countyObj
+    }
+  }
+}
+
+case class DesAddress(
+                       line1: String,
+                       line2: Option[String],
+                       line3: Option[String],
+                       line4: Option[String],
+                       line5: Option[String],
+                       postCode: Option[String],
+                       countryCode: String
+                     ) extends Address
+
+object DesAddress {
+
+  implicit val format: OFormat[DesAddress] = Json.format[DesAddress]
 }

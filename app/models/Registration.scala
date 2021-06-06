@@ -26,12 +26,13 @@ case class Registration(
                          registeredCompanyName: String,
                          tradingNames: Seq[String],
                          vatDetails: VatDetails,
-                         euVatRegistrations: Seq[EuVatRegistration],
+                         euRegistrations: Seq[EuTaxRegistration],
                          contactDetails: BusinessContactDetails,
                          websites: Seq[String],
                          startDate: LocalDate,
                          currentCountryOfRegistration: Option[Country],
-                         previousRegistrations: Seq[PreviousRegistration]
+                         previousRegistrations: Seq[PreviousRegistration],
+                         bankDetails: BankDetails
                        )
 
 case object Registration {

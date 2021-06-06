@@ -1,6 +1,7 @@
 package models.des
 
 import base.BaseSpec
+import models.DesAddress
 import play.api.libs.json.{JsSuccess, Json}
 
 import java.time.LocalDate

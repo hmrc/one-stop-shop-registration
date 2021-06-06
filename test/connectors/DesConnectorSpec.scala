@@ -1,12 +1,13 @@
 package connectors
 
+import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
+import models.DesAddress
+import models.des._
 import org.scalacheck.Gen
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.running
-import base.BaseSpec
-import models.des._
 
 import java.time.LocalDate
 

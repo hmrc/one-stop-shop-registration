@@ -1,9 +1,9 @@
 package utils
 
+import models.EuTaxIdentifierType.Vat
 import models.VatDetailSource.UserEntered
-import uk.gov.hmrc.domain.Vrn
 import models._
-import models.des.DesAddress
+import uk.gov.hmrc.domain.Vrn
 
 import java.time.LocalDate
 
@@ -28,7 +28,14 @@ object RegistrationData {
         partOfVatGroup = true,
         source = UserEntered
       ),
-      euVatRegistrations = Seq(EuVatRegistration(Country("FR", "France"), "FR123", None)),
+      euRegistrations = Seq(
+        EuVatRegistration(Country("FR", "France"), "FR123"),
+        RegistrationWithFixedEstablishment(
+          Country("DE", "Germany"),
+          EuTaxIdentifier(Vat, "DE123"),
+          FixedEstablishment("Name", FixedEstablishmentAddress("Line 1", None, "Town", None, None))
+        )
+      ),
       contactDetails =     new BusinessContactDetails(
         "Joe Bloggs",
         "01112223344",
@@ -39,7 +46,8 @@ object RegistrationData {
       currentCountryOfRegistration = Some(Country("FR", "France")),
       previousRegistrations = Seq(
         PreviousRegistration(Country("DE", "Germany"), "DE123")
-      )
+      ),
+      bankDetails = BankDetails("Account name", Some("12345678"), "GB1234578")
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""

@@ -16,12 +16,10 @@
 
 package models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json._
 
-case class EuVatDetails(vatRegisteredEuMemberState: Country, euVatNumber: String)
+case class BankDetails (accountName: String, bic: Option[String], iban: String)
 
-object EuVatDetails {
-
-  implicit val format: OFormat[EuVatDetails] =
-    Json.format[EuVatDetails]
+object BankDetails {
+  implicit val format: OFormat[BankDetails] = Json.format[BankDetails]
 }
