@@ -16,6 +16,7 @@
 
 package models.des
 
+import models.DesAddress
 import models.des.PartyType.{OtherPartyType, VatGroup}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, OFormat, OWrites, Reads, __}
@@ -57,20 +58,4 @@ object VatCustomerInfo {
 
   implicit val writes: OWrites[VatCustomerInfo] =
     Json.writes[VatCustomerInfo]
-}
-
-case class DesAddress(
-                       line1: String,
-                       line2: Option[String],
-                       line3: Option[String],
-                       line4: Option[String],
-                       line5: Option[String],
-                       postCode: Option[String],
-                       countryCode: String
-                     )
-
-object DesAddress {
-
-  implicit val format: OFormat[DesAddress] =
-    Json.format[DesAddress]
 }

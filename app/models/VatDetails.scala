@@ -16,14 +16,13 @@
 
 package models
 
-import models.des.DesAddress
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
 case class VatDetails(
                        registrationDate: LocalDate,
-                       address: DesAddress,
+                       address: Address,
                        partOfVatGroup: Boolean,
                        source: VatDetailSource
                      )

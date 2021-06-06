@@ -18,13 +18,9 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class EuVatRegistration(
-                                    country: Country,
-                                    vatNumber: String,
-                                    fixedEstablishment: Option[FixedEstablishment]
-                                  )
+case class EuTaxIdentifier(identifierType: EuTaxIdentifierType, value: String)
 
-object EuVatRegistration {
+object EuTaxIdentifier {
 
-  implicit val format: OFormat[EuVatRegistration] = Json.format[EuVatRegistration]
+  implicit val format: OFormat[EuTaxIdentifier] = Json.format[EuTaxIdentifier]
 }
