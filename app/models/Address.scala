@@ -23,11 +23,13 @@ sealed trait Address
 object Address {
   def reads: Reads[Address] =
     UkAddress.reads.widen[Address] orElse
+      InternationalAddress.format.widen[Address] orElse
       DesAddress.format.widen[Address]
 
   def writes: Writes[Address] = Writes {
-    case u: UkAddress => Json.toJson(u)(UkAddress.writes)
-    case d: DesAddress => Json.toJson(d)(DesAddress.format)
+    case u: UkAddress            => Json.toJson(u)(UkAddress.writes)
+    case d: DesAddress           => Json.toJson(d)(DesAddress.format)
+    case i: InternationalAddress => Json.toJson(i)(InternationalAddress.format)
   }
 
   implicit def format: Format[Address] = Format(reads, writes)
@@ -41,11 +43,27 @@ case class UkAddress(
                       postCode: String
                     ) extends Address {
 
-  val countryCode: String = "GB"
+  val country: Country = Country("GB", "United Kingdom")
 }
 
 object UkAddress {
-  implicit val reads: Reads[UkAddress] = Json.reads[UkAddress]
+  implicit val reads: Reads[UkAddress] = {
+
+    import play.api.libs.functional.syntax._
+
+    (__ \ "country" \ "code").read[String].flatMap[String] {
+      t =>
+        if (t == "GB") Reads(_ => JsSuccess(t)) else Reads(_ => JsError("countryCode must be GB"))
+    }.andKeep(
+      (
+        (__ \ "line1").read[String] and
+          (__ \ "line2").readNullable[String] and
+          (__ \ "townOrCity").read[String] and
+          (__ \ "county").readNullable[String] and
+          (__ \ "postCode").read[String]
+        )(UkAddress(_, _, _, _, _)
+      ))
+  }
 
   implicit val writes: OWrites[UkAddress] = new OWrites[UkAddress] {
 
@@ -57,7 +75,7 @@ object UkAddress {
         "line1" -> o.line1,
         "townOrCity" -> o.townOrCity,
         "postCode" -> o.postCode,
-        "countryCode" -> o.countryCode
+        "country" -> o.country
       ) ++ line2Obj ++ countyObj
     }
   }
@@ -76,4 +94,19 @@ case class DesAddress(
 object DesAddress {
 
   implicit val format: OFormat[DesAddress] = Json.format[DesAddress]
+}
+
+
+case class InternationalAddress (
+                                  line1: String,
+                                  line2: Option[String],
+                                  townOrCity: String,
+                                  stateOrRegion: Option[String],
+                                  postCode: Option[String],
+                                  country: Country
+                                ) extends Address
+
+object InternationalAddress {
+
+  implicit val format: OFormat[InternationalAddress] = Json.format[InternationalAddress]
 }
