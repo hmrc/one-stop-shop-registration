@@ -36,7 +36,7 @@ case class Registration(
                          bankDetails: BankDetails
                        )
 
-case object Registration {
+object Registration {
   implicit val format: OFormat[Registration] = Json.format[Registration]
 }
 
@@ -53,3 +53,8 @@ case class EncryptedRegistration(
                                   previousRegistrations: Seq[EncryptedPreviousRegistration],
                                   bankDetails: EncryptedBankDetails
                                 )
+
+object EncryptedRegistration {
+
+  implicit val format: OFormat[EncryptedRegistration] = Json.format[EncryptedRegistration]
+}
