@@ -16,7 +16,12 @@
 
 package config
 
+import play.api.Configuration
+
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class AppConfig @Inject()()
+class AppConfig @Inject()(config: Configuration) {
+
+  val encryptionKey: String = config.get[String]("mongodb.encryption.key")
+}
