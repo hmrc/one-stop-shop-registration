@@ -16,14 +16,26 @@
 
 package models
 
+import crypto.EncryptedValue
 import play.api.libs.json._
 
-case class BusinessContactDetails (
+case class ContactDetails(
   fullName: String,
   telephoneNumber: String,
   emailAddress: String
 )
 
-object BusinessContactDetails {
-  implicit val format: OFormat[BusinessContactDetails] = Json.format[BusinessContactDetails]
+object ContactDetails {
+  implicit val format: OFormat[ContactDetails] = Json.format[ContactDetails]
+}
+
+case class EncryptedContactDetails (
+                                     fullName: EncryptedValue,
+                                     telephoneNumber: EncryptedValue,
+                                     emailAddress: EncryptedValue
+                                   )
+
+object EncryptedContactDetails {
+
+  implicit val format: OFormat[EncryptedContactDetails] = Json.format[EncryptedContactDetails]
 }

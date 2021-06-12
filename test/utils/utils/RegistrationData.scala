@@ -36,7 +36,7 @@ object RegistrationData {
           FixedEstablishment("Name", FixedEstablishmentAddress("Line 1", None, "Town", None, None))
         )
       ),
-      contactDetails =     new BusinessContactDetails(
+      contactDetails =     new ContactDetails(
         "Joe Bloggs",
         "01112223344",
         "email@email.com"

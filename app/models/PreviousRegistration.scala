@@ -16,6 +16,7 @@
 
 package models
 
+import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 
 case class PreviousRegistration(country: Country, vatNumber: String)
@@ -23,4 +24,11 @@ case class PreviousRegistration(country: Country, vatNumber: String)
 object PreviousRegistration {
 
   implicit val format: OFormat[PreviousRegistration] = Json.format[PreviousRegistration]
+}
+
+case class EncryptedPreviousRegistration(country: EncryptedCountry, vatNumber: EncryptedValue)
+
+object EncryptedPreviousRegistration {
+
+  implicit val format: OFormat[EncryptedPreviousRegistration] = Json.format[EncryptedPreviousRegistration]
 }

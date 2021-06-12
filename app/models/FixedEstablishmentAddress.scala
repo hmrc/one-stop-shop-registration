@@ -16,6 +16,7 @@
 
 package models
 
+import crypto.EncryptedValue
 import play.api.libs.json._
 
 case class FixedEstablishmentAddress (
@@ -28,4 +29,18 @@ case class FixedEstablishmentAddress (
 
 object FixedEstablishmentAddress {
   implicit val format: OFormat[FixedEstablishmentAddress] = Json.format[FixedEstablishmentAddress]
+}
+
+case class EncryptedFixedEstablishmentAddress (
+                                                line1: EncryptedValue,
+                                                line2: Option[EncryptedValue],
+                                                townOrCity: EncryptedValue,
+                                                county: Option[EncryptedValue],
+                                                postCode: Option[EncryptedValue]
+                                              )
+
+object EncryptedFixedEstablishmentAddress {
+
+  implicit val format: OFormat[EncryptedFixedEstablishmentAddress] =
+    Json.format[EncryptedFixedEstablishmentAddress]
 }

@@ -16,6 +16,7 @@
 
 package models
 
+import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
 sealed trait EuTaxRegistration
@@ -31,6 +32,20 @@ object EuTaxRegistration {
   }
 }
 
+sealed trait EncryptedEuTaxRegistration
+
+object EncryptedEuTaxRegistration {
+
+  implicit val reads: Reads[EncryptedEuTaxRegistration] =
+    EncryptedEuVatRegistration.format.widen[EncryptedEuTaxRegistration]
+      .orElse(EncryptedRegistrationWithFixedEstablishment.format.widen[EncryptedEuTaxRegistration])
+
+  implicit val writes: Writes[EncryptedEuTaxRegistration] = Writes {
+    case v: EncryptedEuVatRegistration                  => Json.toJson(v)(EncryptedEuVatRegistration.format)
+    case f: EncryptedRegistrationWithFixedEstablishment => Json.toJson(f)(EncryptedRegistrationWithFixedEstablishment.format)
+  }
+}
+
 final case class EuVatRegistration(
                                     country: Country,
                                     vatNumber: String
@@ -42,6 +57,16 @@ object EuVatRegistration {
     Json.format[EuVatRegistration]
 }
 
+final case class EncryptedEuVatRegistration(
+                                             country: EncryptedCountry,
+                                             vatNumber: EncryptedValue
+                                           ) extends EncryptedEuTaxRegistration
+
+object EncryptedEuVatRegistration {
+
+  implicit val format: OFormat[EncryptedEuVatRegistration] = Json.format[EncryptedEuVatRegistration]
+}
+
 final case class RegistrationWithFixedEstablishment(
                                                      country: Country,
                                                      taxIdentifier: EuTaxIdentifier,
@@ -51,4 +76,16 @@ final case class RegistrationWithFixedEstablishment(
 object RegistrationWithFixedEstablishment {
   implicit val format: OFormat[RegistrationWithFixedEstablishment] =
     Json.format[RegistrationWithFixedEstablishment]
+}
+
+final case class EncryptedRegistrationWithFixedEstablishment(
+                                                              country: EncryptedCountry,
+                                                              taxIdentifier: EncryptedEuTaxIdentifier,
+                                                              fixedEstablishment: EncryptedFixedEstablishment
+                                                            ) extends EncryptedEuTaxRegistration
+
+object EncryptedRegistrationWithFixedEstablishment {
+
+  implicit val format: OFormat[EncryptedRegistrationWithFixedEstablishment] =
+    Json.format[EncryptedRegistrationWithFixedEstablishment]
 }
