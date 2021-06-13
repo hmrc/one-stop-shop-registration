@@ -121,22 +121,11 @@ trait Generators {
       } yield EuTaxIdentifier(identifierType, value)
     }
 
-  implicit lazy val arbitraryFixedEstablishmentAddress: Arbitrary[FixedEstablishmentAddress] =
-    Arbitrary {
-      for {
-        line1      <- arbitrary[String]
-        line2      <- Gen.option(arbitrary[String])
-        townOrCity <- arbitrary[String]
-        county     <- Gen.option(arbitrary[String])
-        postCode   <- Gen.option(arbitrary[String])
-      } yield FixedEstablishmentAddress(line1, line2, townOrCity, county, postCode)
-    }
-
   implicit lazy val arbitraryFixedEstablishment: Arbitrary[FixedEstablishment] =
     Arbitrary {
       for {
         tradingName <- arbitrary[String]
-        address     <- arbitrary[FixedEstablishmentAddress]
+        address     <- arbitrary[InternationalAddress]
       } yield FixedEstablishment(tradingName, address)
     }
 
