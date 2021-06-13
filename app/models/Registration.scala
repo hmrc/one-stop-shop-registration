@@ -16,6 +16,7 @@
 
 package models
 
+import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -27,7 +28,7 @@ case class Registration(
                          tradingNames: Seq[String],
                          vatDetails: VatDetails,
                          euRegistrations: Seq[EuTaxRegistration],
-                         contactDetails: BusinessContactDetails,
+                         contactDetails: ContactDetails,
                          websites: Seq[String],
                          startDate: LocalDate,
                          currentCountryOfRegistration: Option[Country],
@@ -35,6 +36,25 @@ case class Registration(
                          bankDetails: BankDetails
                        )
 
-case object Registration {
+object Registration {
   implicit val format: OFormat[Registration] = Json.format[Registration]
+}
+
+case class EncryptedRegistration(
+                                  vrn: Vrn,
+                                  registeredCompanyName: EncryptedValue,
+                                  tradingNames: Seq[EncryptedValue],
+                                  vatDetails: EncryptedVatDetails,
+                                  euRegistrations: Seq[EncryptedEuTaxRegistration],
+                                  contactDetails: EncryptedContactDetails,
+                                  websites: Seq[EncryptedValue],
+                                  startDate: LocalDate,
+                                  currentCountryOfRegistration: Option[EncryptedCountry],
+                                  previousRegistrations: Seq[EncryptedPreviousRegistration],
+                                  bankDetails: EncryptedBankDetails
+                                )
+
+object EncryptedRegistration {
+
+  implicit val format: OFormat[EncryptedRegistration] = Json.format[EncryptedRegistration]
 }

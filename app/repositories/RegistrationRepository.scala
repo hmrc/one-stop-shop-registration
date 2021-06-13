@@ -16,23 +16,29 @@
 
 package repositories
 
+import config.AppConfig
+import crypto.RegistrationEncrypter
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.{InsertResult, Registration}
+import models.{EncryptedRegistration, InsertResult, Registration}
 import repositories.MongoErrors.Duplicate
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[Registration] (
+class RegistrationRepository @Inject()(
+                                        mongoComponent: MongoComponent,
+                                        encrypter: RegistrationEncrypter,
+                                        appConfig: AppConfig
+                                      )(implicit ec: ExecutionContext)
+  extends PlayMongoRepository[EncryptedRegistration] (
     collectionName = "registrations",
     mongoComponent = mongoComponent,
-    domainFormat   = Registration.format,
+    domainFormat   = EncryptedRegistration.format,
     replaceIndexes = true,
     indexes        = Seq(
       IndexModel(
@@ -46,9 +52,13 @@ class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit 
 
   import uk.gov.hmrc.mongo.play.json.Codecs.toBson
 
+  private val encryptionKey = appConfig.encryptionKey
+
   def insert(registration: Registration): Future[InsertResult] = {
+    val encryptedRegistration = encrypter.encryptRegistration(registration, registration.vrn, encryptionKey)
+
     collection
-      .insertOne(registration)
+      .insertOne(encryptedRegistration)
       .toFuture
       .map(_ => InsertSucceeded)
       .recover {
@@ -57,7 +67,13 @@ class RegistrationRepository @Inject()(mongoComponent: MongoComponent)(implicit 
   }
 
   def get(vrn: Vrn): Future[Option[Registration]] = {
-    collection.find(Filters.equal("vrn", toBson(vrn))).headOption
+    collection
+      .find(Filters.equal("vrn", toBson(vrn)))
+      .headOption
+      .map(_.map {
+        r =>
+          encrypter.decryptRegistration(r, r.vrn, encryptionKey)
+      })
   }
 }
 

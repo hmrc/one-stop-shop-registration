@@ -16,6 +16,8 @@
 
 package repositories
 
+import config.AppConfig
+import crypto.{RegistrationEncrypter, SecureGCMCipher}
 import org.mockito.MockitoSugar
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -31,15 +33,24 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class RegistrationRepositorySpec extends AnyFreeSpec
   with Matchers
-  with DefaultPlayMongoRepositorySupport[Registration]
+  with DefaultPlayMongoRepositorySupport[EncryptedRegistration]
   with CleanMongoCollectionSupport
   with ScalaFutures
   with IntegrationPatience
   with OptionValues
   with MockitoSugar {
 
+  private val cipher    = new SecureGCMCipher
+  private val encrypter = new RegistrationEncrypter(cipher)
+  private val appConfig = mock[AppConfig]
+  private val secretKey = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
+
+  when(appConfig.encryptionKey) thenReturn secretKey
+
   override protected val repository = new RegistrationRepository(
-      mongoComponent = mongoComponent
+      mongoComponent = mongoComponent,
+      encrypter = encrypter,
+      appConfig = appConfig
   )
 
   ".insert" - {
@@ -47,10 +58,11 @@ class RegistrationRepositorySpec extends AnyFreeSpec
     "must insert a registration" in {
 
       val insertResult  = repository.insert(RegistrationData.registration).futureValue
-      val updatedRecord = findAll().futureValue.headOption.value
+      val databaseRecord = findAll().futureValue.headOption.value
+      val decryptedRecord = encrypter.decryptRegistration(databaseRecord, RegistrationData.registration.vrn, secretKey)
 
       insertResult mustEqual InsertSucceeded
-      updatedRecord mustEqual RegistrationData.registration
+      decryptedRecord mustEqual RegistrationData.registration
     }
 
     "must not allow duplicate registrations to be inserted" in {
@@ -66,7 +78,8 @@ class RegistrationRepositorySpec extends AnyFreeSpec
 
     "must find a record when one exists" in {
 
-      insert(RegistrationData.registration).futureValue
+      val registration = encrypter.encryptRegistration(RegistrationData.registration, RegistrationData.registration.vrn, secretKey)
+      insert(registration).futureValue
 
       val result = repository.get(RegistrationData.registration.vrn).futureValue
 

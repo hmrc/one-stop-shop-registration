@@ -16,12 +16,11 @@
 
 package models
 
-import models.{Enumerable, WithName}
 import play.api.libs.json._
 
 sealed trait EuTaxIdentifierType
 
-object EuTaxIdentifierType {
+object EuTaxIdentifierType extends Enumerable.Implicits {
 
   case object Vat extends WithName("vat") with EuTaxIdentifierType
   case object Other extends WithName("other") with EuTaxIdentifierType
@@ -29,7 +28,7 @@ object EuTaxIdentifierType {
   val values: Seq[EuTaxIdentifierType] =
     Seq(Vat, Other)
 
-  val enumerable: Enumerable[EuTaxIdentifierType] =
+  implicit val enumerable: Enumerable[EuTaxIdentifierType] =
     Enumerable(values.map(v => v.toString -> v): _*)
 
   implicit def reads: Reads[EuTaxIdentifierType] = Reads[EuTaxIdentifierType] {

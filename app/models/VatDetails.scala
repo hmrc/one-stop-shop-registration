@@ -16,6 +16,7 @@
 
 package models
 
+import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
@@ -29,4 +30,16 @@ case class VatDetails(
 
 object VatDetails {
   implicit val format: OFormat[VatDetails] = Json.format[VatDetails]
+}
+
+case class EncryptedVatDetails(
+                                registrationDate: LocalDate,
+                                address: EncryptedAddress,
+                                partOfVatGroup: EncryptedValue,
+                                source: VatDetailSource
+                              )
+
+object EncryptedVatDetails {
+
+  implicit val format: OFormat[EncryptedVatDetails] = Json.format[EncryptedVatDetails]
 }
