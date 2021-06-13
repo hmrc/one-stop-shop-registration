@@ -191,32 +191,18 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       case f: EncryptedRegistrationWithFixedEstablishment => decryptRegistrationWithFixedEstablishment(f, vrn, key)
     }
 
-  private def encryptFixedEstablishmentAddress(address: FixedEstablishmentAddress, vrn: Vrn, key: String): EncryptedFixedEstablishmentAddress = {
-    def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
-    import address._
-
-    EncryptedFixedEstablishmentAddress(e(line1), line2 map e, e(townOrCity), county map e, postCode map e)
-  }
-
-  private def decryptFixedEstablishmentAddress(address: EncryptedFixedEstablishmentAddress, vrn: Vrn, key: String): FixedEstablishmentAddress = {
-    def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
-    import address._
-
-    FixedEstablishmentAddress(d(line1), line2 map d, d(townOrCity), county map d, postCode map d)
-  }
-
   private def encryptFixedEstablishment(fixedEstablishment: FixedEstablishment, vrn: Vrn, key: String): EncryptedFixedEstablishment = {
     def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
     import fixedEstablishment._
 
-    EncryptedFixedEstablishment(e(tradingName), encryptFixedEstablishmentAddress(address, vrn, key))
+    EncryptedFixedEstablishment(e(tradingName), encryptInternationalAddress(address, vrn, key))
   }
 
   private def decryptFixedEstablishment(fixedEstablishment: EncryptedFixedEstablishment, vrn: Vrn, key: String): FixedEstablishment = {
     def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
     import fixedEstablishment._
 
-    FixedEstablishment(d(tradingName), decryptFixedEstablishmentAddress(address, vrn, key))
+    FixedEstablishment(d(tradingName), decryptInternationalAddress(address, vrn, key))
   }
 
   def encryptedPreviousRegistration(registration: PreviousRegistration, vrn: Vrn, key: String): EncryptedPreviousRegistration = {

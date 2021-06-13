@@ -19,7 +19,7 @@ package models
 import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 
-final case class FixedEstablishment(tradingName: String, address: FixedEstablishmentAddress)
+final case class FixedEstablishment(tradingName: String, address: InternationalAddress)
 
 object FixedEstablishment {
 
@@ -28,7 +28,7 @@ object FixedEstablishment {
 
 final case class EncryptedFixedEstablishment(
                                               tradingName: EncryptedValue,
-                                              address: EncryptedFixedEstablishmentAddress
+                                              address: EncryptedInternationalAddress
                                             )
 
 object EncryptedFixedEstablishment {
