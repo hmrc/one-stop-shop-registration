@@ -24,13 +24,17 @@ import connectors.VatCustomerInfoHttpParser._
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
+import logging.Logging
+
 class DesConnector @Inject()(des: DesConfig, httpClient: HttpClient)
-                            (implicit ec: ExecutionContext) extends HttpErrorFunctions {
+                            (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
   implicit val hc: HeaderCarrier =
     HeaderCarrier(authorization = Some(Authorization(s"Bearer ${des.authorizationToken}")))
       .withExtraHeaders("Environment" -> des.environment)
 
-  def getVatCustomerDetails(vrn: Vrn): Future[VatCustomerInfoResponse] =
+  def getVatCustomerDetails(vrn: Vrn): Future[VatCustomerInfoResponse] = {
+    logger.debug(s"Test URLTest ${des.baseUrl}vat/customer/vrn/${vrn.value}/information")
     httpClient.GET[VatCustomerInfoResponse](s"${des.baseUrl}vat/customer/vrn/${vrn.value}/information")
+  }
 }
