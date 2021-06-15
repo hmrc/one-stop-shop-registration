@@ -35,4 +35,15 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
         json.validate[EuTaxRegistration] mustEqual JsSuccess(euRegistration)
     }
   }
+
+  "must serialise and deserialise from / to a Registration without Fixed Establishment" in {
+
+    forAll(arbitrary[Country]) {
+      country =>
+        val euRegistration = RegistrationWithoutFixedEstablishment(country)
+
+        val json = Json.toJson(euRegistration)
+        json.validate[EuTaxRegistration] mustEqual JsSuccess(euRegistration)
+    }
+  }
 }

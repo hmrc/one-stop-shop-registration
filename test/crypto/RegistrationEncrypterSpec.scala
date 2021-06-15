@@ -111,6 +111,16 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
           d mustEqual registration
       }
     }
+
+    "must encrypt a registration without a fixed establishment and decrypt it" in {
+      forAll(arbitrary[RegistrationWithoutFixedEstablishment]) {
+        registration =>
+          val e = encrypter.encryptEuTaxRegistration(registration, vrn, secretKey)
+          val d = encrypter.decryptEuTaxRegistration(e, vrn, secretKey)
+
+          d mustEqual registration
+      }
+    }
   }
 
   "encrypt / decrypt previous registration" - {

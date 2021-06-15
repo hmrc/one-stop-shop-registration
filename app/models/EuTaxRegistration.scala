@@ -24,11 +24,15 @@ sealed trait EuTaxRegistration
 object EuTaxRegistration {
 
   implicit val reads: Reads[EuTaxRegistration] =
-    EuVatRegistration.format.widen[EuTaxRegistration] orElse RegistrationWithFixedEstablishment.format.widen[EuTaxRegistration]
+    RegistrationWithFixedEstablishment.format.widen[EuTaxRegistration] orElse
+      EuVatRegistration.format.widen[EuTaxRegistration] orElse
+      RegistrationWithoutFixedEstablishment.format.widen[EuTaxRegistration]
+
 
   implicit val writes: Writes[EuTaxRegistration] = Writes {
-    case v: EuVatRegistration                   => Json.toJson(v)(EuVatRegistration.format)
-    case fe: RegistrationWithFixedEstablishment => Json.toJson(fe)(RegistrationWithFixedEstablishment.format)
+    case v: EuVatRegistration                     => Json.toJson(v)(EuVatRegistration.format)
+    case fe: RegistrationWithFixedEstablishment   => Json.toJson(fe)(RegistrationWithFixedEstablishment.format)
+    case w: RegistrationWithoutFixedEstablishment => Json.toJson(w)(RegistrationWithoutFixedEstablishment.format)
   }
 }
 
@@ -88,4 +92,18 @@ object EncryptedRegistrationWithFixedEstablishment {
 
   implicit val format: OFormat[EncryptedRegistrationWithFixedEstablishment] =
     Json.format[EncryptedRegistrationWithFixedEstablishment]
+}
+
+final case class RegistrationWithoutFixedEstablishment(country: Country) extends EuTaxRegistration
+
+object RegistrationWithoutFixedEstablishment {
+  implicit val format: OFormat[RegistrationWithoutFixedEstablishment] =
+    Json.format[RegistrationWithoutFixedEstablishment]
+}
+
+final case class EncryptedRegistrationWithoutFixedEstablishment(country: EncryptedCountry) extends EncryptedEuTaxRegistration
+
+object EncryptedRegistrationWithoutFixedEstablishment {
+  implicit val format: OFormat[EncryptedRegistrationWithoutFixedEstablishment] =
+    Json.format[EncryptedRegistrationWithoutFixedEstablishment]
 }
