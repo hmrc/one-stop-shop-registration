@@ -34,7 +34,6 @@ class DesConnector @Inject()(des: DesConfig, httpClient: HttpClient)
       .withExtraHeaders("Environment" -> des.environment)
 
   def getVatCustomerDetails(vrn: Vrn): Future[VatCustomerInfoResponse] = {
-    logger.warn(s"Test URLTest ${des.baseUrl}vat/customer/vrn/${vrn.value}/information")
     httpClient.GET[VatCustomerInfoResponse](s"${des.baseUrl}vat/customer/vrn/${vrn.value}/information")
   }
 }
