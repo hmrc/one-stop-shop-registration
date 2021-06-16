@@ -18,7 +18,12 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
 
   private def application: Application =
     new GuiceApplicationBuilder()
-      .configure("microservice.services.des.port" -> server.port)
+      .configure(
+        "microservice.services.des.host" -> "127.0.0.1",
+        "microservice.services.des.port" -> server.port,
+        "microservice.services.des.authorizationToken" -> "auth-token",
+        "microservice.services.des.environment" -> "test-environment"
+      )
       .build()
 
   private val desUrl = s"/one-stop-shop-registration-stub/vat/customer/vrn/${vrn.value}/information"
@@ -52,6 +57,8 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
 
         server.stubFor(
           get(urlEqualTo(desUrl))
+            .withHeader("Authorization", equalTo("Bearer auth-token"))
+            .withHeader("Environment", equalTo("test-environment"))
             .willReturn(ok(responseJson))
         )
 
@@ -106,7 +113,6 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
         }
       }
 
-
       "must return Left(ServiceUnavailable) when the server returns SERVICE_UNAVAILABLE" in {
 
         val app = application
@@ -125,7 +131,6 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
         }
       }
 
-
       "must return Left(ServerError) when the server returns INTERNAL_SERVER_ERROR" in {
 
         val app = application
@@ -143,7 +148,6 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
           result mustEqual Left(ServerError)
         }
       }
-
 
       "must return Left(InvalidJson) when the server returns OK with a payload that cannot be parsed" in {
 
