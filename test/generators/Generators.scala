@@ -53,6 +53,11 @@ trait Generators {
       } yield RegistrationWithFixedEstablishment(country, taxIdentifier, fixedEstablishment)
     }
 
+  implicit lazy val arbitraryRegistrationWithoutFixedEstablistment: Arbitrary[RegistrationWithoutFixedEstablishment] =
+    Arbitrary {
+      arbitrary[Country].map(c => RegistrationWithoutFixedEstablishment(c))
+    }
+
   implicit lazy val arbitraryUkAddress: Arbitrary[UkAddress] =
     Arbitrary {
       for {
