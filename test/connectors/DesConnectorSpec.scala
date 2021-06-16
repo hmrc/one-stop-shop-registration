@@ -8,10 +8,13 @@ import org.scalacheck.Gen
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.running
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDate
 
 class DesConnectorSpec extends BaseSpec with WireMockHelper {
+
+  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private def application: Application =
     new GuiceApplicationBuilder()
