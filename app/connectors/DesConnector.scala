@@ -17,24 +17,27 @@
 package connectors
 
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpErrorFunctions}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 import config.DesConfig
 import connectors.VatCustomerInfoHttpParser._
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-
 import logging.Logging
+import play.api.http.HeaderNames
+
 
 class DesConnector @Inject()(des: DesConfig, httpClient: HttpClient)
                             (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
-  implicit val hc: HeaderCarrier =
-    HeaderCarrier(authorization = Some(Authorization(s"Bearer ${des.authorizationToken}")))
-      .withExtraHeaders("Environment" -> des.environment)
+  val headers = Seq(
+    HeaderNames.AUTHORIZATION -> s"Bearer ${des.authorizationToken}",
+    "Environment" -> des.environment
+  )
 
-  def getVatCustomerDetails(vrn: Vrn): Future[VatCustomerInfoResponse] = {
-    logger.warn(s"Test URLTest ${des.baseUrl}vat/customer/vrn/${vrn.value}/information")
-    httpClient.GET[VatCustomerInfoResponse](s"${des.baseUrl}vat/customer/vrn/${vrn.value}/information")
+  def getVatCustomerDetails(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[VatCustomerInfoResponse] = {
+    val url = s"${des.baseUrl}vat/customer/vrn/${vrn.value}/information"
+    logger.warn(s"Test URLTest ${url}")
+    httpClient.GET[VatCustomerInfoResponse](url = url, headers = headers)
   }
 }

@@ -29,7 +29,7 @@ class VatInfoControllerSpec extends BaseSpec {
       )
 
       val mockConnector = mock[DesConnector]
-      when(mockConnector.getVatCustomerDetails(any())) thenReturn Future.successful(Right(vatInfo))
+      when(mockConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatInfo))
 
       val app = applicationBuilder.overrides(bind[DesConnector].toInstance(mockConnector)).build()
 
@@ -46,7 +46,7 @@ class VatInfoControllerSpec extends BaseSpec {
     "must return NotFound when the connector returns Not Found" in {
 
       val mockConnector = mock[DesConnector]
-      when(mockConnector.getVatCustomerDetails(any())) thenReturn Future.successful(Left(NotFound))
+      when(mockConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Left(NotFound))
 
       val app = applicationBuilder.overrides(bind[DesConnector].toInstance(mockConnector)).build()
 
@@ -63,7 +63,7 @@ class VatInfoControllerSpec extends BaseSpec {
 
       val response = Gen.oneOf(InvalidJson, ServerError, ServiceUnavailable, InvalidVrn).sample.value
       val mockConnector = mock[DesConnector]
-      when(mockConnector.getVatCustomerDetails(any())) thenReturn Future.successful(Left(response))
+      when(mockConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Left(response))
 
       val app = applicationBuilder.overrides(bind[DesConnector].toInstance(mockConnector)).build()
 
