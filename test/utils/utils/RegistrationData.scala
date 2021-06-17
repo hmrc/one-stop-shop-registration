@@ -5,9 +5,11 @@ import models.VatDetailSource.UserEntered
 import models._
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.LocalDate
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 
 object RegistrationData {
+
+  val stubClock: Clock = Clock.fixed(LocalDate.now.atStartOfDay(ZoneId.systemDefault).toInstant, ZoneId.systemDefault)
 
   val registration: Registration =
     Registration(
@@ -47,7 +49,8 @@ object RegistrationData {
       previousRegistrations = Seq(
         PreviousRegistration(Country("DE", "Germany"), "DE123")
       ),
-      bankDetails = BankDetails("Account name", Some("12345678"), "GB1234578")
+      bankDetails = BankDetails("Account name", Some("12345678"), "GB1234578"),
+      submissionReceived = Instant.now(stubClock)
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""

@@ -20,7 +20,7 @@ import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 
 case class Registration(
                          vrn: Vrn,
@@ -33,7 +33,8 @@ case class Registration(
                          startDate: LocalDate,
                          currentCountryOfRegistration: Option[Country],
                          previousRegistrations: Seq[PreviousRegistration],
-                         bankDetails: BankDetails
+                         bankDetails: BankDetails,
+                         submissionReceived: Instant
                        )
 
 object Registration {
@@ -51,7 +52,8 @@ case class EncryptedRegistration(
                                   startDate: LocalDate,
                                   currentCountryOfRegistration: Option[EncryptedCountry],
                                   previousRegistrations: Seq[EncryptedPreviousRegistration],
-                                  bankDetails: EncryptedBankDetails
+                                  bankDetails: EncryptedBankDetails,
+                                  submissionReceived: Instant
                                 )
 
 object EncryptedRegistration {
