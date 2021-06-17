@@ -1,5 +1,6 @@
 package generators
 
+import crypto.EncryptedValue
 import models._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
@@ -7,6 +8,22 @@ import org.scalacheck.{Arbitrary, Gen}
 import java.time.LocalDate
 
 trait Generators {
+
+  implicit lazy val arbitraryEncryptedCountry: Arbitrary[EncryptedCountry] =
+    Arbitrary {
+      for {
+        code <- arbitrary[EncryptedValue]
+        name <- arbitrary[EncryptedValue]
+      } yield EncryptedCountry(code, name)
+    }
+
+  implicit lazy val arbitraryEncryptedValue: Arbitrary[EncryptedValue] =
+    Arbitrary {
+      for {
+        value <- Gen.listOfN(50, Gen.alphaNumChar).map(_.mkString)
+        nonce <- Gen.listOfN(50, Gen.alphaNumChar).map(_.mkString)
+      } yield EncryptedValue(value, nonce)
+    }
 
   implicit lazy val arbitraryVatDetails: Arbitrary[VatDetails] =
     Arbitrary {

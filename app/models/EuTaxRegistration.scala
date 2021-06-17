@@ -41,12 +41,14 @@ sealed trait EncryptedEuTaxRegistration
 object EncryptedEuTaxRegistration {
 
   implicit val reads: Reads[EncryptedEuTaxRegistration] =
-    EncryptedEuVatRegistration.format.widen[EncryptedEuTaxRegistration]
-      .orElse(EncryptedRegistrationWithFixedEstablishment.format.widen[EncryptedEuTaxRegistration])
+    EncryptedRegistrationWithFixedEstablishment.format.widen[EncryptedEuTaxRegistration] orElse
+      EncryptedEuVatRegistration.format.widen[EncryptedEuTaxRegistration] orElse
+      EncryptedRegistrationWithoutFixedEstablishment.format.widen[EncryptedEuTaxRegistration]
 
   implicit val writes: Writes[EncryptedEuTaxRegistration] = Writes {
     case v: EncryptedEuVatRegistration                  => Json.toJson(v)(EncryptedEuVatRegistration.format)
     case f: EncryptedRegistrationWithFixedEstablishment => Json.toJson(f)(EncryptedRegistrationWithFixedEstablishment.format)
+    case w: EncryptedRegistrationWithoutFixedEstablishment => Json.toJson(w)(EncryptedRegistrationWithoutFixedEstablishment.format)
   }
 }
 
