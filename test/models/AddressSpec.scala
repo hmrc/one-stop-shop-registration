@@ -16,11 +16,16 @@
 
 package models
 
+import org.scalacheck.Arbitrary.arbitrary
+import crypto.EncryptedValue
+import generators.Generators
+import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.{JsSuccess, Json}
 
-class AddressSpec extends AnyFreeSpec with Matchers {
+class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with Generators with OptionValues {
 
   "Address" - {
 
@@ -136,6 +141,181 @@ class AddressSpec extends AnyFreeSpec with Matchers {
 
         Json.toJson(address) mustEqual expectedJson
         expectedJson.validate[Address] mustEqual JsSuccess(address)
+      }
+    }
+  }
+
+  "EncryptedAddress" - {
+
+    "must serialise and deserialise, with GB as the country, to and from a UK address" - {
+
+      "with all optional fields present" in {
+
+        forAll(arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedValue]) {
+          case (line1, line2, town, county, postCode) =>
+
+            val address: EncryptedAddress = EncryptedUkAddress(line1, Some(line2), town, Some(county), postCode)
+
+            val expectedJson = Json.obj(
+              "line1"       -> Json.toJson(line1),
+              "line2"       -> Json.toJson(line2),
+              "townOrCity"  -> Json.toJson(town),
+              "county"      -> Json.toJson(county),
+              "postCode"    -> Json.toJson(postCode),
+              "country"     -> Json.obj(
+                "code" -> "GB",
+                "name" -> "United Kingdom"
+              )
+            )
+
+            Json.toJson(address) mustEqual expectedJson
+            expectedJson.validate[EncryptedAddress] mustEqual JsSuccess(address)
+        }
+      }
+
+      "with all optional fields missing" in {
+
+        forAll(arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedValue]) {
+          case (line1, town, postCode) =>
+
+            val address: EncryptedAddress = EncryptedUkAddress(line1, None, town, None, postCode)
+
+            val expectedJson = Json.obj(
+              "line1"       -> Json.toJson(line1),
+              "townOrCity"  -> Json.toJson(town),
+              "postCode"    -> Json.toJson(postCode),
+              "country"     -> Json.obj(
+                "code" -> "GB",
+                "name" -> "United Kingdom"
+              )
+            )
+
+            Json.toJson(address) mustEqual expectedJson
+            expectedJson.validate[EncryptedAddress] mustEqual JsSuccess(address)
+        }
+      }
+    }
+
+    "must serialise and deserialise from and to an International address" - {
+
+      "with all optional fields present" in {
+
+        val countryGenerator = for {
+          line1 <- arbitrary[EncryptedValue]
+          line2 <- arbitrary[EncryptedValue]
+          town  <- arbitrary[EncryptedValue]
+          state <- arbitrary[EncryptedValue]
+          postCode <- arbitrary[EncryptedValue]
+          countryCode <- arbitrary[String]
+          countryName <- arbitrary[String]
+        } yield (line1, line2, town, state, postCode, countryCode, countryName)
+
+        forAll(countryGenerator) {
+          case (line1, line2, town, state, postCode, countryCode, countryName) =>
+
+            val address = EncryptedInternationalAddress(line1, Some(line2), town, Some(state), Some(postCode), Country(countryCode, countryName))
+
+            val expectedJson = Json.obj(
+              "line1"         -> line1,
+              "line2"         -> line2,
+              "townOrCity"    -> town,
+              "stateOrRegion" -> state,
+              "postCode"      -> postCode,
+              "country"       -> Json.obj(
+                "code" -> countryCode,
+                "name" -> countryName
+              )
+            )
+
+            Json.toJson(address) mustEqual expectedJson
+            expectedJson.validate[EncryptedAddress] mustEqual JsSuccess(address)
+        }
+      }
+
+      "with all optional fields missing" in {
+
+
+        val countryGenerator = for {
+          line1 <- arbitrary[EncryptedValue]
+          town  <- arbitrary[EncryptedValue]
+          countryCode <- arbitrary[String]
+          countryName <- arbitrary[String]
+        } yield (line1, town, countryCode, countryName)
+
+        forAll(countryGenerator) {
+          case (line1, town, countryCode, countryName) =>
+
+            val address = EncryptedInternationalAddress(line1, None, town, None, None, Country(countryCode, countryName))
+
+            val expectedJson = Json.obj(
+              "line1"         -> line1,
+              "townOrCity"    -> town,
+              "country"       -> Json.obj(
+                "code" -> countryCode,
+                "name" -> countryName
+              )
+            )
+
+            Json.toJson(address) mustEqual expectedJson
+            expectedJson.validate[EncryptedAddress] mustEqual JsSuccess(address)
+        }
+      }
+    }
+
+    "must serialise / deserialise from and to a DES address" - {
+
+      "with all optional fields present" in {
+
+        val countryGenerator = for {
+          line1 <- arbitrary[EncryptedValue]
+          line2 <- arbitrary[EncryptedValue]
+          line3 <- arbitrary[EncryptedValue]
+          line4 <- arbitrary[EncryptedValue]
+          line5 <- arbitrary[EncryptedValue]
+          postCode <- arbitrary[EncryptedValue]
+          countryCode <- arbitrary[EncryptedValue]
+        } yield (line1, line2, line3, line4, line5, postCode, countryCode)
+
+        forAll(countryGenerator) {
+          case (line1, line2, line3, line4, line5, postCode, countryCode) =>
+
+            val address = EncryptedDesAddress(line1, Some(line2), Some(line3), Some(line4), Some(line5), Some(postCode), countryCode)
+
+            val expectedJson = Json.obj(
+              "line1"       -> line1,
+              "line2"       -> line2,
+              "line3"       -> line3,
+              "line4"       -> line4,
+              "line5"       -> line5,
+              "postCode"    -> postCode,
+              "countryCode" -> countryCode
+            )
+
+            Json.toJson(address) mustEqual expectedJson
+            expectedJson.validate[EncryptedAddress] mustEqual JsSuccess(address)
+        }
+      }
+
+      "with all optional fields missing" in {
+
+        val countryGenerator = for {
+          line1 <- arbitrary[EncryptedValue]
+          countryCode <- arbitrary[EncryptedValue]
+        } yield (line1, countryCode)
+
+        forAll(countryGenerator) {
+          case (line1, countryCode) =>
+
+            val address = EncryptedDesAddress(line1, None, None, None, None, None, countryCode)
+
+            val expectedJson = Json.obj(
+              "line1"       -> line1,
+              "countryCode" -> countryCode
+            )
+
+            Json.toJson(address) mustEqual expectedJson
+            expectedJson.validate[EncryptedAddress] mustEqual JsSuccess(address)
+        }
       }
     }
   }

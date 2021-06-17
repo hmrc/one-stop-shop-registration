@@ -1,7 +1,7 @@
 package models
 
+import crypto.EncryptedValue
 import generators.Generators
-import models.Country
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -10,40 +10,95 @@ import play.api.libs.json.{JsSuccess, Json}
 
 class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with Generators {
 
-  "must serialise and deserialise from / to an EU VAT Registration" in {
+  "EU Tax Registration" - {
 
-    val euVatNumberGen = arbitrary[Int].map(_.toString)
+    "must serialise and deserialise from / to an EU VAT Registration" in {
 
-    forAll(arbitrary[Country], euVatNumberGen) {
-      case (country, vatNumber) =>
+      val euVatNumberGen = arbitrary[Int].map(_.toString)
 
-        val euVatRegistration = EuVatRegistration(country, vatNumber)
+      forAll(arbitrary[Country], euVatNumberGen) {
+        case (country, vatNumber) =>
 
-        val json = Json.toJson(euVatRegistration)
-        json.validate[EuTaxRegistration] mustEqual JsSuccess(euVatRegistration)
+          val euVatRegistration = EuVatRegistration(country, vatNumber)
+
+          val json = Json.toJson(euVatRegistration)
+          json.validate[EuTaxRegistration] mustEqual JsSuccess(euVatRegistration)
+      }
+    }
+
+    "must serialise and deserialise from / to a Registration with Fixed Establishment" in {
+
+      forAll(arbitrary[Country], arbitrary[FixedEstablishment], arbitrary[EuTaxIdentifier]) {
+        case (country, fixedEstablishment, taxRef) =>
+
+          val euRegistration = RegistrationWithFixedEstablishment(country, taxRef, fixedEstablishment)
+
+          val json = Json.toJson(euRegistration)
+          json.validate[EuTaxRegistration] mustEqual JsSuccess(euRegistration)
+      }
+    }
+
+    "must serialise and deserialise from / to a Registration without Fixed Establishment" in {
+
+      forAll(arbitrary[Country]) {
+        country =>
+          val euRegistration = RegistrationWithoutFixedEstablishment(country)
+
+          val json = Json.toJson(euRegistration)
+          json.validate[EuTaxRegistration] mustEqual JsSuccess(euRegistration)
+      }
     }
   }
 
-  "must serialise and deserialise from / to a Registration with Fixed Establishment" in {
+  "Encrypted EU Tax Registration" - {
 
-    forAll(arbitrary[Country], arbitrary[FixedEstablishment], arbitrary[EuTaxIdentifier]) {
-      case (country, fixedEstablishment, taxRef) =>
+    "must serialise and deserialise from / to an EU VAT Registration" in {
 
-        val euRegistration = RegistrationWithFixedEstablishment(country, taxRef, fixedEstablishment)
+      forAll(arbitrary[EncryptedValue], arbitrary[EncryptedCountry]) {
+        case (vatNumber, country) =>
 
-        val json = Json.toJson(euRegistration)
-        json.validate[EuTaxRegistration] mustEqual JsSuccess(euRegistration)
+          val euVatRegistration = EncryptedEuVatRegistration(country, vatNumber)
+
+          val json = Json.toJson(euVatRegistration)
+          json.validate[EncryptedEuTaxRegistration] mustEqual JsSuccess(euVatRegistration)
+      }
     }
-  }
 
-  "must serialise and deserialise from / to a Registration without Fixed Establishment" in {
+    "must serialise and deserialise from / to a Registration with Fixed Establishment" in {
 
-    forAll(arbitrary[Country]) {
-      country =>
-        val euRegistration = RegistrationWithoutFixedEstablishment(country)
+      val gen = for {
+        country        <- arbitrary[EncryptedCountry]
+        name           <- arbitrary[EncryptedValue]
+        line1          <- arbitrary[EncryptedValue]
+        town           <- arbitrary[EncryptedValue]
+        identifierType <- arbitrary[EncryptedValue]
+        taxRef         <- arbitrary[EncryptedValue]
+        addressCountry <- arbitrary[Country]
+      } yield (
+        country,
+        EncryptedFixedEstablishment(name, EncryptedInternationalAddress(line1, None, town, None, None, addressCountry)),
+        EncryptedEuTaxIdentifier(identifierType, taxRef)
+      )
 
-        val json = Json.toJson(euRegistration)
-        json.validate[EuTaxRegistration] mustEqual JsSuccess(euRegistration)
+      forAll(gen) {
+        case (country, fixedEstablishment, taxRef) =>
+
+          val euRegistration = EncryptedRegistrationWithFixedEstablishment(country, taxRef, fixedEstablishment)
+
+          val json = Json.toJson(euRegistration)
+          json.validate[EncryptedEuTaxRegistration] mustEqual JsSuccess(euRegistration)
+      }
+    }
+
+    "must serialise and deserialise from / to a Registration without Fixed Establishment" in {
+
+      forAll(arbitrary[EncryptedCountry]) {
+        country =>
+          val euRegistration = EncryptedRegistrationWithoutFixedEstablishment(country)
+
+          val json = Json.toJson(euRegistration)
+          json.validate[EncryptedEuTaxRegistration] mustEqual JsSuccess(euRegistration)
+      }
     }
   }
 }
