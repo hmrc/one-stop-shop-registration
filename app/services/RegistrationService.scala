@@ -16,21 +16,39 @@
 
 package services
 
+import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
 import repositories.RegistrationRepository
 import uk.gov.hmrc.domain.Vrn
 
+import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 @Singleton
 class RegistrationService @Inject() (
-  registrationRepository: RegistrationRepository
-)(implicit ec: ExecutionContext) {
+                                      registrationRepository: RegistrationRepository,
+                                      clock: Clock
+                                    ) {
 
-  def insert(registration: Registration): Future[InsertResult] = {
-    registrationRepository.insert(registration)
-  }
+  def createRegistration(request: RegistrationRequest): Future[InsertResult] =
+    registrationRepository.insert(buildRegistration(request))
+
+  private def buildRegistration(request: RegistrationRequest): Registration =
+    Registration(
+      vrn                          = request.vrn,
+      registeredCompanyName        = request.registeredCompanyName,
+      tradingNames                 = request.tradingNames,
+      vatDetails                   = request.vatDetails,
+      euRegistrations              = request.euRegistrations,
+      contactDetails               = request.contactDetails,
+      websites                     = request.websites,
+      startDate                    = request.startDate,
+      currentCountryOfRegistration = request.currentCountryOfRegistration,
+      previousRegistrations        = request.previousRegistrations,
+      bankDetails                  = request.bankDetails,
+      submissionReceived           = Instant.now(clock)
+    )
 
   def get(vrn: Vrn): Future[Option[Registration]] =
     registrationRepository.get(vrn)

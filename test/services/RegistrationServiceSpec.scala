@@ -19,29 +19,27 @@ package services
 import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import models.InsertResult.InsertSucceeded
-import models.Registration
+import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import repositories.RegistrationRepository
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class RegistrationServiceSpec extends BaseSpec {
 
-  private val registration           = mock[Registration]
+  private val registrationRequest    = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]
 
-  private val service = new RegistrationService(registrationRepository)
+  private val service = new RegistrationService(registrationRepository, stubClock)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
-  "insert()" - {
+  ".createRegistration" - {
 
-    "must return the result provided by the repository" in {
+    "must create a registration from the request, save it and return the result of the save operation" in {
 
       when(registrationRepository.insert(any())).thenReturn(successful(InsertSucceeded))
 
-      service.insert(registration).futureValue mustEqual InsertSucceeded
+      service.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
     }
 
     "propagate any error" in {
@@ -49,7 +47,7 @@ class RegistrationServiceSpec extends BaseSpec {
       when(registrationRepository.insert(any())).thenThrow(emulatedFailure)
 
       val caught = intercept[RuntimeException] {
-        service.insert(registration).futureValue
+        service.createRegistration(registrationRequest).futureValue
       }
 
       caught mustBe emulatedFailure

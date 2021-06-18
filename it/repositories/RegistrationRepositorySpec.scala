@@ -26,7 +26,6 @@ import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepositorySupport}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models._
-import repositories.RegistrationRepository
 import utils.RegistrationData
 
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -16,11 +16,11 @@
 
 package controllers
 
-import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import controllers.actions.AuthAction
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.Registration
+import models.requests.RegistrationRequest
+import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.RegistrationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -33,10 +33,10 @@ class RegistrationController @Inject() (
   auth: AuthAction
 )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
-  def create(): Action[Registration] = auth(parse.json[Registration]).async {
+  def create(): Action[RegistrationRequest] = auth(parse.json[RegistrationRequest]).async {
     implicit request =>
       registrationService
-        .insert(request.body)
+        .createRegistration(request.body)
         .map {
           case InsertSucceeded => Created
           case AlreadyExists   => Conflict

@@ -1,5 +1,6 @@
 package base
 
+import controllers.actions.{AuthAction, FakeAuthAction}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -8,7 +9,8 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.domain.Vrn
-import controllers.actions.{AuthAction, FakeAuthAction}
+
+import java.time.{Clock, LocalDate, ZoneId}
 
 trait BaseSpec
   extends AnyFreeSpec
@@ -20,6 +22,9 @@ trait BaseSpec
     with MockitoSugar {
 
   protected val vrn: Vrn = Vrn("123456789")
+
+  val stubClock: Clock = Clock.fixed(LocalDate.now.atStartOfDay(ZoneId.systemDefault).toInstant, ZoneId.systemDefault)
+
 
   protected def applicationBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder().overrides(bind[AuthAction].to[FakeAuthAction])

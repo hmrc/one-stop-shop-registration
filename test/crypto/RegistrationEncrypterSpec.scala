@@ -7,7 +7,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 
 class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks with Generators {
 
@@ -165,7 +165,8 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         startDate                    = LocalDate.now,
         currentCountryOfRegistration = None,
         previousRegistrations        = Seq.empty,
-        bankDetails                  = arbitrary[BankDetails].sample.value
+        bankDetails                  = arbitrary[BankDetails].sample.value,
+        submissionReceived           = Instant.now(stubClock)
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)
@@ -187,7 +188,8 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         startDate                    = LocalDate.now,
         currentCountryOfRegistration = arbitrary[Country].map(Some(_)).sample.value,
         previousRegistrations        = Gen.listOfN(10, arbitrary[PreviousRegistration]).sample.value,
-        bankDetails                  = arbitrary[BankDetails].sample.value
+        bankDetails                  = arbitrary[BankDetails].sample.value,
+        submissionReceived           = Instant.now(stubClock)
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)
