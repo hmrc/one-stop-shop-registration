@@ -43,8 +43,7 @@ class RegistrationService @Inject() (
       euRegistrations              = request.euRegistrations,
       contactDetails               = request.contactDetails,
       websites                     = request.websites,
-      startDate                    = request.startDate,
-      currentCountryOfRegistration = request.currentCountryOfRegistration,
+      commencementDate             = request.commencementDate,
       previousRegistrations        = request.previousRegistrations,
       bankDetails                  = request.bankDetails,
       submissionReceived           = Instant.now(clock)
