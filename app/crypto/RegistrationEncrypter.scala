@@ -95,14 +95,17 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
     import bankDetails._
 
-    EncryptedBankDetails(e(accountName), bic map e, e(iban))
+    EncryptedBankDetails(e(accountName), bic.map(b => e(b.toString)), e(iban.toString))
   }
 
   def decryptBankDetails(bankDetails: EncryptedBankDetails, vrn: Vrn, key: String): BankDetails = {
     def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
     import bankDetails._
 
-    BankDetails(d(accountName), bic map d, d(iban))
+    val b = bic.map(x => Bic(d(x)).getOrElse(throw new EncryptionDecryptionException("decryptBankDetails", "Unable to decrypt BIC", "")))
+    val i = Iban(d(iban)).right.getOrElse(throw new EncryptionDecryptionException("decryptBankDetails", "Unable to decrypt IBAN", ""))
+
+    BankDetails(d(accountName), b, i)
   }
 
   def encryptContactDetails(contactDetails: ContactDetails, vrn: Vrn, key: String): EncryptedContactDetails = {

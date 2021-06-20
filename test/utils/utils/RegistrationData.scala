@@ -10,6 +10,8 @@ import java.time.{Clock, Instant, LocalDate, ZoneId}
 object RegistrationData {
 
   val stubClock: Clock = Clock.fixed(LocalDate.now.atStartOfDay(ZoneId.systemDefault).toInstant, ZoneId.systemDefault)
+  val iban: Iban = Iban("GB33BUKB20201555555555").right.get
+  val bic: Bic = Bic("ABCDGB2A").get
 
   val registration: Registration =
     Registration(
@@ -48,7 +50,7 @@ object RegistrationData {
       previousRegistrations = Seq(
         PreviousRegistration(Country("DE", "Germany"), "DE123")
       ),
-      bankDetails = BankDetails("Account name", Some("12345678"), "GB1234578"),
+      bankDetails = BankDetails("Account name", Some(bic), iban),
       submissionReceived = Instant.now(stubClock)
     )
 
