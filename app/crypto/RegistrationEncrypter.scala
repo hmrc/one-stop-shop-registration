@@ -260,8 +260,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       euRegistrations              = registration.euRegistrations.map(encryptEuTaxRegistration(_, vrn, key)),
       contactDetails               = encryptContactDetails(registration.contactDetails, vrn, key),
       websites                     = registration.websites.map(e),
-      startDate                    = registration.startDate,
-      currentCountryOfRegistration = registration.currentCountryOfRegistration.map(encryptCountry(_, vrn, key)),
+      commencementDate             = registration.commencementDate,
       previousRegistrations        = registration.previousRegistrations.map(encryptedPreviousRegistration(_, vrn, key)),
       bankDetails                  = encryptBankDetails(registration.bankDetails, vrn, key),
       submissionReceived           = registration.submissionReceived
@@ -279,8 +278,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       euRegistrations              = registration.euRegistrations.map(decryptEuTaxRegistration(_, vrn, key)),
       contactDetails               = decryptContactDetails(registration.contactDetails, vrn, key),
       websites                     = registration.websites.map(d),
-      startDate                    = registration.startDate,
-      currentCountryOfRegistration = registration.currentCountryOfRegistration.map(decryptCountry(_, vrn, key)),
+      commencementDate             = registration.commencementDate,
       previousRegistrations        = registration.previousRegistrations.map(decryptedPreviousRegistration(_, vrn, key)),
       bankDetails                  = decryptBankDetails(registration.bankDetails, vrn, key),
       submissionReceived           = registration.submissionReceived

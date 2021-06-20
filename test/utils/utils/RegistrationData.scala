@@ -44,8 +44,7 @@ object RegistrationData {
         "email@email.com"
       ),
       websites = List("website1", "website2"),
-      startDate = LocalDate.now,
-      currentCountryOfRegistration = Some(Country("FR", "France")),
+      commencementDate = LocalDate.now,
       previousRegistrations = Seq(
         PreviousRegistration(Country("DE", "Germany"), "DE123")
       ),

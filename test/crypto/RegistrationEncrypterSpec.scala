@@ -162,8 +162,7 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         euRegistrations              = Seq.empty,
         contactDetails               = arbitrary[ContactDetails].sample.value,
         websites                     = Seq.empty,
-        startDate                    = LocalDate.now,
-        currentCountryOfRegistration = None,
+        commencementDate             = LocalDate.now,
         previousRegistrations        = Seq.empty,
         bankDetails                  = arbitrary[BankDetails].sample.value,
         submissionReceived           = Instant.now(stubClock)
@@ -185,8 +184,7 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         euRegistrations              = Gen.listOfN(10, arbitrary[EuTaxRegistration]).sample.value,
         contactDetails               = arbitrary[ContactDetails].sample.value,
         websites                     = Gen.listOfN(10, arbitrary[String]).sample.value,
-        startDate                    = LocalDate.now,
-        currentCountryOfRegistration = arbitrary[Country].map(Some(_)).sample.value,
+        commencementDate             = LocalDate.now,
         previousRegistrations        = Gen.listOfN(10, arbitrary[PreviousRegistration]).sample.value,
         bankDetails                  = arbitrary[BankDetails].sample.value,
         submissionReceived           = Instant.now(stubClock)

@@ -30,8 +30,7 @@ case class Registration(
                          euRegistrations: Seq[EuTaxRegistration],
                          contactDetails: ContactDetails,
                          websites: Seq[String],
-                         startDate: LocalDate,
-                         currentCountryOfRegistration: Option[Country],
+                         commencementDate: LocalDate,
                          previousRegistrations: Seq[PreviousRegistration],
                          bankDetails: BankDetails,
                          submissionReceived: Instant
@@ -49,8 +48,7 @@ case class EncryptedRegistration(
                                   euRegistrations: Seq[EncryptedEuTaxRegistration],
                                   contactDetails: EncryptedContactDetails,
                                   websites: Seq[EncryptedValue],
-                                  startDate: LocalDate,
-                                  currentCountryOfRegistration: Option[EncryptedCountry],
+                                  commencementDate: LocalDate,
                                   previousRegistrations: Seq[EncryptedPreviousRegistration],
                                   bankDetails: EncryptedBankDetails,
                                   submissionReceived: Instant

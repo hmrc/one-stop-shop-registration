@@ -30,8 +30,7 @@ case class RegistrationRequest(
                                 euRegistrations: Seq[EuTaxRegistration],
                                 contactDetails: ContactDetails,
                                 websites: Seq[String],
-                                startDate: LocalDate,
-                                currentCountryOfRegistration: Option[Country],
+                                commencementDate: LocalDate,
                                 previousRegistrations: Seq[PreviousRegistration],
                                 bankDetails: BankDetails
                               )
