@@ -33,6 +33,7 @@ case class Registration(
                          commencementDate: LocalDate,
                          previousRegistrations: Seq[PreviousRegistration],
                          bankDetails: BankDetails,
+                         isOnlineMarketplace: Boolean,
                          submissionReceived: Instant
                        )
 
@@ -51,6 +52,7 @@ case class EncryptedRegistration(
                                   commencementDate: LocalDate,
                                   previousRegistrations: Seq[EncryptedPreviousRegistration],
                                   bankDetails: EncryptedBankDetails,
+                                  isOnlineMarketplace: EncryptedValue,
                                   submissionReceived: Instant
                                 )
 

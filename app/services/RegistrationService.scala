@@ -46,6 +46,7 @@ class RegistrationService @Inject() (
       commencementDate             = request.commencementDate,
       previousRegistrations        = request.previousRegistrations,
       bankDetails                  = request.bankDetails,
+      isOnlineMarketplace          = request.isOnlineMarketplace,
       submissionReceived           = Instant.now(clock)
     )
 
