@@ -9,16 +9,25 @@ import java.time.LocalDate
 
 trait Generators {
 
+  implicit lazy val arbitraryBic: Arbitrary[Bic] = {
+    val asciiCodeForA = 65
+    val asciiCodeForN = 78
+    val asciiCodeForP = 80
+    val asciiCodeForZ = 90
 
-  implicit lazy val arbitraryBic: Arbitrary[Bic] =
-    Arbitrary{
+    Arbitrary {
       for {
         firstChars <- Gen.listOfN(6, Gen.alphaUpperChar).map(_.mkString)
         char7      <- Gen.oneOf(Gen.alphaUpperChar, Gen.choose(2, 9))
-        char8      <- Gen.oneOf(Gen.alphaUpperChar, Gen.numChar).suchThat(_ != 'O')
-        lastChars  <- Gen.option(Gen.listOfN(3, Gen.oneOf(Gen.alphaUpperChar, Gen.numChar)).map(_.mkString))
+        char8 <- Gen.oneOf(
+          Gen.choose(asciiCodeForA, asciiCodeForN).map(_.toChar),
+          Gen.choose(asciiCodeForP, asciiCodeForZ).map(_.toChar),
+          Gen.choose(0, 9)
+        )
+        lastChars <- Gen.option(Gen.listOfN(3, Gen.oneOf(Gen.alphaUpperChar, Gen.numChar)).map(_.mkString))
       } yield Bic(s"$firstChars$char7$char8${lastChars.getOrElse("")}").get
     }
+  }
 
   implicit lazy val arbitraryIban: Arbitrary[Iban] =
     Arbitrary {
