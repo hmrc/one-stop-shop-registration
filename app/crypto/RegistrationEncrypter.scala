@@ -256,17 +256,18 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
 
     EncryptedRegistration(
-      vrn                          = vrn,
-      registeredCompanyName        = e(registration.registeredCompanyName),
-      tradingNames                 = registration.tradingNames.map(e),
-      vatDetails                   = encryptVatDetails(registration.vatDetails, vrn, key),
-      euRegistrations              = registration.euRegistrations.map(encryptEuTaxRegistration(_, vrn, key)),
-      contactDetails               = encryptContactDetails(registration.contactDetails, vrn, key),
-      websites                     = registration.websites.map(e),
-      commencementDate             = registration.commencementDate,
-      previousRegistrations        = registration.previousRegistrations.map(encryptedPreviousRegistration(_, vrn, key)),
-      bankDetails                  = encryptBankDetails(registration.bankDetails, vrn, key),
-      submissionReceived           = registration.submissionReceived
+      vrn                   = vrn,
+      registeredCompanyName = e(registration.registeredCompanyName),
+      tradingNames          = registration.tradingNames.map(e),
+      vatDetails            = encryptVatDetails(registration.vatDetails, vrn, key),
+      euRegistrations       = registration.euRegistrations.map(encryptEuTaxRegistration(_, vrn, key)),
+      contactDetails        = encryptContactDetails(registration.contactDetails, vrn, key),
+      websites              = registration.websites.map(e),
+      commencementDate      = registration.commencementDate,
+      previousRegistrations = registration.previousRegistrations.map(encryptedPreviousRegistration(_, vrn, key)),
+      bankDetails           = encryptBankDetails(registration.bankDetails, vrn, key),
+      isOnlineMarketplace   = e(registration.isOnlineMarketplace.toString),
+      submissionReceived    = registration.submissionReceived
     )
   }
 
@@ -274,17 +275,18 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
 
     Registration(
-      vrn                          = vrn,
-      registeredCompanyName        = d(registration.registeredCompanyName),
-      tradingNames                 = registration.tradingNames.map(d),
-      vatDetails                   = decryptVatDetails(registration.vatDetails, vrn, key),
-      euRegistrations              = registration.euRegistrations.map(decryptEuTaxRegistration(_, vrn, key)),
-      contactDetails               = decryptContactDetails(registration.contactDetails, vrn, key),
-      websites                     = registration.websites.map(d),
-      commencementDate             = registration.commencementDate,
-      previousRegistrations        = registration.previousRegistrations.map(decryptedPreviousRegistration(_, vrn, key)),
-      bankDetails                  = decryptBankDetails(registration.bankDetails, vrn, key),
-      submissionReceived           = registration.submissionReceived
+      vrn                   = vrn,
+      registeredCompanyName = d(registration.registeredCompanyName),
+      tradingNames          = registration.tradingNames.map(d),
+      vatDetails            = decryptVatDetails(registration.vatDetails, vrn, key),
+      euRegistrations       = registration.euRegistrations.map(decryptEuTaxRegistration(_, vrn, key)),
+      contactDetails        = decryptContactDetails(registration.contactDetails, vrn, key),
+      websites              = registration.websites.map(d),
+      commencementDate      = registration.commencementDate,
+      previousRegistrations = registration.previousRegistrations.map(decryptedPreviousRegistration(_, vrn, key)),
+      bankDetails           = decryptBankDetails(registration.bankDetails, vrn, key),
+      isOnlineMarketplace   = d(registration.isOnlineMarketplace).toBoolean,
+      submissionReceived    = registration.submissionReceived
     )
   }
 }

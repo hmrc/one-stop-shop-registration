@@ -155,17 +155,18 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
     "must encrypt a registration with all options missing and decrypt it" in {
 
       val registration = Registration(
-        vrn                          = vrn,
-        registeredCompanyName        = arbitrary[String].sample.value,
-        tradingNames                 = Seq.empty,
-        vatDetails                   = arbitrary[VatDetails].sample.value,
-        euRegistrations              = Seq.empty,
-        contactDetails               = arbitrary[ContactDetails].sample.value,
-        websites                     = Seq.empty,
-        commencementDate             = LocalDate.now,
-        previousRegistrations        = Seq.empty,
-        bankDetails                  = arbitrary[BankDetails].sample.value,
-        submissionReceived           = Instant.now(stubClock)
+        vrn                   = vrn,
+        registeredCompanyName = arbitrary[String].sample.value,
+        tradingNames          = Seq.empty,
+        vatDetails            = arbitrary[VatDetails].sample.value,
+        euRegistrations       = Seq.empty,
+        contactDetails        = arbitrary[ContactDetails].sample.value,
+        websites              = Seq.empty,
+        commencementDate      = LocalDate.now,
+        previousRegistrations = Seq.empty,
+        bankDetails           = arbitrary[BankDetails].sample.value,
+        isOnlineMarketplace   = arbitrary[Boolean].sample.value,
+        submissionReceived    = Instant.now(stubClock)
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)
@@ -177,17 +178,18 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
     "must encrypt a registration with all options present and decrypt it" in {
 
       val registration = Registration(
-        vrn                          = vrn,
-        registeredCompanyName        = arbitrary[String].sample.value,
-        tradingNames                 = Gen.listOfN(10, arbitrary[String]).sample.value,
-        vatDetails                   = arbitrary[VatDetails].sample.value,
-        euRegistrations              = Gen.listOfN(10, arbitrary[EuTaxRegistration]).sample.value,
-        contactDetails               = arbitrary[ContactDetails].sample.value,
-        websites                     = Gen.listOfN(10, arbitrary[String]).sample.value,
-        commencementDate             = LocalDate.now,
-        previousRegistrations        = Gen.listOfN(10, arbitrary[PreviousRegistration]).sample.value,
-        bankDetails                  = arbitrary[BankDetails].sample.value,
-        submissionReceived           = Instant.now(stubClock)
+        vrn                   = vrn,
+        registeredCompanyName = arbitrary[String].sample.value,
+        tradingNames          = Gen.listOfN(10, arbitrary[String]).sample.value,
+        vatDetails            = arbitrary[VatDetails].sample.value,
+        euRegistrations       = Gen.listOfN(10, arbitrary[EuTaxRegistration]).sample.value,
+        contactDetails        = arbitrary[ContactDetails].sample.value,
+        websites              = Gen.listOfN(10, arbitrary[String]).sample.value,
+        commencementDate      = LocalDate.now,
+        previousRegistrations = Gen.listOfN(10, arbitrary[PreviousRegistration]).sample.value,
+        bankDetails           = arbitrary[BankDetails].sample.value,
+        isOnlineMarketplace   = arbitrary[Boolean].sample.value,
+        submissionReceived    = Instant.now(stubClock)
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)
