@@ -34,6 +34,7 @@ case class Registration(
                          previousRegistrations: Seq[PreviousRegistration],
                          bankDetails: BankDetails,
                          isOnlineMarketplace: Boolean,
+                         niPresence: Option[NiPresence],
                          submissionReceived: Instant
                        )
 
@@ -53,6 +54,7 @@ case class EncryptedRegistration(
                                   previousRegistrations: Seq[EncryptedPreviousRegistration],
                                   bankDetails: EncryptedBankDetails,
                                   isOnlineMarketplace: EncryptedValue,
+                                  niPresence: Option[NiPresence],
                                   submissionReceived: Instant
                                 )
 

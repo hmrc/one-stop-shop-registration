@@ -52,7 +52,8 @@ object RegistrationData {
       ),
       bankDetails = BankDetails("Account name", Some(bic), iban),
       submissionReceived = Instant.now(stubClock),
-      isOnlineMarketplace = false
+      isOnlineMarketplace = false,
+      niPresence = Some(PrincipalPlaceOfBusinessInNi)
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""
