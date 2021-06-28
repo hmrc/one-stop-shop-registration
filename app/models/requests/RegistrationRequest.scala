@@ -33,7 +33,8 @@ case class RegistrationRequest(
                                 commencementDate: LocalDate,
                                 previousRegistrations: Seq[PreviousRegistration],
                                 bankDetails: BankDetails,
-                                isOnlineMarketplace: Boolean
+                                isOnlineMarketplace: Boolean,
+                                niPresence: Option[NiPresence]
                               )
 
 object RegistrationRequest {

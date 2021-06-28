@@ -9,6 +9,20 @@ import java.time.LocalDate
 
 trait Generators {
 
+  implicit lazy val arbitrarySalesChannels: Arbitrary[SalesChannels] =
+    Arbitrary {
+      Gen.oneOf(SalesChannels.values)
+    }
+
+  implicit lazy val arbitraryNiPresence: Arbitrary[NiPresence] =
+    Arbitrary {
+      Gen.oneOf(
+        Gen.const(PrincipalPlaceOfBusinessInNi),
+        Gen.const(FixedEstablishmentInNi),
+        arbitrary[SalesChannels].map(NoPresence(_))
+      )
+    }
+
   implicit lazy val arbitraryBic: Arbitrary[Bic] = {
     val asciiCodeForA = 65
     val asciiCodeForN = 78

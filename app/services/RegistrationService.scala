@@ -36,18 +36,20 @@ class RegistrationService @Inject() (
 
   private def buildRegistration(request: RegistrationRequest): Registration =
     Registration(
-      vrn                          = request.vrn,
-      registeredCompanyName        = request.registeredCompanyName,
-      tradingNames                 = request.tradingNames,
-      vatDetails                   = request.vatDetails,
-      euRegistrations              = request.euRegistrations,
-      contactDetails               = request.contactDetails,
-      websites                     = request.websites,
-      commencementDate             = request.commencementDate,
-      previousRegistrations        = request.previousRegistrations,
-      bankDetails                  = request.bankDetails,
-      isOnlineMarketplace          = request.isOnlineMarketplace,
-      submissionReceived           = Instant.now(clock)
+      vrn                    = request.vrn,
+      registeredCompanyName  = request.registeredCompanyName,
+      tradingNames           = request.tradingNames,
+      vatDetails             = request.vatDetails,
+      euRegistrations        = request.euRegistrations,
+      contactDetails         = request.contactDetails,
+      websites               = request.websites,
+      commencementDate       = request.commencementDate,
+      previousRegistrations  = request.previousRegistrations,
+      bankDetails            = request.bankDetails,
+      isOnlineMarketplace    = request.isOnlineMarketplace,
+      niPresence             = request.niPresence,
+      submissionReceived     = Instant.now(clock),
+      lastUpdated            = Instant.now(clock)
     )
 
   def get(vrn: Vrn): Future[Option[Registration]] =
