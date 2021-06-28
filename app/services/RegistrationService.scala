@@ -48,7 +48,8 @@ class RegistrationService @Inject() (
       bankDetails            = request.bankDetails,
       isOnlineMarketplace    = request.isOnlineMarketplace,
       niPresence             = request.niPresence,
-      submissionReceived     = Instant.now(clock)
+      submissionReceived     = Instant.now(clock),
+      lastUpdated            = Instant.now(clock)
     )
 
   def get(vrn: Vrn): Future[Option[Registration]] =

@@ -267,8 +267,9 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       previousRegistrations = registration.previousRegistrations.map(encryptedPreviousRegistration(_, vrn, key)),
       bankDetails           = encryptBankDetails(registration.bankDetails, vrn, key),
       isOnlineMarketplace   = e(registration.isOnlineMarketplace.toString),
+      niPresence            = registration.niPresence,
       submissionReceived    = registration.submissionReceived,
-      niPresence            = registration.niPresence
+      lastUpdated           = registration.lastUpdated
     )
   }
 
@@ -287,8 +288,9 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       previousRegistrations = registration.previousRegistrations.map(decryptedPreviousRegistration(_, vrn, key)),
       bankDetails           = decryptBankDetails(registration.bankDetails, vrn, key),
       isOnlineMarketplace   = d(registration.isOnlineMarketplace).toBoolean,
+      niPresence            = registration.niPresence,
       submissionReceived    = registration.submissionReceived,
-      niPresence            = registration.niPresence
+      lastUpdated           = registration.lastUpdated
     )
   }
 }

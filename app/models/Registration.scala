@@ -35,7 +35,8 @@ case class Registration(
                          bankDetails: BankDetails,
                          isOnlineMarketplace: Boolean,
                          niPresence: Option[NiPresence],
-                         submissionReceived: Instant
+                         submissionReceived: Instant,
+                         lastUpdated: Instant
                        )
 
 object Registration {
@@ -55,7 +56,8 @@ case class EncryptedRegistration(
                                   bankDetails: EncryptedBankDetails,
                                   isOnlineMarketplace: EncryptedValue,
                                   niPresence: Option[NiPresence],
-                                  submissionReceived: Instant
+                                  submissionReceived: Instant,
+                                  lastUpdated: Instant
                                 )
 
 object EncryptedRegistration {

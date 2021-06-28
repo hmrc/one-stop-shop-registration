@@ -167,7 +167,8 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         bankDetails           = arbitrary[BankDetails].sample.value,
         isOnlineMarketplace   = arbitrary[Boolean].sample.value,
         niPresence            = None,
-        submissionReceived    = Instant.now(stubClock)
+        submissionReceived    = Instant.now(stubClock),
+        lastUpdated           = Instant.now(stubClock)
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)
@@ -191,7 +192,8 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         bankDetails           = arbitrary[BankDetails].sample.value,
         isOnlineMarketplace   = arbitrary[Boolean].sample.value,
         niPresence            = Some(arbitrary[NiPresence].sample.value),
-        submissionReceived    = Instant.now(stubClock)
+        submissionReceived    = Instant.now(stubClock),
+        lastUpdated           = Instant.now(stubClock)
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)

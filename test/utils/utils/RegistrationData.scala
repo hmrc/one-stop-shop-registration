@@ -51,9 +51,10 @@ object RegistrationData {
         PreviousRegistration(Country("DE", "Germany"), "DE123")
       ),
       bankDetails = BankDetails("Account name", Some(bic), iban),
-      submissionReceived = Instant.now(stubClock),
       isOnlineMarketplace = false,
-      niPresence = Some(PrincipalPlaceOfBusinessInNi)
+      niPresence = Some(PrincipalPlaceOfBusinessInNi),
+      submissionReceived = Instant.now(stubClock),
+      lastUpdated = Instant.now(stubClock)
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""
