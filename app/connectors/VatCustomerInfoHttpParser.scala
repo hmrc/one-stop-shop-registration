@@ -31,7 +31,9 @@ object VatCustomerInfoHttpParser extends Logging {
       response.status match {
         case OK =>
           response.json.validate[VatCustomerInfo](VatCustomerInfo.desReads) match {
-            case JsSuccess(model, _) => Right(model)
+            case JsSuccess(model, _) =>
+              logger.warn("DES RESPONSE: " + model)
+              Right(model)
             case JsError(errors) =>
               logger.warn("Failed trying to parse JSON", errors)
               Left(InvalidJson)
