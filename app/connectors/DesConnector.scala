@@ -37,6 +37,7 @@ class DesConnector @Inject()(des: DesConfig, httpClient: HttpClient)
 
   def getVatCustomerDetails(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[VatCustomerInfoResponse] = {
     val url = s"${des.baseUrl}vat/customer/vrn/${vrn.value}/information"
+    logger.warn(s"DES url: $url")
     httpClient.GET[VatCustomerInfoResponse](url = url, headers = headers)
   }
 }
