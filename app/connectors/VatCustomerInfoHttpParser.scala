@@ -31,15 +31,13 @@ object VatCustomerInfoHttpParser extends Logging {
       response.status match {
         case OK =>
           response.json.validate[VatCustomerInfo](VatCustomerInfo.desReads) match {
-            case JsSuccess(model, _) =>
-              Right(model)
+            case JsSuccess(model, _) => Right(model)
             case JsError(errors) =>
               logger.warn("Failed trying to parse JSON", errors)
               Left(InvalidJson)
           }
         case NOT_FOUND =>
           logger.warn("Received NotFound from DES")
-          logger.warn("Received NotFound RESPONSE BODY" + response.body)
           Left(NotFound)
         case INTERNAL_SERVER_ERROR =>
           logger.warn("Received InternalServerError from DES")

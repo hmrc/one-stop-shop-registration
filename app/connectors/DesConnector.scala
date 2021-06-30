@@ -23,12 +23,11 @@ import connectors.VatCustomerInfoHttpParser._
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import logging.Logging
 import play.api.http.HeaderNames
 
 
 class DesConnector @Inject()(des: DesConfig, httpClient: HttpClient)
-                            (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
+                            (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   val headers = Seq(
     HeaderNames.AUTHORIZATION -> s"Bearer ${des.authorizationToken}",
@@ -37,7 +36,6 @@ class DesConnector @Inject()(des: DesConfig, httpClient: HttpClient)
 
   def getVatCustomerDetails(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[VatCustomerInfoResponse] = {
     val url = s"${des.baseUrl}vat/customer/vrn/${vrn.value}/information"
-    logger.warn(s"DES url: $url")
     httpClient.GET[VatCustomerInfoResponse](url = url, headers = headers)
   }
 }
