@@ -21,9 +21,10 @@ sealed trait VatDetailSource
 object VatDetailSource extends Enumerable.Implicits {
   case object Etmp        extends WithName("etmp") with VatDetailSource
   case object UserEntered extends WithName("userEntered") with VatDetailSource
+  case object Mixed       extends WithName("mixed") with VatDetailSource
 
   val values: Seq[VatDetailSource] = Seq(
-    Etmp, UserEntered
+    Etmp, UserEntered, Mixed
   )
 
   implicit val enumerable: Enumerable[VatDetailSource] =
