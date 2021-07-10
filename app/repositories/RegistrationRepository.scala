@@ -75,5 +75,13 @@ class RegistrationRepository @Inject()(
           encrypter.decryptRegistration(r, r.vrn, encryptionKey)
       })
   }
+
+  def get(count: Int): Future[Seq[Registration]] = {
+    collection
+      .find
+      .limit(count)
+      .map(r => encrypter.decryptRegistration(r, r.vrn, encryptionKey))
+      .toFuture
+  }
 }
 

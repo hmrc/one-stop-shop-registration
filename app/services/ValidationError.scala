@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package config
+package services
 
-import com.google.inject.AbstractModule
-import controllers.actions.{AuthAction, AuthActionImpl}
-import services.{DataQueryService, DataQueryServiceImpl}
+sealed trait ValidationError {
 
-import java.time.{Clock, ZoneOffset}
+  val errorMessage: String
+}
 
-class Module extends AbstractModule {
+case class FieldLengthError(item: String, length: Int, limit: Int) extends ValidationError {
 
-  override def configure(): Unit = {
-    bind(classOf[AuthAction]).to(classOf[AuthActionImpl]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-    bind(classOf[DataQueryService]).to(classOf[DataQueryServiceImpl]).asEagerSingleton()
-  }
+  override val errorMessage: String = s"$item is $length characters, breaching the limit of $limit"
 }
