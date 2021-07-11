@@ -40,6 +40,8 @@ class DataQueryServiceImpl @Inject()(
 
     val count = appConfig.recordsToCheckForLength
 
+    logger.info(s"About to check up to $count records for field length issues")
+
     repository.get(count).map {
       registrations =>
 
@@ -60,7 +62,10 @@ class DataQueryServiceImpl @Inject()(
 
   private def obfuscateVrn(vrn: Vrn): String = vrn.vrn.take(5) + "****"
 
-  private def getErrors(registration: Registration): ValidationResult[Unit] =
+  private def getErrors(registration: Registration): ValidationResult[Unit] = {
+
+    logger.info(s"Checking data for VRN ${obfuscateVrn(registration.vrn)}")
+
     (
       checkContactName(registration.contactDetails),
       checkAddress(registration.vatDetails.address),
@@ -68,6 +73,7 @@ class DataQueryServiceImpl @Inject()(
     ).mapN(
       (_, _, _) => ().validNec
     )
+  }
 
   private def checkEuRegistrations(registrations: List[EuTaxRegistration]): ValidationResult[List[Unit]] =
     registrations
