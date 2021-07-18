@@ -49,7 +49,7 @@ class DataQueryServiceImpl @Inject()(
 
         registrations.foreach {
           registration =>
-            getErrors(registration) match {
+            checkRegistration(registration) match {
               case Valid(_) =>
                 logger.info(s"VRN ${obfuscateVrn(registration.vrn)} has no field length issues")
               case Invalid(e) =>
@@ -57,12 +57,16 @@ class DataQueryServiceImpl @Inject()(
                 logger.warn(s"VRN ${obfuscateVrn(registration.vrn)} has the following field length issues:\n$errorMessages")
             }
         }
+    }.recover {
+      case e: Exception =>
+        logger.warn("Error trying to get registrations", e)
+        ()
     }
   }
 
   private def obfuscateVrn(vrn: Vrn): String = vrn.vrn.take(5) + "****"
 
-  private def getErrors(registration: Registration): ValidationResult[Unit] = {
+  private def checkRegistration(registration: Registration): ValidationResult[Unit] = {
 
     logger.info(s"Checking data for VRN ${obfuscateVrn(registration.vrn)}")
 
