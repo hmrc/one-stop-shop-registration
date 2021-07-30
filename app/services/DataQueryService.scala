@@ -91,7 +91,7 @@ class DataQueryServiceImpl @Inject()(
 
       case fe: RegistrationWithFixedEstablishment =>
         (
-          checkLength("RegistrationWithFixedAddress.taxIdentifier", fe.taxIdentifier.value, 50),
+          checkLength("RegistrationWithFixedAddress.taxIdentifier", fe.taxIdentifier.value, 20),
           checkFixedEstablishment(fe.fixedEstablishment)
         ).mapN(
           (_, _) => ().validNec
