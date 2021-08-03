@@ -26,7 +26,9 @@ import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepositorySupport}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models._
+import uk.gov.hmrc.domain.Vrn
 import utils.RegistrationData
+import utils.RegistrationData.registration
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -56,18 +58,18 @@ class RegistrationRepositorySpec extends AnyFreeSpec
 
     "must insert a registration" in {
 
-      val insertResult  = repository.insert(RegistrationData.registration).futureValue
+      val insertResult  = repository.insert(registration).futureValue
       val databaseRecord = findAll().futureValue.headOption.value
-      val decryptedRecord = encrypter.decryptRegistration(databaseRecord, RegistrationData.registration.vrn, secretKey)
+      val decryptedRecord = encrypter.decryptRegistration(databaseRecord, registration.vrn, secretKey)
 
       insertResult mustEqual InsertSucceeded
-      decryptedRecord mustEqual RegistrationData.registration
+      decryptedRecord mustEqual registration
     }
 
     "must not allow duplicate registrations to be inserted" in {
 
-      repository.insert(RegistrationData.registration).futureValue
-      val secondResult = repository.insert(RegistrationData.registration).futureValue
+      repository.insert(registration).futureValue
+      val secondResult = repository.insert(registration).futureValue
 
       secondResult mustEqual AlreadyExists
     }
@@ -87,9 +89,29 @@ class RegistrationRepositorySpec extends AnyFreeSpec
 
     "must return None when no registration exists" in {
 
-      val result = repository.get(RegistrationData.registration.vrn).futureValue
+      val result = repository.get(registration.vrn).futureValue
 
       result must not be defined
     }
   }
+
+//  ".set" - {
+//
+//      "must update registration Date of First Sale" in {
+//
+//        val currentRegistration = registration copy (vrn = Vrn("235689632"), dateOfFirstSale = None)
+//        println("currentRegistration: " + currentRegistration)
+//
+//        val encryptedRegistration = encrypter.encryptRegistration(currentRegistration, currentRegistration.vrn, secretKey)
+//        insert(encryptedRegistration).futureValue
+//
+//        val result = repository.updateDateOfFirstSale(currentRegistration).futureValue
+//
+//        val expectedRegistration = currentRegistration copy (dateOfFirstSale = Some(currentRegistration.commencementDate))
+//
+//        result mustEqual true
+//        repository.get(currentRegistration.vrn).futureValue mustEqual expectedRegistration
+//
+//      }
+//  }
 }

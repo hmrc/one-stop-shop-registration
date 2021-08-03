@@ -83,5 +83,9 @@ class RegistrationRepository @Inject()(
       .map(r => encrypter.decryptRegistration(r, r.vrn, encryptionKey))
       .toFuture
   }
+
+  def updateDateOfFirstSale(registration: Registration): Future[Boolean] = {
+    ???
+  }
 }
 
