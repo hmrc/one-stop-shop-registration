@@ -53,6 +53,7 @@ object RegistrationData {
       bankDetails = BankDetails("Account name", Some(bic), iban),
       isOnlineMarketplace = false,
       niPresence = Some(PrincipalPlaceOfBusinessInNi),
+      dateOfFirstSale = Some(LocalDate.now),
       submissionReceived = Instant.now(stubClock),
       lastUpdated = Instant.now(stubClock)
     )

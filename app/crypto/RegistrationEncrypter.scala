@@ -268,6 +268,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       bankDetails           = encryptBankDetails(registration.bankDetails, vrn, key),
       isOnlineMarketplace   = e(registration.isOnlineMarketplace.toString),
       niPresence            = registration.niPresence,
+      dateOfFirstSale       = registration.dateOfFirstSale,
       submissionReceived    = registration.submissionReceived,
       lastUpdated           = registration.lastUpdated
     )
@@ -289,6 +290,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       bankDetails           = decryptBankDetails(registration.bankDetails, vrn, key),
       isOnlineMarketplace   = d(registration.isOnlineMarketplace).toBoolean,
       niPresence            = registration.niPresence,
+      dateOfFirstSale       = registration.dateOfFirstSale,
       submissionReceived    = registration.submissionReceived,
       lastUpdated           = registration.lastUpdated
     )
