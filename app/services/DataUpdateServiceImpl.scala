@@ -19,10 +19,11 @@ package services
 import cats.data.ValidatedNec
 import config.AppConfig
 import logging.Logging
+import models.Registration
 import repositories.RegistrationRepository
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 trait DataUpdateService
 
@@ -33,8 +34,14 @@ class DataUpdateServiceImpl @Inject()(
 
   type ValidationResult[A] = ValidatedNec[ValidationError, A]
 
-  val updateDateOfFirstSale: Unit = {
-    ???
+  def updateDateOfFirstSale(): Unit = {
+    repository.get(200).map {
+      registrations =>
+        registrations
+          .foreach(
+            registration =>
+              repository.updateDateOfFirstSale(registration)
+          )
+    }
   }
-
 }
