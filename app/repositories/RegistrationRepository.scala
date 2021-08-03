@@ -18,13 +18,15 @@ package repositories
 
 import config.AppConfig
 import crypto.RegistrationEncrypter
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes}
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.{EncryptedRegistration, InsertResult, Registration}
 import repositories.MongoErrors.Duplicate
+
+import logging.Logging
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -48,7 +50,7 @@ class RegistrationRepository @Inject()(
           .unique(true)
       )
     )
-  ) {
+  ) with Logging {
 
   import uk.gov.hmrc.mongo.play.json.Codecs.toBson
 
@@ -85,7 +87,27 @@ class RegistrationRepository @Inject()(
   }
 
   def updateDateOfFirstSale(registration: Registration): Future[Boolean] = {
-    ???
+
+    logger.info("About to update registration with dateOfFirstSale for vrn: " + obfuscateVrn(registration.vrn))
+
+    val updatedRegistration = registration copy (dateOfFirstSale = Some(registration.commencementDate))
+
+    logger.info("New registration object created with dateOfFirstSale for vrn: " + obfuscateVrn(registration.vrn))
+
+    val encryptedRegistration = encrypter.encryptRegistration(updatedRegistration, updatedRegistration.vrn, encryptionKey)
+
+    logger.info("Newly created registration object encrypted for vrn " + obfuscateVrn(registration.vrn))
+
+    collection
+      .replaceOne(
+        filter = Filters.equal("vrn", updatedRegistration.vrn.vrn),
+        replacement = encryptedRegistration,
+        options = ReplaceOptions().upsert(true)
+      )
+      .toFuture()
+      .map(_ => true)
   }
+
+  private def obfuscateVrn(vrn: Vrn): String = vrn.vrn.take(5) + "****"
 }
 

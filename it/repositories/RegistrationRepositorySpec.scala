@@ -95,23 +95,20 @@ class RegistrationRepositorySpec extends AnyFreeSpec
     }
   }
 
-//  ".set" - {
-//
-//      "must update registration Date of First Sale" in {
-//
-//        val currentRegistration = registration copy (vrn = Vrn("235689632"), dateOfFirstSale = None)
-//        println("currentRegistration: " + currentRegistration)
-//
-//        val encryptedRegistration = encrypter.encryptRegistration(currentRegistration, currentRegistration.vrn, secretKey)
-//        insert(encryptedRegistration).futureValue
-//
-//        val result = repository.updateDateOfFirstSale(currentRegistration).futureValue
-//
-//        val expectedRegistration = currentRegistration copy (dateOfFirstSale = Some(currentRegistration.commencementDate))
-//
-//        result mustEqual true
-//        repository.get(currentRegistration.vrn).futureValue mustEqual expectedRegistration
-//
-//      }
-//  }
+  ".set" - {
+
+      "must update registration Date of First Sale" in {
+
+        val currentRegistration = registration copy (dateOfFirstSale = None)
+        val encryptedRegistration = encrypter.encryptRegistration(currentRegistration, currentRegistration.vrn, secretKey)
+        insert(encryptedRegistration).futureValue
+
+        val result = repository.updateDateOfFirstSale(currentRegistration).futureValue
+        val newRegistration = repository.get(currentRegistration.vrn).futureValue
+        val expectedRegistration = currentRegistration copy (dateOfFirstSale = Some(currentRegistration.commencementDate))
+
+        result mustEqual true
+        newRegistration mustEqual Some(expectedRegistration)
+      }
+  }
 }
