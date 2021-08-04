@@ -2,6 +2,8 @@ package services
 
 import base.BaseSpec
 import config.AppConfig
+import models.Registration
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, anyInt}
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, times, verify, when}
@@ -31,7 +33,7 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
     "must not call repository.updateDateOfFirstSale when no registrations exist" in {
       when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq.empty)
 
-      val result: Seq[Boolean] = service.updateDateOfFirstSale().futureValue
+      val result = service.updateDateOfFirstSale().futureValue
 
       result mustBe Seq.empty
       verify(registrationRepository, times(1)).get(anyInt())
@@ -40,6 +42,7 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
     "must call repository.updateDateOfFirstSale once when one registration exist" in {
       val singleRegistration = registration copy (dateOfFirstSale = None)
+      val captor: ArgumentCaptor[Registration] = ArgumentCaptor.forClass(classOf[Registration])
 
       when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq(singleRegistration))
       when(registrationRepository.updateDateOfFirstSale(any())) thenReturn Future.successful(true)
@@ -48,28 +51,34 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
       result mustBe Seq(true)
       verify(registrationRepository, times(1)).get(anyInt())
-      verify(registrationRepository, times(1)).updateDateOfFirstSale(eqTo(singleRegistration))
+      verify(registrationRepository, times(1)).updateDateOfFirstSale(captor.capture())
+      captor.getValue mustBe singleRegistration
     }
 
     "must call repository.updateDateOfFirstSale method once when there is one registration without Date Of First Sale" in {
       val registrationWithDOFS = registration
       val registrationWithoutDOFS = registration copy (dateOfFirstSale = None)
+      val captor: ArgumentCaptor[Registration] = ArgumentCaptor.forClass(classOf[Registration])
 
-      when(registrationRepository.get(anyInt())) thenReturn
-        Future.successful(Seq(registrationWithDOFS, registrationWithoutDOFS))
-
-      when(registrationRepository.updateDateOfFirstSale(eqTo(registrationWithoutDOFS))) thenReturn Future.successful(true)
+      when(
+        registrationRepository.get(anyInt())
+      ) thenReturn Future.successful(Seq(registrationWithDOFS, registrationWithoutDOFS))
+      when(
+        registrationRepository.updateDateOfFirstSale(any())
+      ) thenReturn Future.successful(true)
 
       val result = service.updateDateOfFirstSale().futureValue
 
       result mustBe Seq(true)
       verify(registrationRepository, times(1)).get(anyInt())
-      verify(registrationRepository, times(1)).updateDateOfFirstSale(eqTo(registrationWithoutDOFS))
+      verify(registrationRepository, times(1)).updateDateOfFirstSale(captor.capture())
+      captor.getValue mustBe registrationWithoutDOFS
     }
 
     "must call repository.updateDateOfFirstSale method twice when there is multiple registrations without Date Of First Sale" in {
       val registrationWithoutDOFSOne = registration copy (vrn = Vrn("000000001"), dateOfFirstSale = None)
       val registrationWithoutDOFSTwo = registration copy (vrn = Vrn("000000002"), dateOfFirstSale = None)
+      val captor: ArgumentCaptor[Registration] = ArgumentCaptor.forClass(classOf[Registration])
 
       when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq(registrationWithoutDOFSOne, registrationWithoutDOFSTwo))
       when(registrationRepository.updateDateOfFirstSale(any())) thenReturn Future.successful(true)
@@ -78,7 +87,9 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
       result mustBe Seq(true, true)
       verify(registrationRepository, times(1)).get(anyInt())
-      verify(registrationRepository, times(2)).updateDateOfFirstSale(any())
+      verify(registrationRepository, times(2)).updateDateOfFirstSale(captor.capture())
+      captor.getAllValues.get(0) mustBe registrationWithoutDOFSOne
+      captor.getAllValues.get(1) mustBe registrationWithoutDOFSTwo
     }
   }
 }
