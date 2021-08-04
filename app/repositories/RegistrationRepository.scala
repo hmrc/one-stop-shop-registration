@@ -103,8 +103,7 @@ class RegistrationRepository @Inject()(
         filter = Filters.equal("vrn", updatedRegistration.vrn.vrn),
         replacement = encryptedRegistration,
         options = ReplaceOptions().upsert(true)
-      )
-      .toFuture()
+      ).toFuture()
       .map(_ => true)
   }
 

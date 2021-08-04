@@ -39,7 +39,13 @@ class DataUpdateServiceImpl @Inject()(
   def updateDateOfFirstSale(): Future[Seq[Boolean]] = {
     repository.get(appConfig.dbRecordLimit).flatMap {
       registrations =>
-        Future.sequence(registrations.filter(_.dateOfFirstSale.isEmpty).map {
+        logger.info(s"${registrations.size} registrations pulled from db")
+
+        val registrationsWithoutDateOfFirstSale = registrations.filter(_.dateOfFirstSale.isEmpty)
+
+        logger.info(s"${registrationsWithoutDateOfFirstSale.size} registrations without dateOfFirstSale")
+
+        Future.sequence(registrationsWithoutDateOfFirstSale.map {
           registration =>
             repository.updateDateOfFirstSale(registration).map {
               case true =>
