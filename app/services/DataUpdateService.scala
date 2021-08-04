@@ -37,11 +37,13 @@ class DataUpdateServiceImpl @Inject()(
   def updateDateOfFirstSale(): Unit = {
     repository.get(appConfig.dbRecordLimit).map {
       registrations => registrations.foreach(
-        registration => repository.updateDateOfFirstSale(registration) map {
-          case true =>
-            logger.info(s"Successfully updated dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
-          case false =>
-            logger.info(s"Failed to update dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
+        registration => if(registration.dateOfFirstSale.isEmpty) {
+          repository.updateDateOfFirstSale(registration).map {
+            case true =>
+              logger.info(s"Successfully updated dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
+            case false =>
+              logger.info(s"Failed to update dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
+          }
         }
       )
     }
