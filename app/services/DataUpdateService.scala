@@ -34,6 +34,8 @@ class DataUpdateServiceImpl @Inject()(
 
   type ValidationResult[A] = ValidatedNec[ValidationError, A]
 
+  val runUpdateDateOfFirstSale: Future[Seq[Boolean]] = updateDateOfFirstSale()
+
   def updateDateOfFirstSale(): Future[Seq[Boolean]] = {
     repository.get(appConfig.dbRecordLimit).flatMap {
       registrations =>

@@ -18,7 +18,7 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions.{AuthAction, AuthActionImpl}
-import services.{DataQueryService, DataQueryServiceImpl}
+import services.{DataQueryService, DataQueryServiceImpl, DataUpdateService, DataUpdateServiceImpl}
 
 import java.time.{Clock, ZoneOffset}
 
@@ -28,5 +28,6 @@ class Module extends AbstractModule {
     bind(classOf[AuthAction]).to(classOf[AuthActionImpl]).asEagerSingleton()
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
     bind(classOf[DataQueryService]).to(classOf[DataQueryServiceImpl]).asEagerSingleton()
+    bind(classOf[DataUpdateService]).to(classOf[DataUpdateServiceImpl]).asEagerSingleton()
   }
 }
