@@ -42,7 +42,6 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
     "must call repository.updateDateOfFirstSale once when one registration exist" in {
       val singleRegistration = registration copy (dateOfFirstSale = None)
-      val captor: ArgumentCaptor[Registration] = ArgumentCaptor.forClass(classOf[Registration])
 
       when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq(singleRegistration))
       when(registrationRepository.updateDateOfFirstSale(any())) thenReturn Future.successful(true)
@@ -50,26 +49,7 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
       service.updateDateOfFirstSale()
 
       verify(registrationRepository, times(1)).get(anyInt())
-      verify(registrationRepository, times(1)).updateDateOfFirstSale(captor.capture())
-      captor.getValue mustBe singleRegistration
-    }
-
-    "must call repository.updateDateOfFirstSale method twice when there is multiple registrations without Date Of First Sale" in {
-      val registrationWithoutDOFSOne = registration copy (vrn = Vrn("000000001"), dateOfFirstSale = None)
-      val registrationWithoutDOFSTwo = registration copy (vrn = Vrn("000000002"), dateOfFirstSale = None)
-      val captor: ArgumentCaptor[Registration] = ArgumentCaptor.forClass(classOf[Registration])
-
-      when(registrationRepository.get(anyInt())) thenReturn
-        Future.successful(Seq(registrationWithoutDOFSOne, registrationWithoutDOFSTwo))
-
-      when(registrationRepository.updateDateOfFirstSale(any())) thenReturn Future.successful(true)
-
-      service.updateDateOfFirstSale()
-
-      verify(registrationRepository, times(1)).get(anyInt())
-      verify(registrationRepository, times(2)).updateDateOfFirstSale(captor.capture())
-      captor.getAllValues contains registrationWithoutDOFSOne
-      captor.getAllValues contains registrationWithoutDOFSTwo
+      verify(registrationRepository, times(1)).updateDateOfFirstSale(eqTo(singleRegistration))
     }
 
     "must call repository.updateDateOfFirstSale method once when there is one registration without Date Of First Sale" in {
@@ -79,12 +59,25 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
       when(registrationRepository.get(anyInt())) thenReturn
         Future.successful(Seq(registrationWithDOFS, registrationWithoutDOFS))
 
+      when(registrationRepository.updateDateOfFirstSale(eqTo(registrationWithoutDOFS))) thenReturn Future.successful(true)
+
+      service.updateDateOfFirstSale()
+
+      verify(registrationRepository, times(1)).get(anyInt())
+      verify(registrationRepository, times(1)).updateDateOfFirstSale(eqTo(registrationWithoutDOFS))
+    }
+
+    "must call repository.updateDateOfFirstSale method twice when there is multiple registrations without Date Of First Sale" in {
+      val registrationWithoutDOFSOne = registration copy (vrn = Vrn("000000001"), dateOfFirstSale = None)
+      val registrationWithoutDOFSTwo = registration copy (vrn = Vrn("000000002"), dateOfFirstSale = None)
+
+      when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq(registrationWithoutDOFSOne, registrationWithoutDOFSTwo))
       when(registrationRepository.updateDateOfFirstSale(any())) thenReturn Future.successful(true)
 
       service.updateDateOfFirstSale()
 
       verify(registrationRepository, times(1)).get(anyInt())
-      verify(registrationRepository, times(1)).updateDateOfFirstSale(any())
+      verify(registrationRepository, times(2)).updateDateOfFirstSale(any())
     }
   }
 }
