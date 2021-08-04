@@ -23,7 +23,7 @@ import repositories.RegistrationRepository
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 trait DataUpdateService
 
@@ -34,18 +34,20 @@ class DataUpdateServiceImpl @Inject()(
 
   type ValidationResult[A] = ValidatedNec[ValidationError, A]
 
-  def updateDateOfFirstSale(): Unit = {
-    repository.get(appConfig.dbRecordLimit).map {
-      registrations => registrations.foreach(
-        registration => if(registration.dateOfFirstSale.isEmpty) {
-          repository.updateDateOfFirstSale(registration).map {
-            case true =>
-              logger.info(s"Successfully updated dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
-            case false =>
-              logger.info(s"Failed to update dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
-          }
-        }
-      )
+  def updateDateOfFirstSale(): Future[Seq[Boolean]] = {
+    repository.get(appConfig.dbRecordLimit).flatMap {
+      registrations =>
+        Future.sequence(registrations.filter(_.dateOfFirstSale.isEmpty).map {
+          registration =>
+            repository.updateDateOfFirstSale(registration).map {
+              case true =>
+                logger.info(s"Successfully updated dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
+                true
+              case false =>
+                logger.info(s"Failed to update dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
+                false
+            }
+        })
     }
   }
 

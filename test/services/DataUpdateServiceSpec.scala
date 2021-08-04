@@ -2,15 +2,12 @@ package services
 
 import base.BaseSpec
 import config.AppConfig
-import models.Registration
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, anyInt}
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import repositories.RegistrationRepository
 import uk.gov.hmrc.domain.Vrn
-import utils.RegistrationData
 import utils.RegistrationData._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,8 +31,9 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
     "must not call repository.updateDateOfFirstSale when no registrations exist" in {
       when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq.empty)
 
-      service.updateDateOfFirstSale()
+      val result: Seq[Boolean] = service.updateDateOfFirstSale().futureValue
 
+      result mustBe Seq.empty
       verify(registrationRepository, times(1)).get(anyInt())
       verify(registrationRepository, times(0)).updateDateOfFirstSale(any())
     }
@@ -46,8 +44,9 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
       when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq(singleRegistration))
       when(registrationRepository.updateDateOfFirstSale(any())) thenReturn Future.successful(true)
 
-      service.updateDateOfFirstSale()
+      val result = service.updateDateOfFirstSale().futureValue
 
+      result mustBe Seq(true)
       verify(registrationRepository, times(1)).get(anyInt())
       verify(registrationRepository, times(1)).updateDateOfFirstSale(eqTo(singleRegistration))
     }
@@ -61,8 +60,9 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
       when(registrationRepository.updateDateOfFirstSale(eqTo(registrationWithoutDOFS))) thenReturn Future.successful(true)
 
-      service.updateDateOfFirstSale()
+      val result = service.updateDateOfFirstSale().futureValue
 
+      result mustBe Seq(true)
       verify(registrationRepository, times(1)).get(anyInt())
       verify(registrationRepository, times(1)).updateDateOfFirstSale(eqTo(registrationWithoutDOFS))
     }
@@ -74,8 +74,9 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
       when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq(registrationWithoutDOFSOne, registrationWithoutDOFSTwo))
       when(registrationRepository.updateDateOfFirstSale(any())) thenReturn Future.successful(true)
 
-      service.updateDateOfFirstSale()
+      val result = service.updateDateOfFirstSale().futureValue
 
+      result mustBe Seq(true, true)
       verify(registrationRepository, times(1)).get(anyInt())
       verify(registrationRepository, times(2)).updateDateOfFirstSale(any())
     }
