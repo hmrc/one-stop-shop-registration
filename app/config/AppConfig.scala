@@ -24,5 +24,5 @@ import javax.inject.{Inject, Singleton}
 class AppConfig @Inject()(config: Configuration) {
 
   val encryptionKey: String = config.get[String]("mongodb.encryption.key")
-  val recordsToCheckForLength: Int = config.get[Int]("records-to-check-for-length")
+  val dbRecordLimit: Int = config.get[Int]("db-record-limit")
 }

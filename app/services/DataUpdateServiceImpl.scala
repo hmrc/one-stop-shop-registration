@@ -19,11 +19,11 @@ package services
 import cats.data.ValidatedNec
 import config.AppConfig
 import logging.Logging
-import models.Registration
 import repositories.RegistrationRepository
+import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 trait DataUpdateService
 
@@ -35,13 +35,17 @@ class DataUpdateServiceImpl @Inject()(
   type ValidationResult[A] = ValidatedNec[ValidationError, A]
 
   def updateDateOfFirstSale(): Unit = {
-    repository.get(200).map {
-      registrations =>
-        registrations
-          .foreach(
-            registration =>
-              repository.updateDateOfFirstSale(registration)
-          )
+    repository.get(appConfig.dbRecordLimit).map {
+      registrations => registrations.foreach(
+        registration => repository.updateDateOfFirstSale(registration) map {
+          case true =>
+            logger.info(s"Successfully updated dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
+          case false =>
+            logger.info(s"Failed to update dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
+        }
+      )
     }
   }
+
+  private def obfuscateVrn(vrn: Vrn): String = vrn.vrn.take(5) + "****"
 }

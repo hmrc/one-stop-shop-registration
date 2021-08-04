@@ -38,7 +38,7 @@ class DataQueryServiceImpl @Inject()(
 
   val checkFieldLengths: Unit = {
 
-    val count = appConfig.recordsToCheckForLength
+    val count = appConfig.dbRecordLimit
 
     logger.info(s"About to check up to $count records for field length issues")
 

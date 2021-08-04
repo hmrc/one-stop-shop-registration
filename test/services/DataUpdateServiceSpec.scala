@@ -25,6 +25,8 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   ".updateDateOfFirstSale" - {
 
+    when(appConfig.dbRecordLimit) thenReturn 200
+
     "must not call repository.updateDateOfFirstSale when no registrations exist" in {
       when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq.empty)
 

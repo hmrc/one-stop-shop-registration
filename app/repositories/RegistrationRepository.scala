@@ -88,15 +88,15 @@ class RegistrationRepository @Inject()(
 
   def updateDateOfFirstSale(registration: Registration): Future[Boolean] = {
 
-    logger.info("About to update registration with dateOfFirstSale for vrn: " + obfuscateVrn(registration.vrn))
+    logger.info("About to update registration with dateOfFirstSale for VRN: " + obfuscateVrn(registration.vrn))
 
     val updatedRegistration = registration copy (dateOfFirstSale = Some(registration.commencementDate))
 
-    logger.info("New registration object created with dateOfFirstSale for vrn: " + obfuscateVrn(registration.vrn))
+    logger.info("New registration object created with dateOfFirstSale for VRN: " + obfuscateVrn(registration.vrn))
 
     val encryptedRegistration = encrypter.encryptRegistration(updatedRegistration, updatedRegistration.vrn, encryptionKey)
 
-    logger.info("Newly created registration object encrypted for vrn " + obfuscateVrn(registration.vrn))
+    logger.info("Newly created registration object encrypted for VRN " + obfuscateVrn(registration.vrn))
 
     collection
       .replaceOne(
