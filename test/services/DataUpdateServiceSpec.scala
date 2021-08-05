@@ -20,6 +20,8 @@ class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
   private val registrationRepository = mock[RegistrationRepository]
   private val appConfig = mock[AppConfig]
 
+  when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq.empty)
+
   private val service = new DataUpdateServiceImpl(registrationRepository, appConfig)
 
   override def beforeEach(): Unit = {
