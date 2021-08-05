@@ -66,7 +66,7 @@ class AuthActionImpl @Inject()(
       case Some(internalId) ~ enrolments ~ Some(Individual) ~ confidence ~ _ =>
         findVrnFromEnrolments(enrolments) match {
           case Some(vrn) =>
-            if (confidence >= ConfidenceLevel.L250) {
+            if (confidence >= ConfidenceLevel.L200) {
               block(AuthorisedRequest(request, internalId, vrn))
             } else {
               throw InsufficientConfidenceLevel("Insufficient confidence level")
@@ -95,5 +95,4 @@ class AuthActionImpl @Inject()(
         enrolment =>
           enrolment.identifiers.find(_.key == "VATRegNo").map(e => Vrn(e.value))
       }
-
 }
