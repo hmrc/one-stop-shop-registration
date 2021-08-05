@@ -18,14 +18,16 @@ package repositories
 
 import config.AppConfig
 import crypto.RegistrationEncrypter
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes}
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.{EncryptedRegistration, InsertResult, Registration}
 import repositories.MongoErrors.Duplicate
+import logging.Logging
 
+import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,7 +35,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegistrationRepository @Inject()(
                                         mongoComponent: MongoComponent,
                                         encrypter: RegistrationEncrypter,
-                                        appConfig: AppConfig
+                                        appConfig: AppConfig,
+                                        clock: Clock
                                       )(implicit ec: ExecutionContext)
   extends PlayMongoRepository[EncryptedRegistration] (
     collectionName = "registrations",
@@ -48,7 +51,7 @@ class RegistrationRepository @Inject()(
           .unique(true)
       )
     )
-  ) {
+  ) with Logging {
 
   import uk.gov.hmrc.mongo.play.json.Codecs.toBson
 
@@ -83,5 +86,28 @@ class RegistrationRepository @Inject()(
       .map(r => encrypter.decryptRegistration(r, r.vrn, encryptionKey))
       .toFuture
   }
+
+  def updateDateOfFirstSale(registration: Registration): Future[Boolean] = {
+
+    logger.info("About to update registration with dateOfFirstSale for VRN: " + obfuscateVrn(registration.vrn))
+
+    val updatedRegistration = registration copy (dateOfFirstSale = Some(registration.commencementDate), lastUpdated = Instant.now(clock))
+
+    logger.info("New registration object created with dateOfFirstSale for VRN: " + obfuscateVrn(registration.vrn))
+
+    val encryptedRegistration = encrypter.encryptRegistration(updatedRegistration, updatedRegistration.vrn, encryptionKey)
+
+    logger.info("Newly created registration object encrypted for VRN " + obfuscateVrn(registration.vrn))
+
+    collection
+      .replaceOne(
+        filter = Filters.equal("vrn", updatedRegistration.vrn.vrn),
+        replacement = encryptedRegistration,
+        options = ReplaceOptions().upsert(true)
+      ).toFuture()
+      .map(_ => true)
+  }
+
+  private def obfuscateVrn(vrn: Vrn): String = vrn.vrn.take(5) + "****"
 }
 

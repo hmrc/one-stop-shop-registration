@@ -9,6 +9,8 @@
 
     <logger name="application.services.DataQueryServiceImpl" level="${logger.services.DataQueryService:-INFO}"/>
 
+    <logger name="application.services.DataUpdateServiceImpl" level="${logger.services.DataUpdateService:-INFO}"/>
+
     <root level="${logger.application:-WARN}">
         <appender-ref ref="STDOUT"/>
     </root>
