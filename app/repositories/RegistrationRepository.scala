@@ -25,9 +25,9 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.{EncryptedRegistration, InsertResult, Registration}
 import repositories.MongoErrors.Duplicate
-
 import logging.Logging
 
+import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,7 +35,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegistrationRepository @Inject()(
                                         mongoComponent: MongoComponent,
                                         encrypter: RegistrationEncrypter,
-                                        appConfig: AppConfig
+                                        appConfig: AppConfig,
+                                        clock: Clock
                                       )(implicit ec: ExecutionContext)
   extends PlayMongoRepository[EncryptedRegistration] (
     collectionName = "registrations",
@@ -90,7 +91,7 @@ class RegistrationRepository @Inject()(
 
     logger.info("About to update registration with dateOfFirstSale for VRN: " + obfuscateVrn(registration.vrn))
 
-    val updatedRegistration = registration copy (dateOfFirstSale = Some(registration.commencementDate))
+    val updatedRegistration = registration copy (dateOfFirstSale = Some(registration.commencementDate), lastUpdated = Instant.now(clock))
 
     logger.info("New registration object created with dateOfFirstSale for VRN: " + obfuscateVrn(registration.vrn))
 

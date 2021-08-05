@@ -5,7 +5,6 @@ import config.AppConfig
 import models.Registration
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, anyInt}
-import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import repositories.RegistrationRepository

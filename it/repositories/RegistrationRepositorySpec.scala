@@ -26,10 +26,10 @@ import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepositorySupport}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models._
-import uk.gov.hmrc.domain.Vrn
 import utils.RegistrationData
-import utils.RegistrationData.registration
+import utils.RegistrationData.{registration, stubClock}
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RegistrationRepositorySpec extends AnyFreeSpec
@@ -51,7 +51,8 @@ class RegistrationRepositorySpec extends AnyFreeSpec
   override protected val repository = new RegistrationRepository(
       mongoComponent = mongoComponent,
       encrypter = encrypter,
-      appConfig = appConfig
+      appConfig = appConfig,
+      clock = stubClock
   )
 
   ".insert" - {
@@ -105,7 +106,7 @@ class RegistrationRepositorySpec extends AnyFreeSpec
 
         val result = repository.updateDateOfFirstSale(currentRegistration).futureValue
         val newRegistration = repository.get(currentRegistration.vrn).futureValue
-        val expectedRegistration = currentRegistration copy (dateOfFirstSale = Some(currentRegistration.commencementDate))
+        val expectedRegistration = currentRegistration copy (dateOfFirstSale = Some(currentRegistration.commencementDate), lastUpdated = Instant.now(stubClock))
 
         result mustEqual true
         newRegistration mustEqual Some(expectedRegistration)
