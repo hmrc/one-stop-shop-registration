@@ -30,15 +30,12 @@ class RegistrationBackUpRepositorySpec extends AnyFreeSpec
 
   when(appConfig.encryptionKey) thenReturn encryptionKey
 
-  override protected val repository = new RegistrationBackUpRepository(
-    mongoComponent = mongoComponent,
-  )
+  override protected val repository = new RegistrationBackUpRepository(mongoComponent = mongoComponent)
 
   ".insertMany" - {
 
     "must return true if given an empty list" in {
-      val emptyList = List.empty
-      val result = repository.insertMany(emptyList).futureValue
+      val result = repository.insertMany(List.empty).futureValue
 
       result mustBe true
     }

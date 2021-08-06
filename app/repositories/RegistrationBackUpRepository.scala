@@ -50,10 +50,14 @@ class RegistrationBackUpRepository @Inject()(
     encryptedRegistrations match {
       case Nil => Future.successful(true)
       case _ =>
-        collection.insertMany(encryptedRegistrations).toFuture.map(_ => true).recover {
-          case ex =>
-            logger.error(s"Failed to insert many Encrypted Registrations ${ex.getMessage}")
-            false
+        collection
+          .insertMany(encryptedRegistrations)
+          .toFuture
+          .map(_ => true)
+          .recover {
+            case ex =>
+              logger.error(s"Failed to insert many Encrypted Registrations ${ex.getMessage}")
+              false
         }
     }
   }

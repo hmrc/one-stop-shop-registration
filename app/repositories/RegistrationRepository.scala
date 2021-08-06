@@ -87,8 +87,11 @@ class RegistrationRepository @Inject()(
       .toFuture
   }
 
-  def get(): List[EncryptedRegistration] = {
-    ???
+  def getEncryptedRegistrations(): Future[Seq[EncryptedRegistration]] = {
+    collection
+      .find()
+      .limit(appConfig.dbRecordLimit)
+      .toFuture()
   }
 
   def updateDateOfFirstSale(registration: Registration): Future[Boolean] = {
