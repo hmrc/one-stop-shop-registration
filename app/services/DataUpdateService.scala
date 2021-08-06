@@ -19,7 +19,8 @@ package services
 import cats.data.ValidatedNec
 import config.AppConfig
 import logging.Logging
-import repositories.RegistrationRepository
+import models.Registration
+import repositories.{RegistrationBackUpRepository, RegistrationRepository}
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.Inject
@@ -28,7 +29,8 @@ import scala.concurrent.{ExecutionContext, Future}
 trait DataUpdateService
 
 class DataUpdateServiceImpl @Inject()(
-                                       repository: RegistrationRepository,
+                                       registrationRepository: RegistrationRepository,
+                                       registrationBackUpRepository: RegistrationBackUpRepository,
                                        appConfig: AppConfig
                                      )(implicit ec: ExecutionContext) extends DataUpdateService with Logging {
 
@@ -37,17 +39,24 @@ class DataUpdateServiceImpl @Inject()(
   val runUpdateDateOfFirstSale: Future[Seq[Boolean]] = updateDateOfFirstSale()
 
   def updateDateOfFirstSale(): Future[Seq[Boolean]] = {
-    repository.get(appConfig.dbRecordLimit).flatMap {
+
+    // Call Get method on RegistrationRepo
+//    val registrations = registrationRepository.get(appConfig.dbRecordLimit)
+
+    // Call InsertMany method on RegistrationBackUp
+//    registrationBackUpRepository.insertMany(registrations)
+
+    registrationRepository.get(appConfig.dbRecordLimit).flatMap {
       registrations =>
         logger.info(s"${registrations.size} registrations pulled from db")
 
-        val registrationsWithoutDateOfFirstSale = registrations.filter(_.dateOfFirstSale.isEmpty)
+        val registrationsWithoutDateOfFirstSale: Seq[Registration] = registrations.filter(_.dateOfFirstSale.isEmpty)
 
         logger.info(s"${registrationsWithoutDateOfFirstSale.size} registrations without dateOfFirstSale")
 
         Future.sequence(registrationsWithoutDateOfFirstSale.map {
           registration =>
-            repository.updateDateOfFirstSale(registration).map {
+            registrationRepository.updateDateOfFirstSale(registration).map {
               case true =>
                 logger.info(s"Successfully updated dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
                 true

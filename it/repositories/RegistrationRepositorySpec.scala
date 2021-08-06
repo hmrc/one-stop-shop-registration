@@ -94,6 +94,20 @@ class RegistrationRepositorySpec extends AnyFreeSpec
 
       result must not be defined
     }
+
+    "must call get and return list of Encrypted Registrations" in {
+
+      val registration =
+        encrypter.encryptRegistration(RegistrationData.registration, RegistrationData.registration.vrn, secretKey)
+
+      insert(registration).futureValue
+
+      val result = repository.get()
+
+      result mustBe registration
+
+    }
+
   }
 
   ".set" - {

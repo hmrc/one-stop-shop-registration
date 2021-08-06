@@ -87,6 +87,10 @@ class RegistrationRepository @Inject()(
       .toFuture
   }
 
+  def get(): List[EncryptedRegistration] = {
+    ???
+  }
+
   def updateDateOfFirstSale(registration: Registration): Future[Boolean] = {
 
     logger.info("About to update registration with dateOfFirstSale for VRN: " + obfuscateVrn(registration.vrn))

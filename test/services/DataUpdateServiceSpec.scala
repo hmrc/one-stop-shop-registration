@@ -7,7 +7,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, anyInt}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
-import repositories.RegistrationRepository
+import repositories.{RegistrationBackUpRepository, RegistrationRepository}
 import uk.gov.hmrc.domain.Vrn
 import utils.RegistrationData._
 
@@ -17,11 +17,12 @@ import scala.concurrent.Future
 class DataUpdateServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val registrationRepository = mock[RegistrationRepository]
+  private val registrationBackUpRepository = mock[RegistrationBackUpRepository]
   private val appConfig = mock[AppConfig]
 
   when(registrationRepository.get(anyInt())) thenReturn Future.successful(Seq.empty)
 
-  private val service = new DataUpdateServiceImpl(registrationRepository, appConfig)
+  private val service = new DataUpdateServiceImpl(registrationRepository, registrationBackUpRepository, appConfig)
 
   override def beforeEach(): Unit = {
     reset(registrationRepository)
