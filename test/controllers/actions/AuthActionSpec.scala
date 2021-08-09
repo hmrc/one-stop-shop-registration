@@ -57,7 +57,7 @@ class AuthActionSpec extends BaseSpec with BeforeAndAfterEach {
       }
     }
 
-    "when the user is logged in as an Individual with a VAT enrolment, strong credentials and confidence level 250" - {
+    "when the user is logged in as an Individual with a VAT enrolment, strong credentials and confidence level 200" - {
 
       "must succeed" in {
 
@@ -67,7 +67,7 @@ class AuthActionSpec extends BaseSpec with BeforeAndAfterEach {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
 
           when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-            .thenReturn(Future.successful(Some("id") ~ vatEnrolment ~ Some(Individual) ~ ConfidenceLevel.L250 ~ None))
+            .thenReturn(Future.successful(Some("id") ~ vatEnrolment ~ Some(Individual) ~ ConfidenceLevel.L200 ~ None))
 
           val action = new AuthActionImpl(mockAuthConnector, bodyParsers)
           val controller = new Harness(action)
@@ -120,7 +120,7 @@ class AuthActionSpec extends BaseSpec with BeforeAndAfterEach {
       }
     }
 
-    "when the user has logged in as an Individual with a VAT enrolment and strong credentials, but confidence level less then 200" - {
+    "when the user has logged in as an Individual with a VAT enrolment and strong credentials, but confidence level less than 200" - {
 
       "must return Unauthorized" in {
 
@@ -130,7 +130,7 @@ class AuthActionSpec extends BaseSpec with BeforeAndAfterEach {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
 
           when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-            .thenReturn(Future.successful(Some("id") ~ vatEnrolment ~ Some(Individual) ~ ConfidenceLevel.L200 ~ None))
+            .thenReturn(Future.successful(Some("id") ~ vatEnrolment ~ Some(Individual) ~ ConfidenceLevel.L50 ~ None))
 
           val action = new AuthActionImpl(mockAuthConnector, bodyParsers)
           val controller = new Harness(action)
@@ -151,7 +151,7 @@ class AuthActionSpec extends BaseSpec with BeforeAndAfterEach {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
 
           when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-            .thenReturn(Future.successful(Some("id") ~ Enrolments(Set.empty) ~ Some(Individual) ~ ConfidenceLevel.L250 ~ None))
+            .thenReturn(Future.successful(Some("id") ~ Enrolments(Set.empty) ~ Some(Individual) ~ ConfidenceLevel.L200 ~ None))
 
           val action = new AuthActionImpl(mockAuthConnector, bodyParsers)
           val controller = new Harness(action)
