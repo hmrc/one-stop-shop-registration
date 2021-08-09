@@ -19,6 +19,7 @@ package repositories
 import logging.Logging
 import models.EncryptedRegistration
 import org.mongodb.scala.model.{IndexModel, IndexOptions, Indexes}
+import repositories.MongoErrors.Duplicate
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
@@ -44,14 +45,21 @@ class RegistrationBackUpRepository @Inject()(
   ) with Logging {
 
   def insertMany(encryptedRegistrations: Seq[EncryptedRegistration]): Future[Boolean] = {
-      collection
-        .insertMany(encryptedRegistrations)
-        .toFuture
-        .map(_ => true)
-        .recover {
-          case ex =>
-            logger.error(s"Failed to insert many Encrypted Registrations ${ex.getMessage}")
-            false
-      }
+   encryptedRegistrations match {
+     case Seq() =>  Future.successful(true)
+     case _ =>
+       collection
+         .insertMany(encryptedRegistrations)
+         .toFuture
+         .map(_ => true)
+         .recover {
+           case Duplicate(_) =>
+             logger.info (s"Tried to back up duplicate Encrypted Registration")
+             false
+           case ex =>
+             logger.error(s"Failed to insert many Encrypted Registrations ${ex.getMessage}")
+             false
+         }
+   }
   }
 }
