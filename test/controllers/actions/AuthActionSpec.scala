@@ -14,6 +14,7 @@ import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.HeaderCarrier
 import base.BaseSpec
+import repositories.RegistrationBackUpRepository
 import utils.TestAuthRetrievals._
 
 import scala.concurrent.ExecutionContext.Implicits.global

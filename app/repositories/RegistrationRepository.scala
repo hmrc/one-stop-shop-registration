@@ -87,6 +87,13 @@ class RegistrationRepository @Inject()(
       .toFuture
   }
 
+  def getEncryptedRegistrations(): Future[Seq[EncryptedRegistration]] = {
+    collection
+      .find()
+      .limit(appConfig.dbRecordLimit)
+      .toFuture()
+  }
+
   def updateDateOfFirstSale(registration: Registration): Future[Boolean] = {
 
     logger.info("About to update registration with dateOfFirstSale for VRN: " + obfuscateVrn(registration.vrn))
@@ -105,7 +112,10 @@ class RegistrationRepository @Inject()(
         replacement = encryptedRegistration,
         options = ReplaceOptions().upsert(true)
       ).toFuture()
-      .map(_ => true)
+      .map(_ => {
+        logger.info(s"Successfully updated dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
+        true
+      })
   }
 
   private def obfuscateVrn(vrn: Vrn): String = vrn.vrn.take(5) + "****"

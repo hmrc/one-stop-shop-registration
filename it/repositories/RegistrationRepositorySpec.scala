@@ -26,6 +26,7 @@ import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepositorySupport}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models._
+import uk.gov.hmrc.domain.Vrn
 import utils.RegistrationData
 import utils.RegistrationData.{registration, stubClock}
 
@@ -93,6 +94,41 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       val result = repository.get(registration.vrn).futureValue
 
       result must not be defined
+    }
+  }
+
+  ".getEncryptedRegistrations" - {
+
+    "must return an empty list of EncryptedRegistrations when no Registrations in collection" in {
+      when(appConfig.dbRecordLimit) thenReturn 200
+
+      val result = repository.getEncryptedRegistrations().futureValue
+
+      result mustBe Seq.empty
+    }
+
+    "must return Seq of Encrypted Registrations when 1 registration in collection" in {
+      when(appConfig.dbRecordLimit) thenReturn 200
+
+      val registration =
+        encrypter.encryptRegistration(RegistrationData.registration, RegistrationData.registration.vrn, secretKey)
+      insert(registration).futureValue
+
+      val result = repository.getEncryptedRegistrations().futureValue
+      result mustBe Seq(registration)
+    }
+
+    "must return Seq of Encrypted Registrations when multiple registration in collection" in {
+      when(appConfig.dbRecordLimit) thenReturn 200
+
+      val registration =
+        encrypter.encryptRegistration(RegistrationData.registration, RegistrationData.registration.vrn, secretKey)
+      val registrationTwo = registration.copy(vrn = Vrn("234567890"))
+      insert(registration).futureValue
+      insert(registrationTwo).futureValue
+
+      val result = repository.getEncryptedRegistrations().futureValue
+      result mustBe Seq(registration, registrationTwo)
     }
   }
 
