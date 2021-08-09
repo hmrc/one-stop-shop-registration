@@ -11,6 +11,10 @@
 
     <logger name="application.services.DataUpdateServiceImpl" level="${logger.services.DataUpdateService:-INFO}"/>
 
+    <logger name="application.repositories.RegistrationRepository" level="${logger.repositories.RegistrationRepository:-INFO}"/>
+
+    <logger name="application.repositories.RegistrationBackUpRepository" level="${logger.repositories.RegistrationBackUpRepository:-INFO}"/>
+
     <root level="${logger.application:-WARN}">
         <appender-ref ref="STDOUT"/>
     </root>
