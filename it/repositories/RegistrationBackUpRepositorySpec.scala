@@ -23,7 +23,7 @@ class RegistrationBackUpRepositorySpec extends AnyFreeSpec
   with OptionValues
   with MockitoSugar {
 
-  private val cipher    = new SecureGCMCipher
+  private val cipher = new SecureGCMCipher
   private val encrypter = new RegistrationEncrypter(cipher)
   private val appConfig = mock[AppConfig]
   private val encryptionKey = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
@@ -35,7 +35,7 @@ class RegistrationBackUpRepositorySpec extends AnyFreeSpec
   ".insertMany" - {
 
     "must return true if given an empty list" in {
-      val result = repository.insertMany(List.empty).futureValue
+      val result = repository.insertMany(Seq.empty).futureValue
 
       result mustBe true
     }
@@ -46,7 +46,7 @@ class RegistrationBackUpRepositorySpec extends AnyFreeSpec
       val encryptedRegistrationOne = encrypter.encryptRegistration(registrationOne, registrationOne.vrn, encryptionKey)
       val encryptedRegistrationTwo = encrypter.encryptRegistration(registrationTwo, registrationTwo.vrn, encryptionKey)
 
-      val encryptedRegistrations = List(encryptedRegistrationOne, encryptedRegistrationTwo)
+      val encryptedRegistrations = Seq(encryptedRegistrationOne, encryptedRegistrationTwo)
 
       val result = repository.insertMany(encryptedRegistrations).futureValue
 
@@ -58,18 +58,11 @@ class RegistrationBackUpRepositorySpec extends AnyFreeSpec
       val registrationOne = RegistrationData.registration copy (vrn = Vrn("435432347"))
       val encryptedRegistrationOne = encrypter.encryptRegistration(registrationOne, registrationOne.vrn, encryptionKey)
 
-      val encryptedRegistrations = List(encryptedRegistrationOne, encryptedRegistrationOne)
+      val encryptedRegistrations = Seq(encryptedRegistrationOne, encryptedRegistrationOne)
 
       val result = repository.insertMany(encryptedRegistrations).futureValue
 
       result mustBe false
     }
-
-
-
-
-
   }
-
-
 }

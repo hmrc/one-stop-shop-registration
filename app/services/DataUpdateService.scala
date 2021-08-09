@@ -39,31 +39,41 @@ class DataUpdateServiceImpl @Inject()(
   val runUpdateDateOfFirstSale: Future[Seq[Boolean]] = updateDateOfFirstSale()
 
   def updateDateOfFirstSale(): Future[Seq[Boolean]] = {
+      backup().flatMap {
+        case false => Future.successful(Seq(false))
+        case true  =>
+          logger.info(s"Successfully backed up registrations")
+          update()
+      }
+  }
 
-    // Call Get method on RegistrationRepo
-//    val registrations = registrationRepository.get(appConfig.dbRecordLimit)
+  private def backup(): Future[Boolean] = {
+    registrationRepository.getEncryptedRegistrations().flatMap {
+      case Seq()         => Future.successful(false)
+      case registrations =>
+        logger.info(s"Beginning back up of ${registrations.size} registrations")
+        registrationBackUpRepository.insertMany(registrations)
+    }
+  }
 
-    // Call InsertMany method on RegistrationBackUp
-//    registrationBackUpRepository.insertMany(registrations)
-
+  private def update(): Future[Seq[Boolean]] = {
     registrationRepository.get(appConfig.dbRecordLimit).flatMap {
       registrations =>
         logger.info(s"${registrations.size} registrations pulled from db")
 
-        val registrationsWithoutDateOfFirstSale: Seq[Registration] = registrations.filter(_.dateOfFirstSale.isEmpty)
+        val registrationsWithoutDateOfFirstSale: Seq[Registration] =
+          registrations.filter(_.dateOfFirstSale.isEmpty)
 
         logger.info(s"${registrationsWithoutDateOfFirstSale.size} registrations without dateOfFirstSale")
 
         Future.sequence(registrationsWithoutDateOfFirstSale.map {
           registration =>
-            registrationRepository.updateDateOfFirstSale(registration).map {
-              case true =>
-                logger.info(s"Successfully updated dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
-                true
-              case false =>
-                logger.info(s"Failed to update dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)}")
-                false
-            }
+            registrationRepository.updateDateOfFirstSale(registration)
+              .recover {
+                case exception =>
+                  logger.error(s"Failed to update dateOfFirstSale for VRN: ${obfuscateVrn(registration.vrn)} with error: ${exception.getMessage}")
+                  false
+              }
         })
     }
   }

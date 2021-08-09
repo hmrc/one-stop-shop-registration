@@ -16,15 +16,12 @@
 
 package repositories
 
-import config.AppConfig
-import crypto.RegistrationEncrypter
 import logging.Logging
 import models.EncryptedRegistration
 import org.mongodb.scala.model.{IndexModel, IndexOptions, Indexes}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -46,19 +43,15 @@ class RegistrationBackUpRepository @Inject()(
     )
   ) with Logging {
 
-  def insertMany(encryptedRegistrations: List[EncryptedRegistration]): Future[Boolean] = {
-    encryptedRegistrations match {
-      case Nil => Future.successful(true)
-      case _ =>
-        collection
-          .insertMany(encryptedRegistrations)
-          .toFuture
-          .map(_ => true)
-          .recover {
-            case ex =>
-              logger.error(s"Failed to insert many Encrypted Registrations ${ex.getMessage}")
-              false
-        }
-    }
+  def insertMany(encryptedRegistrations: Seq[EncryptedRegistration]): Future[Boolean] = {
+      collection
+        .insertMany(encryptedRegistrations)
+        .toFuture
+        .map(_ => true)
+        .recover {
+          case ex =>
+            logger.error(s"Failed to insert many Encrypted Registrations ${ex.getMessage}")
+            false
+      }
   }
 }
