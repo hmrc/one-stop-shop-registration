@@ -78,6 +78,45 @@ To successfully register go through the journey providing the answers as follows
   7.
   ![image](https://user-images.githubusercontent.com/48218839/145987158-977dac92-15bb-40e5-84b1-835f836b020f.png)
 
+Unit and Integration Tests
+------------
+
+To run the unit and integration tests, you will need to open an sbt session on the browser.
+
+### Unit Tests
+
+To run all tests, run the following command in your sbt session:
+```
+test
+```
+
+To run a single test, run the following command in your sbt session:
+```
+testOnly <package>.<SpecName>
+```
+
+An asterisk can be used as a wildcard character without having to enter the package, as per the example below:
+```
+testOnly *RegistrationControllerSpec
+```
+
+### Integration Tests
+
+To run all tests, run the following command in your sbt session:
+```
+it:test
+```
+
+To run a single test, run the following command in your sbt session:
+```
+it:testOnly <package>.<SpecName>
+```
+
+An asterisk can be used as a wildcard character without having to enter the package, as per the example below:
+```
+it:testOnly *RegistrationRepositorySpec
+```
+
 ### License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
