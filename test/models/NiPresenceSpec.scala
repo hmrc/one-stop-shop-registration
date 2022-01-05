@@ -55,5 +55,28 @@ class NiPresenceSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCh
           Json.toJson(NoPresence(salesChannels): NiPresence) mustEqual json
       }
     }
+
+    "must return JsError when reading invalid no presence json" in {
+
+      forAll(arbitrary[SalesChannels]) {
+        salesChannels =>
+          val json = Json.obj(
+            "presence"      -> "test",
+            "salesChannels" -> salesChannels
+          )
+
+          json.validate[NiPresence] mustEqual JsError("presence must be `noPresence`")
+      }
+    }
+
+    "must return JsError when reading invalid json" in {
+
+      forAll(arbitrary[SalesChannels]) {
+        salesChannels =>
+          val json = JsString("test")
+
+          json.validate[NiPresence] mustEqual JsError("Unable to read as NiPresence")
+      }
+    }
   }
 }

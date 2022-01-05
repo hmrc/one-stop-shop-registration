@@ -62,6 +62,32 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
           d mustEqual bankDetails
       }
     }
+
+    "must throw exception if IBAN cannot be decrypted" in {
+      forAll(arbitrary[BankDetails]) {
+        bankDetails =>
+          val e = encrypter.encryptBankDetails(bankDetails.copy(iban = Iban("ZZ", "zz", "zz")), vrn, secretKey)
+          val d = intercept[EncryptionDecryptionException](
+            encrypter.decryptBankDetails(e, vrn, secretKey)
+          )
+          d.failureReason must include("Unable to decrypt IBAN")
+
+      }
+    }
+
+    "must throw exception if BIC cannot be decrypted" in {
+      forAll(arbitrary[BankDetails]) {
+        bankDetails =>
+          val e = encrypter.encryptBankDetails(bankDetails, vrn, secretKey)
+          val z = e.copy(bic = Some(e.iban))
+
+          val d = intercept[EncryptionDecryptionException](
+            encrypter.decryptBankDetails(z, vrn, secretKey)
+          )
+          d.failureReason must include("Unable to decrypt BIC")
+
+      }
+    }
   }
 
   "encrypt / decrypt contact details" - {
@@ -86,6 +112,18 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
           val d = encrypter.decryptEuTaxIdentifier(e, vrn, secretKey)
 
           d mustEqual taxIdentifier
+      }
+    }
+
+    "must throw exception if tax identifier cannot be decrypted" in {
+      forAll(arbitrary[EuTaxIdentifier]) {
+        taxIdentifier =>
+          val e = encrypter.encryptEuTaxIdentifier(taxIdentifier, vrn, secretKey)
+          val z = e.copy(identifierType = e.value)
+          val d = intercept[Exception](
+            encrypter.decryptEuTaxIdentifier(z, vrn, secretKey)
+          )
+          d.getMessage must include("Unable to decrypt value")
       }
     }
   }

@@ -19,7 +19,7 @@ package models
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import play.api.libs.json.{JsString, JsSuccess, Json}
+import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
 
 class IbanSpec extends AnyFreeSpec with Matchers with EitherValues {
 
@@ -82,5 +82,26 @@ class IbanSpec extends AnyFreeSpec with Matchers with EitherValues {
 
     Json.toJson(iban) mustEqual json
     json.validate[Iban] mustEqual JsSuccess(iban)
+  }
+
+  "must return JsError when reading invalid IBAN format" in {
+
+    val json = JsString("G294BARC10201530093459")
+
+    json.validate[Iban] mustEqual JsError("IBAN is not in the correct format")
+  }
+
+  "must return JsError when reading invalid IBAN checksum" in {
+
+    val json = JsString("GB00BARC10201530093459")
+
+    json.validate[Iban] mustEqual JsError("Invalid checksum")
+  }
+
+  "must return JsError when reading invalid IBAN json" in {
+
+    val json = Json.obj("something" -> "GB00BARC10201530093459")
+
+    json.validate[Iban] mustEqual JsError("IBAN is not in the correct format")
   }
 }
