@@ -19,7 +19,7 @@ package models
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import play.api.libs.json.{JsString, JsSuccess, Json}
+import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
 
 class BicSpec extends AnyFreeSpec with Matchers with OptionValues {
 
@@ -64,5 +64,19 @@ class BicSpec extends AnyFreeSpec with Matchers with OptionValues {
 
     Json.toJson(bic) mustEqual json
     json.validate[Bic] mustEqual JsSuccess(bic)
+  }
+
+  "must return JsError when BIC is in invalid format" in {
+
+    val json = JsString("A1CDEF2A")
+
+    json.validate[Bic] mustEqual JsError("BIC is not in the correct format")
+  }
+
+  "must return JsError for invalid json" in {
+
+    val json = Json.obj("test" -> "ABCDEF2A")
+
+    json.validate[Bic] mustEqual JsError("BIC is not in the correct format")
   }
 }

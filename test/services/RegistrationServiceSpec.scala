@@ -23,6 +23,9 @@ import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import repositories.RegistrationRepository
+import uk.gov.hmrc.domain.Vrn
+
+import scala.concurrent.Future
 
 class RegistrationServiceSpec extends BaseSpec {
 
@@ -52,5 +55,15 @@ class RegistrationServiceSpec extends BaseSpec {
 
       caught mustBe emulatedFailure
     }
+  }
+
+  ".get" - {
+
+    "must call registrationRepository.get" in {
+      when(registrationRepository.get(any())) thenReturn Future.successful(None)
+      service.get(Vrn("123456789")).futureValue
+      verify(registrationRepository, times(1)).get(Vrn("123456789"))
+    }
+
   }
 }
