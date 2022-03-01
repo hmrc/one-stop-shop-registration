@@ -40,4 +40,8 @@ case object ServiceUnavailable extends DesErrorResponse {
   override val body: String = "Service unavailable"
 }
 
+case object GatewayTimeout extends DesErrorResponse {
+  override val body: String = "Gateway timeout"
+}
+
 case class UnexpectedResponseStatus(status: Int, body: String) extends DesErrorResponse
