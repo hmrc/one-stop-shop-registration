@@ -144,14 +144,15 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
     import registration._
 
-    EncryptedEuVatRegistration(encryptCountry(country, vrn, key), e(vatNumber))
+    EncryptedEuVatRegistration(encryptCountry(country, vrn, key),
+      encryptEuTaxIdentifier(taxIdentifier, vrn, key))
   }
 
   private def decryptEuVatRegistration(registration: EncryptedEuVatRegistration, vrn: Vrn, key: String): EuVatRegistration = {
     def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
     import registration._
 
-    EuVatRegistration(decryptCountry(country, vrn, key), d(vatNumber))
+    EuVatRegistration(decryptCountry(country, vrn, key), decryptEuTaxIdentifier(taxIdentifier, vrn, key))
   }
 
   private def encryptRegistrationWithFixedEstablishment(

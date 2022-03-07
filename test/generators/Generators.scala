@@ -114,8 +114,8 @@ trait Generators {
     Arbitrary {
       for {
         country   <- arbitrary[Country]
-        vatNumber <- Gen.listOfN(9, Gen.numChar).map(_.mkString)
-      } yield EuVatRegistration(country, vatNumber)
+        taxIdentifier      <- arbitrary[EuTaxIdentifier]
+      } yield EuVatRegistration(country, taxIdentifier)
     }
 
   implicit lazy val arbitraryRegistrationWithFixedEstablishment: Arbitrary[RegistrationWithFixedEstablishment] =

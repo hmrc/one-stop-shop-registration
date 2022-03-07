@@ -16,7 +16,7 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
 
       val euVatNumberGen = arbitrary[Int].map(_.toString)
 
-      forAll(arbitrary[Country], euVatNumberGen) {
+      forAll(arbitrary[Country],  arbitrary[EuTaxIdentifier]) {
         case (country, vatNumber) =>
 
           val euVatRegistration = EuVatRegistration(country, vatNumber)
@@ -54,10 +54,10 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
 
     "must serialise and deserialise from / to an EU VAT Registration" in {
 
-      forAll(arbitrary[EncryptedValue], arbitrary[EncryptedCountry]) {
-        case (vatNumber, country) =>
+      forAll(arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedCountry]) {
+        case (identifierType, taxRef, country) =>
 
-          val euVatRegistration = EncryptedEuVatRegistration(country, vatNumber)
+          val euVatRegistration = EncryptedEuVatRegistration(country, EncryptedEuTaxIdentifier(identifierType, taxRef))
 
           val json = Json.toJson(euVatRegistration)
           json.validate[EncryptedEuTaxRegistration] mustEqual JsSuccess(euVatRegistration)

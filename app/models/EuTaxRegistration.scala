@@ -54,7 +54,7 @@ object EncryptedEuTaxRegistration {
 
 final case class EuVatRegistration(
                                     country: Country,
-                                    vatNumber: String
+                                    taxIdentifier: EuTaxIdentifier
                                   ) extends EuTaxRegistration
 
 object EuVatRegistration {
@@ -65,7 +65,7 @@ object EuVatRegistration {
 
 final case class EncryptedEuVatRegistration(
                                              country: EncryptedCountry,
-                                             vatNumber: EncryptedValue
+                                             taxIdentifier: EncryptedEuTaxIdentifier
                                            ) extends EncryptedEuTaxRegistration
 
 object EncryptedEuVatRegistration {
