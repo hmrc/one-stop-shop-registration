@@ -33,7 +33,7 @@ object RegistrationData {
         source = UserEntered
       ),
       euRegistrations = Seq(
-        EuVatRegistration(Country("FR", "France"), EuTaxIdentifier(Vat, "FR123")),
+        RegistrationWithoutFixedEstablishment(Country("FR", "France"), EuTaxIdentifier(Vat, "FR123")),
         RegistrationWithFixedEstablishment(
           Country("DE", "Germany"),
           EuTaxIdentifier(Vat, "DE123"),

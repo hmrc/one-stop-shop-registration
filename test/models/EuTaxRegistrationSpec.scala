@@ -19,7 +19,7 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
       forAll(arbitrary[Country],  arbitrary[EuTaxIdentifier]) {
         case (country, vatNumber) =>
 
-          val euVatRegistration = EuVatRegistration(country, vatNumber)
+          val euVatRegistration = RegistrationWithoutFixedEstablishment(country, vatNumber)
 
           val json = Json.toJson(euVatRegistration)
           json.validate[EuTaxRegistration] mustEqual JsSuccess(euVatRegistration)
@@ -42,7 +42,7 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
 
       forAll(arbitrary[Country]) {
         country =>
-          val euRegistration = RegistrationWithoutFixedEstablishment(country)
+          val euRegistration = RegistrationWithoutTaxId(country)
 
           val json = Json.toJson(euRegistration)
           json.validate[EuTaxRegistration] mustEqual JsSuccess(euRegistration)
@@ -57,7 +57,7 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
       forAll(arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedCountry]) {
         case (identifierType, taxRef, country) =>
 
-          val euVatRegistration = EncryptedEuVatRegistration(country, EncryptedEuTaxIdentifier(identifierType, taxRef))
+          val euVatRegistration = EncryptedRegistrationWithoutFixedEstablishment(country, EncryptedEuTaxIdentifier(identifierType, taxRef))
 
           val json = Json.toJson(euVatRegistration)
           json.validate[EncryptedEuTaxRegistration] mustEqual JsSuccess(euVatRegistration)
@@ -94,7 +94,7 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
 
       forAll(arbitrary[EncryptedCountry]) {
         country =>
-          val euRegistration = EncryptedRegistrationWithoutFixedEstablishment(country)
+          val euRegistration = EncryptedRegistrationWithoutTaxId(country)
 
           val json = Json.toJson(euRegistration)
           json.validate[EncryptedEuTaxRegistration] mustEqual JsSuccess(euRegistration)
