@@ -154,6 +154,21 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     EuVatRegistration(decryptCountry(country, vrn, key), d(vatNumber))
   }
 
+  private def encryptRegistrationWithoutFixedEstablishment(registration: RegistrationWithoutFixedEstablishment, vrn: Vrn, key: String): EncryptedRegistrationWithoutFixedEstablishment = {
+    def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
+    import registration._
+
+    EncryptedRegistrationWithoutFixedEstablishment(encryptCountry(country, vrn, key),
+      encryptEuTaxIdentifier(taxIdentifier, vrn, key))
+  }
+
+  private def decryptRegistrationWithoutFixedEstablishment(registration: EncryptedRegistrationWithoutFixedEstablishment, vrn: Vrn, key: String): RegistrationWithoutFixedEstablishment = {
+    def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
+    import registration._
+
+    RegistrationWithoutFixedEstablishment(decryptCountry(country, vrn, key), decryptEuTaxIdentifier(taxIdentifier, vrn, key))
+  }
+
   private def encryptRegistrationWithFixedEstablishment(
                                                          registration: RegistrationWithFixedEstablishment,
                                                          vrn: Vrn,
@@ -183,31 +198,33 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
   }
 
   private def encryptRegistrationWithoutFixedEstablishment(
-                                                            registration: RegistrationWithoutFixedEstablishment,
+                                                            registration: RegistrationWithoutTaxId,
                                                             vrn: Vrn,
                                                             key: String
-                                                          ) : EncryptedRegistrationWithoutFixedEstablishment =
-    EncryptedRegistrationWithoutFixedEstablishment(encryptCountry(registration.country, vrn, key))
+                                                          ) : EncryptedRegistrationWithoutTaxId =
+    EncryptedRegistrationWithoutTaxId(encryptCountry(registration.country, vrn, key))
 
   private def decryptRegistrationWithoutFixedEstablishment(
-                                                            registration: EncryptedRegistrationWithoutFixedEstablishment,
+                                                            registration: EncryptedRegistrationWithoutTaxId,
                                                             vrn: Vrn,
                                                             key: String
-                                                          ) : RegistrationWithoutFixedEstablishment =
-    RegistrationWithoutFixedEstablishment(decryptCountry(registration.country, vrn, key))
+                                                          ) : RegistrationWithoutTaxId =
+    RegistrationWithoutTaxId(decryptCountry(registration.country, vrn, key))
 
   def encryptEuTaxRegistration(registration: EuTaxRegistration, vrn: Vrn, key: String): EncryptedEuTaxRegistration =
     registration match {
       case v: EuVatRegistration                     => encryptEuVatRegistration(v, vrn, key)
+      case wf: RegistrationWithoutFixedEstablishment                     => encryptRegistrationWithoutFixedEstablishment(wf, vrn, key)
       case f: RegistrationWithFixedEstablishment    => encryptRegistrationWithFixedEstablishment(f, vrn, key)
-      case w: RegistrationWithoutFixedEstablishment => encryptRegistrationWithoutFixedEstablishment(w, vrn, key)
+      case w: RegistrationWithoutTaxId => encryptRegistrationWithoutFixedEstablishment(w, vrn, key)
     }
 
   def decryptEuTaxRegistration(registration: EncryptedEuTaxRegistration, vrn: Vrn, key: String): EuTaxRegistration =
     registration match {
-      case v: EncryptedEuVatRegistration                     => decryptEuVatRegistration(v, vrn, key)
+      case v: EncryptedEuVatRegistration                    => decryptEuVatRegistration(v, vrn, key)
+      case wf: EncryptedRegistrationWithoutFixedEstablishment                     => decryptRegistrationWithoutFixedEstablishment(wf, vrn, key)
       case f: EncryptedRegistrationWithFixedEstablishment    => decryptRegistrationWithFixedEstablishment(f, vrn, key)
-      case w: EncryptedRegistrationWithoutFixedEstablishment => decryptRegistrationWithoutFixedEstablishment(w, vrn, key)
+      case w: EncryptedRegistrationWithoutTaxId => decryptRegistrationWithoutFixedEstablishment(w, vrn, key)
     }
 
   private def encryptFixedEstablishment(fixedEstablishment: FixedEstablishment, vrn: Vrn, key: String): EncryptedFixedEstablishment = {
