@@ -24,13 +24,15 @@ sealed trait EuTaxRegistration
 object EuTaxRegistration {
 
   implicit val reads: Reads[EuTaxRegistration] =
+    EuVatRegistration.format.widen[EuTaxRegistration] orElse
     RegistrationWithFixedEstablishment.format.widen[EuTaxRegistration] orElse
       RegistrationWithoutFixedEstablishment.format.widen[EuTaxRegistration] orElse
       RegistrationWithoutTaxId.format.widen[EuTaxRegistration]
 
 
   implicit val writes: Writes[EuTaxRegistration] = Writes {
-    case v: RegistrationWithoutFixedEstablishment                     => Json.toJson(v)(RegistrationWithoutFixedEstablishment.format)
+    case v: EuVatRegistration                     => Json.toJson(v)(EuVatRegistration.format)
+    case wfe: RegistrationWithoutFixedEstablishment                     => Json.toJson(wfe)(RegistrationWithoutFixedEstablishment.format)
     case fe: RegistrationWithFixedEstablishment   => Json.toJson(fe)(RegistrationWithFixedEstablishment.format)
     case w: RegistrationWithoutTaxId => Json.toJson(w)(RegistrationWithoutTaxId.format)
   }
@@ -41,12 +43,14 @@ sealed trait EncryptedEuTaxRegistration
 object EncryptedEuTaxRegistration {
 
   implicit val reads: Reads[EncryptedEuTaxRegistration] =
+    EncryptedEuVatRegistration.format.widen[EncryptedEuTaxRegistration] orElse
     EncryptedRegistrationWithFixedEstablishment.format.widen[EncryptedEuTaxRegistration] orElse
       EncryptedRegistrationWithoutFixedEstablishment.format.widen[EncryptedEuTaxRegistration] orElse
       EncryptedRegistrationWithoutTaxId.format.widen[EncryptedEuTaxRegistration]
 
   implicit val writes: Writes[EncryptedEuTaxRegistration] = Writes {
-    case v: EncryptedRegistrationWithoutFixedEstablishment                  => Json.toJson(v)(EncryptedRegistrationWithoutFixedEstablishment.format)
+    case v: EncryptedEuVatRegistration                  => Json.toJson(v)(EncryptedEuVatRegistration.format)
+    case wf: EncryptedRegistrationWithoutFixedEstablishment                  => Json.toJson(wf)(EncryptedRegistrationWithoutFixedEstablishment.format)
     case f: EncryptedRegistrationWithFixedEstablishment => Json.toJson(f)(EncryptedRegistrationWithFixedEstablishment.format)
     case w: EncryptedRegistrationWithoutTaxId => Json.toJson(w)(EncryptedRegistrationWithoutTaxId.format)
   }
