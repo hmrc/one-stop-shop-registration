@@ -77,5 +77,19 @@ class RegistrationRepository @Inject()(
           encrypter.decryptRegistration(r, r.vrn, encryptionKey)
       })
   }
+
+
+  def insertMany(registrations: List[Registration]): Future[InsertResult] = {
+    val encryptedRegistrations = registrations.map(
+      registration => encrypter.encryptRegistration(registration, registration.vrn, encryptionKey))
+
+    collection
+      .insertMany(encryptedRegistrations)
+      .toFuture
+      .map(_ => InsertSucceeded)
+      .recover {
+        case Duplicate(_) => AlreadyExists
+      }
+  }
 }
 
