@@ -26,6 +26,7 @@ import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepositorySupport}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models._
+import uk.gov.hmrc.domain.Vrn
 import utils.RegistrationData
 import utils.RegistrationData.registration
 
@@ -91,6 +92,34 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       val result = repository.get(registration.vrn).futureValue
 
       result must not be defined
+    }
+  }
+
+  ".insertMany" - {
+
+    "must insert registrations" in {
+      repository.collection.drop().toFutureOption().futureValue
+      val registration2 = registration.copy(vrn = Vrn("123456789"))
+      val registrations = List(registration, registration2)
+
+      val insertResult  = repository.insertMany(registrations).futureValue
+      val databaseRecord1 = findAll().futureValue.headOption.value
+      val databaseRecord2 = findAll().futureValue.lastOption.value
+      val decryptedRecord1 = encrypter.decryptRegistration(databaseRecord1, registration.vrn, secretKey)
+      val decryptedRecord2 = encrypter.decryptRegistration(databaseRecord2, registration2.vrn, secretKey)
+
+      insertResult mustEqual InsertSucceeded
+      decryptedRecord1 mustEqual registration
+      decryptedRecord2 mustEqual registration2
+    }
+
+    "must not allow duplicate registrations to be inserted" in {
+      val registration2 = registration.copy(vrn = Vrn("123456789"))
+      val registrations = List(registration, registration2)
+      repository.insertMany(registrations).futureValue
+      val secondResult = repository.insertMany(registrations).futureValue
+
+      secondResult mustEqual AlreadyExists
     }
   }
 }

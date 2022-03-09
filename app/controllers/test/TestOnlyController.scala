@@ -16,16 +16,22 @@
 
 package controllers.test
 
+import models.EuTaxIdentifierType.Vat
+import models.VatDetailSource.UserEntered
+import models.{BankDetails, ContactDetails, Country, DesAddress, EuTaxIdentifier, FixedEstablishment, Iban, InternationalAddress, PreviousRegistration, PrincipalPlaceOfBusinessInNi, Registration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishment, VatDetails}
 import org.mongodb.scala.model.Filters
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.RegistrationRepository
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.time.{Clock, Instant, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class TestOnlyController @Inject()(
                                     cc: ControllerComponents,
+                                    clock: Clock,
                                     registrationRepository: RegistrationRepository)(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
@@ -40,5 +46,67 @@ class TestOnlyController @Inject()(
     }
 
   }
+
+  def createRegistrations(startVrn:Int, endVrn: Int, commencementDate: LocalDate): Action[AnyContent] = Action.async {
+
+    val vrns = startVrn to endVrn toList
+
+    val regitrations = vrns.map(vrn =>
+      registration.copy(vrn = Vrn(vrn.toString), commencementDate = commencementDate)
+    )
+    for {
+      res1 <- registrationRepository.insertMany(regitrations)
+    } yield {
+      Ok(s"Inserted Perf Tests Registrations for vrns $startVrn to $endVrn and commencementDate $commencementDate MongoDB")
+    }
+
+  }
+
+  private val iban: Iban = Iban("GB33BUKB20201555555555").right.get
+
+  private val registration: Registration =
+    Registration(
+      vrn = Vrn("123456789"),
+      registeredCompanyName = "foo",
+      tradingNames = List("single", "double"),
+      vatDetails = VatDetails(
+        registrationDate = LocalDate.now,
+        address = DesAddress(
+          "123 Street",
+          Some("Street"),
+          Some("City"),
+          Some("county"),
+          None,
+          Some("AA12 1AB"),
+          "GB",
+        ),
+        partOfVatGroup = true,
+        source = UserEntered
+      ),
+      euRegistrations = Seq(
+        RegistrationWithoutFixedEstablishment(Country("FR", "France"), EuTaxIdentifier(Vat, "FR123")),
+        RegistrationWithFixedEstablishment(
+          Country("DE", "Germany"),
+          EuTaxIdentifier(Vat, "DE123"),
+          FixedEstablishment("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
+        )
+      ),
+      contactDetails =     new ContactDetails(
+        "Joe Bloggs",
+        "01112223344",
+        "email@email.com"
+      ),
+      websites = List("website1", "website2"),
+      commencementDate = LocalDate.now,
+      previousRegistrations = Seq(
+        PreviousRegistration(Country("DE", "Germany"), "DE123")
+      ),
+      bankDetails = BankDetails("Account name", None, iban),
+      isOnlineMarketplace = false,
+      niPresence = Some(PrincipalPlaceOfBusinessInNi),
+      dateOfFirstSale = Some(LocalDate.now),
+      submissionReceived = Instant.now(clock),
+      lastUpdated = Instant.now(clock)
+    )
 
 }
