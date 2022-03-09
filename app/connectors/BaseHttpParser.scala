@@ -27,7 +27,6 @@ trait BaseHttpParser extends Logging {
   val serviceName: String
 
   def parseResponse[T](response: HttpResponse)(implicit rds: Reads[T]): Either[ErrorResponse, T] = {
-    println(response)
     response.status match {
       case OK => response.json.validate[T] match {
           case JsSuccess(registration, _) => Right(registration)
