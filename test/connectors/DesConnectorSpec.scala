@@ -2,7 +2,7 @@ package connectors
 
 import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.DesAddress
+import models.{DesAddress, InvalidJson, InvalidVrn, NotFound, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
 import models.des._
 import org.scalacheck.Gen
 import play.api.Application

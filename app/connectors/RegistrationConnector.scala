@@ -17,7 +17,7 @@
 package connectors
 
 import config.IfConfig
-import connectors.RegistrationHttpParser.RegistrationResponse
+import connectors.RegistrationHttpParser.CreateRegistrationResponse
 import connectors.RegistrationHttpParser._
 import logging.Logging
 import models.Registration
@@ -38,18 +38,18 @@ class RegistrationConnector @Inject()(
   private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
   private def headers(correlationId: String): Seq[(String, String)] = ifConfig.ifHeaders(correlationId)
 
-  def get(vrn: Vrn): Future[Registration] = {
+  def get(vrn: Vrn): Future[GetRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString
     val headersWithCorrelationId = headers(correlationId)
 
-    httpClient.GET[Registration](
+    httpClient.GET[GetRegistrationResponse](
       s"${ifConfig.baseUrl}getRegistration/${vrn.value}",
       headers = headersWithCorrelationId
     )
   }
 
-  def create(registration: RegistrationRequest): Future[RegistrationResponse] = {
+  def create(registration: RegistrationRequest): Future[CreateRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString
     val headersWithCorrelationId = headers(correlationId)
@@ -60,7 +60,7 @@ class RegistrationConnector @Inject()(
 
     logger.info(s"Sending request to core with headers $headersWithoutAuth")
 
-    httpClient.POST[RegistrationRequest, RegistrationResponse](
+    httpClient.POST[RegistrationRequest, CreateRegistrationResponse](
       s"${ifConfig.baseUrl}createRegistration",
       registration,
       headers = headersWithCorrelationId

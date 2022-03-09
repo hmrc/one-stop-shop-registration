@@ -48,7 +48,7 @@ object VatCustomerInfo {
       organisationName = organisationName
     )
 
-  val desReads: Reads[VatCustomerInfo] =
+  implicit val desReads: Reads[VatCustomerInfo] =
     (
       (__ \ "approvedInformation" \ "PPOB" \ "address").read[DesAddress] and
       (__ \ "approvedInformation" \ "customerDetails" \ "effectiveRegistrationDate").readNullable[LocalDate] and

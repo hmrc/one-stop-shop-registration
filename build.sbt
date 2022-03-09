@@ -39,7 +39,7 @@ lazy val microservice = Project(appName, file("."))
 lazy val itSettings = Defaults.itSettings ++ Seq(
   unmanagedSourceDirectories := Seq(
     baseDirectory.value / "it",
-    baseDirectory.value / "test" / "utils"
+    baseDirectory.value / "test" / "testutils"
   ),
   unmanagedResourceDirectories := Seq(
     baseDirectory.value / "it" / "resources"
@@ -55,7 +55,7 @@ lazy val itSettings = Defaults.itSettings ++ Seq(
 lazy val testSettings = Defaults.testSettings ++ Seq(
   unmanagedSourceDirectories := Seq(
     baseDirectory.value / "test",
-    baseDirectory.value / "test" / "utils"
+    baseDirectory.value / "test" / "testutils"
   ),
   parallelExecution := false,
   fork := true,

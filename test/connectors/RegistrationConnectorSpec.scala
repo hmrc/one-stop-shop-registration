@@ -3,9 +3,8 @@ package connectors
 import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
 import generators.Generators
-import models.`if`.IfErrorResponse
 import models.requests.RegistrationRequest
-import models.{BankDetails, ContactDetails, Registration, VatDetails}
+import models._
 import org.scalacheck.Arbitrary.arbitrary
 import play.api.Application
 import play.api.http.HeaderNames._
@@ -18,7 +17,7 @@ import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Instant, LocalDate}
 
-class RegistrationConnectorTest extends BaseSpec with WireMockHelper  with Generators {
+class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Generators {
 
   private def application: Application =
     new GuiceApplicationBuilder()
@@ -118,7 +117,7 @@ class RegistrationConnectorTest extends BaseSpec with WireMockHelper  with Gener
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
         val result = connector.create(registrationRequest).futureValue
-        result mustEqual Left(IfErrorResponse(CONFLICT, ""))
+        result mustEqual Left(Conflict)
       }
     }
   }
@@ -143,9 +142,27 @@ class RegistrationConnectorTest extends BaseSpec with WireMockHelper  with Gener
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
         val result = connector.get(vrn).futureValue
-
         val expectedResult = registration
-        result mustEqual expectedResult
+        result mustEqual Right(expectedResult)
+
+      }
+    }
+
+    "Should return errors correctly" in {
+
+      val app = application
+
+      server.stubFor(
+        get(urlEqualTo(getRegistrationUrl(vrn)))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .willReturn(notFound())
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.get(vrn).futureValue
+        result mustEqual Left(NotFound)
       }
     }
   }

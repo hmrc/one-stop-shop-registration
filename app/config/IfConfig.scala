@@ -43,9 +43,6 @@ class IfConfig @Inject()(config: Configuration, clock: Clock) {
     AUTHORIZATION -> s"Bearer $authorizationToken",
     DATE -> dateTimeFormatter.format(LocalDateTime.now(clock)),
     XCorrelationId -> correlationId,
-
-    // TODO: ETMP?
-
     X_FORWARDED_HOST -> "MDTP"
   )
 }

@@ -21,8 +21,9 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import connectors.DesConnector
 import controllers.actions.AuthAction
 import logging.Logging
-import models.des.{NotFound => DesNotFound}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
+import models.{NotFound => DesNotFound}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext

@@ -1,4 +1,4 @@
-package utils
+package testutils
 
 import models.EuTaxIdentifierType.Vat
 import models.VatDetailSource.UserEntered
@@ -40,7 +40,7 @@ object RegistrationData {
           FixedEstablishment("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
         )
       ),
-      contactDetails =     new ContactDetails(
+      contactDetails = new ContactDetails(
         "Joe Bloggs",
         "01112223344",
         "email@email.com"
