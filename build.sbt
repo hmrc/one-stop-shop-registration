@@ -1,4 +1,5 @@
 import play.sbt.PlayImport.PlayKeys
+import play.sbt.routes.RoutesKeys
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import scoverage.ScoverageKeys
 
@@ -26,6 +27,10 @@ lazy val microservice = Project(appName, file("."))
     ScoverageKeys.coverageMinimumStmtTotal := 78,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
+    RoutesKeys.routesImport ++= Seq(
+      "java.time.LocalDate",
+      "models.binders.Binders._"
+    )
   )
   .settings(PlayKeys.playDefaultPort := 10201)
   .configs(IntegrationTest)

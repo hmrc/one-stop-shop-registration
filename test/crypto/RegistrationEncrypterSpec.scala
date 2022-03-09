@@ -131,7 +131,7 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
   "encrypt / decrypt EU Tax Registration" - {
 
     "must encrypt an EU VAT Registration and decrypt it" in {
-      forAll(arbitrary[EuVatRegistration]) {
+      forAll(arbitrary[RegistrationWithoutFixedEstablishment]) {
         registration =>
           val e = encrypter.encryptEuTaxRegistration(registration, vrn, secretKey)
           val d = encrypter.decryptEuTaxRegistration(e, vrn, secretKey)
@@ -151,7 +151,7 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
     }
 
     "must encrypt a registration without a fixed establishment and decrypt it" in {
-      forAll(arbitrary[RegistrationWithoutFixedEstablishment]) {
+      forAll(arbitrary[RegistrationWithoutTaxId]) {
         registration =>
           val e = encrypter.encryptEuTaxRegistration(registration, vrn, secretKey)
           val d = encrypter.decryptEuTaxRegistration(e, vrn, secretKey)
