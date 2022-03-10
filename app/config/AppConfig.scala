@@ -24,5 +24,4 @@ import javax.inject.{Inject, Singleton}
 class AppConfig @Inject()(config: Configuration) {
 
   val encryptionKey: String = config.get[String]("mongodb.encryption.key")
-  val sendRegToEtmp: Boolean = config.get[Boolean]("features.sendRegToEtmp")
 }

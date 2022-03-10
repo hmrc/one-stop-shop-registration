@@ -21,26 +21,23 @@ import base.BaseSpec
 import config.AppConfig
 import connectors.RegistrationConnector
 import models.InsertResult.InsertSucceeded
-import models.NotFound
 import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import repositories.RegistrationRepository
-import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
-class RegistrationServiceSpec extends BaseSpec with BeforeAndAfterEach {
+class RegistrationServiceImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val registrationRequest    = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]
   private val registrationConnector = mock[RegistrationConnector]
   private val appConfig = mock[AppConfig]
 
-  private val service = new RegistrationService(appConfig, registrationRepository, registrationConnector, stubClock)
+  private val service = new RegistrationServiceImpl(registrationRepository, stubClock)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
@@ -71,25 +68,10 @@ class RegistrationServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   ".get" - {
 
-    "must call registrationRepository.get when sendRegToEtmp Flag is false" in {
-      when(appConfig.sendRegToEtmp) thenReturn false
+    "must call registrationRepository.get" in {
       when(registrationRepository.get(any())) thenReturn Future.successful(None)
       service.get(Vrn("123456789")).futureValue
       verify(registrationRepository, times(1)).get(Vrn("123456789"))
-    }
-
-    "must return a Some(registration) when the connector returns right and sendRegToEtmp Flag is true" in {
-      when(appConfig.sendRegToEtmp) thenReturn true
-      when(registrationConnector.get(any())) thenReturn Future.successful(Right(registration))
-      service.get(Vrn("123456789")).futureValue mustBe Some(registration)
-      verify(registrationConnector, times(1)).get(Vrn("123456789"))
-    }
-
-    "must return a None when the connector returns Left(error) and sendRegToEtmp Flag is true" in {
-      when(appConfig.sendRegToEtmp) thenReturn true
-      when(registrationConnector.get(any())) thenReturn Future.successful(Left(NotFound))
-      service.get(Vrn("123456789")).futureValue mustBe None
-      verify(registrationConnector, times(1)).get(Vrn("123456789"))
     }
   }
 }

@@ -16,30 +16,16 @@
 
 package services
 
-import config.AppConfig
-import connectors.RegistrationConnector
-import logging.Logging
-import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
-import repositories.RegistrationRepository
+import models.requests.RegistrationRequest
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Clock, Instant}
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-@Singleton
-class RegistrationService @Inject()(
-                                     appConfig: AppConfig,
-                                     registrationRepository: RegistrationRepository,
-                                     registrationConnector: RegistrationConnector,
-                                     clock: Clock
-                                   ) extends Logging {
+trait RegistrationService {
 
-  def createRegistration(request: RegistrationRequest): Future[InsertResult] =
-    registrationRepository.insert(buildRegistration(request))
-
-  private def buildRegistration(request: RegistrationRequest): Registration =
+  def buildRegistration(request: RegistrationRequest, clock: Clock): Registration =
     Registration(
       vrn = request.vrn,
       registeredCompanyName = request.registeredCompanyName,
@@ -58,16 +44,9 @@ class RegistrationService @Inject()(
       lastUpdated = Instant.now(clock)
     )
 
-  def get(vrn: Vrn)(implicit ec: ExecutionContext): Future[Option[Registration]] = {
-    if (appConfig.sendRegToEtmp) {
-      registrationConnector.get(vrn).map {
-        case Right(registration) => Some(registration)
-        case Left(error) =>
-          logger.error(s"There was an error getting Registration from ETMP ${error.body}")
-          None
-      }
-    } else {
-      registrationRepository.get(vrn)
-    }
-  }
+  def createRegistration(request: RegistrationRequest): Future[InsertResult]
+
+  def get(vrn: Vrn): Future[Option[Registration]]
 }
+
+

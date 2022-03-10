@@ -28,4 +28,7 @@ trait BaseSpec
 
   protected def applicationBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder().overrides(bind[AuthAction].to[FakeAuthAction])
+
+
+
 }
