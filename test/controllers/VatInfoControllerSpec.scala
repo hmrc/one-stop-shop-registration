@@ -9,7 +9,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import base.BaseSpec
 import connectors.DesConnector
-import models.DesAddress
+import models.{DesAddress, InvalidJson, InvalidVrn, NotFound, ServerError, ServiceUnavailable}
 import models.des._
 
 import java.time.LocalDate

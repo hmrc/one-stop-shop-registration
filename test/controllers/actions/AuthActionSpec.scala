@@ -14,7 +14,7 @@ import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
 import base.BaseSpec
-import utils.TestAuthRetrievals._
+import testutils.TestAuthRetrievals._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}

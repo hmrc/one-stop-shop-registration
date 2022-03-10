@@ -21,7 +21,7 @@ import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier, HttpClient, Htt
 import config.DesConfig
 import connectors.VatCustomerInfoHttpParser._
 import logging.Logging
-import models.des._
+import models.GatewayTimeout
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

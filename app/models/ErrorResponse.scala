@@ -14,34 +14,38 @@
  * limitations under the License.
  */
 
-package models.des
+package models
 
-sealed trait DesErrorResponse {
+sealed trait ErrorResponse {
   val body: String
 }
 
-case object InvalidVrn extends DesErrorResponse {
+case object InvalidVrn extends ErrorResponse {
   override val body: String = "Invalid VRN"
 }
 
-case object InvalidJson extends DesErrorResponse {
+case object InvalidJson extends ErrorResponse {
   override val body: String = "Invalid Response"
 }
 
-case object NotFound extends DesErrorResponse {
+case object NotFound extends ErrorResponse {
   override val body = "Not found"
 }
 
-case object ServerError extends DesErrorResponse {
+case object Conflict extends ErrorResponse {
+  override val body = "Conflict"
+}
+
+case object ServerError extends ErrorResponse {
   override val body = "Internal server error"
 }
 
-case object ServiceUnavailable extends DesErrorResponse {
+case object ServiceUnavailable extends ErrorResponse {
   override val body: String = "Service unavailable"
 }
 
-case object GatewayTimeout extends DesErrorResponse {
+case object GatewayTimeout extends ErrorResponse {
   override val body: String = "Gateway timeout"
 }
 
-case class UnexpectedResponseStatus(status: Int, body: String) extends DesErrorResponse
+case class UnexpectedResponseStatus(status: Int, body: String) extends ErrorResponse
