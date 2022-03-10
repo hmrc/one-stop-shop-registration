@@ -22,6 +22,7 @@ import models.requests.RegistrationRequest
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.RegistrationService
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -46,6 +47,13 @@ class RegistrationController @Inject() (
   def get: Action[AnyContent] = auth.async {
     implicit request =>
       registrationService.get(request.vrn) map {
+        case Some(registration) => Ok(Json.toJson(registration))
+        case None               => NotFound
+      }
+  }
+
+  def getByVrn(vrn: String): Action[AnyContent] = Action.async {
+      registrationService.get(Vrn(vrn)) map {
         case Some(registration) => Ok(Json.toJson(registration))
         case None               => NotFound
       }
