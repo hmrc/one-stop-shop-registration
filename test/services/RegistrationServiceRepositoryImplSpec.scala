@@ -24,6 +24,7 @@ import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
+import play.api.test.Helpers.running
 import repositories.RegistrationRepository
 import uk.gov.hmrc.domain.Vrn
 
@@ -42,6 +43,20 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
   override def beforeEach(): Unit = {
     reset(registrationRepository, registrationConnector)
     super.beforeEach()
+  }
+
+  "RegistrationServiceRepositoryImpl is bound if the sendRegToEtmp toggle is false" in {
+    val app =
+      applicationBuilder
+        .configure(
+          "features.sendRegToEtmp" -> "false"
+        )
+        .build()
+
+    running(app) {
+      val service = app.injector.instanceOf[RegistrationService]
+      service.getClass mustBe classOf[RegistrationServiceRepositoryImpl]
+    }
   }
 
   ".createRegistration" - {

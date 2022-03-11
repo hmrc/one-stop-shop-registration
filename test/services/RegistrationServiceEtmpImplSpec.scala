@@ -19,16 +19,17 @@ package services
 import base.BaseSpec
 import connectors.RegistrationConnector
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.{Conflict, EtmpException, NotFound, ServiceUnavailable}
 import models.requests.RegistrationRequest
+import models.{Conflict, EtmpException, NotFound, ServiceUnavailable}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
+import play.api.test.Helpers.running
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 
 class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
@@ -41,6 +42,20 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     reset(registrationConnector)
     super.beforeEach()
+  }
+
+  "RegistrationServiceEtmpImpl is bound if the sendRegToEtmp toggle is true" in {
+    val app =
+      applicationBuilder
+        .configure(
+          "features.sendRegToEtmp" -> "true"
+        )
+        .build()
+
+    running(app) {
+      val service = app.injector.instanceOf[RegistrationService]
+      service.getClass mustBe classOf[RegistrationServiceEtmpImpl]
+    }
   }
 
   ".createRegistration" - {
