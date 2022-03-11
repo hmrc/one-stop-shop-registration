@@ -19,7 +19,7 @@ package config
 import com.google.inject.AbstractModule
 import controllers.actions.{AuthAction, AuthActionImpl}
 import play.api.{Configuration, Environment}
-import services.{RegistrationService, RegistrationServiceEtmpImpl, RegistrationServiceImpl}
+import services.{RegistrationService, RegistrationServiceEtmpImpl, RegistrationServiceRepositoryImpl}
 
 import java.time.{Clock, ZoneOffset}
 
@@ -34,7 +34,7 @@ class Module(environment: Environment, config: Configuration) extends AbstractMo
     if(sendRegToEtmp) {
       bind(classOf[RegistrationService]).to(classOf[RegistrationServiceEtmpImpl]).asEagerSingleton()
     } else {
-      bind(classOf[RegistrationService]).to(classOf[RegistrationServiceImpl]).asEagerSingleton()
+      bind(classOf[RegistrationService]).to(classOf[RegistrationServiceRepositoryImpl]).asEagerSingleton()
     }
   }
 }

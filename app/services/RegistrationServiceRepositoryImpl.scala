@@ -26,7 +26,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class RegistrationServiceImpl @Inject()(
+class RegistrationServiceRepositoryImpl @Inject()(
                                      registrationRepository: RegistrationRepository,
                                      clock: Clock
                                    ) extends RegistrationService {

@@ -25,7 +25,7 @@ import play.api.inject.bind
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.{RegistrationService, RegistrationServiceImpl}
+import services.{RegistrationService, RegistrationServiceRepositoryImpl}
 import testutils.RegistrationData
 
 import scala.concurrent.Future
@@ -37,7 +37,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
     "must return 201 when given a valid payload and when the registration is created successfully" in {
 
-      val mockService = mock[RegistrationServiceImpl]
+      val mockService = mock[RegistrationServiceRepositoryImpl]
       when(mockService.createRegistration(any())) thenReturn Future.successful(InsertSucceeded)
 
       val app =
@@ -75,7 +75,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
     "must return Conflict when trying to insert a duplicate" in {
 
-      val mockService = mock[RegistrationServiceImpl]
+      val mockService = mock[RegistrationServiceRepositoryImpl]
       when(mockService.createRegistration(any())) thenReturn Future.successful(AlreadyExists)
 
       val app =
@@ -100,7 +100,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
     "must return OK and a registration when one is found" in {
 
-      val mockService = mock[RegistrationServiceImpl]
+      val mockService = mock[RegistrationServiceRepositoryImpl]
       when(mockService.get(any())) thenReturn Future.successful(Some(RegistrationData.registration))
 
       val app =
@@ -119,7 +119,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
     "must return NOT_FOUND when a registration is not found" - {
 
-      val mockService = mock[RegistrationServiceImpl]
+      val mockService = mock[RegistrationServiceRepositoryImpl]
       when(mockService.get(any())) thenReturn Future.successful(None)
 
       val app =

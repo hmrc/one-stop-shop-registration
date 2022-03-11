@@ -18,7 +18,6 @@ package services
 
 import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
-import config.AppConfig
 import connectors.RegistrationConnector
 import models.InsertResult.InsertSucceeded
 import models.requests.RegistrationRequest
@@ -30,19 +29,18 @@ import uk.gov.hmrc.domain.Vrn
 
 import scala.concurrent.Future
 
-class RegistrationServiceImplSpec extends BaseSpec with BeforeAndAfterEach {
+class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val registrationRequest    = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]
   private val registrationConnector = mock[RegistrationConnector]
-  private val appConfig = mock[AppConfig]
 
-  private val service = new RegistrationServiceImpl(registrationRepository, stubClock)
+  private val service = new RegistrationServiceRepositoryImpl(registrationRepository, stubClock)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
   override def beforeEach(): Unit = {
-    reset(appConfig, registrationRepository, registrationConnector)
+    reset(registrationRepository, registrationConnector)
     super.beforeEach()
   }
 

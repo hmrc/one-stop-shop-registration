@@ -19,7 +19,7 @@ package services
 import base.BaseSpec
 import connectors.RegistrationConnector
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.{Conflict, ETMPException, NotFound, ServiceUnavailable}
+import models.{Conflict, EtmpException, NotFound, ServiceUnavailable}
 import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -62,20 +62,20 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       when(registrationConnector.create(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
       whenReady(service.createRegistration(registrationRequest).failed) {
-        exp => exp mustBe ETMPException(s"There was an error getting Registration from ETMP ${ServiceUnavailable.body}")
+        exp => exp mustBe EtmpException(s"There was an error getting Registration from ETMP: ${ServiceUnavailable.body}")
       }
     }
   }
 
   ".get" - {
 
-    "must return a Some(registration) when the connector returns right and sendRegToEtmp Flag is true" in {
+    "must return a Some(registration) when the connector returns right" in {
       when(registrationConnector.get(any())) thenReturn Future.successful(Right(registration))
       service.get(Vrn("123456789")).futureValue mustBe Some(registration)
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
     }
 
-    "must return a None when the connector returns Left(error) and sendRegToEtmp Flag is true" in {
+    "must return a None when the connector returns Left(error)" in {
       when(registrationConnector.get(any())) thenReturn Future.successful(Left(NotFound))
       service.get(Vrn("123456789")).futureValue mustBe None
       verify(registrationConnector, times(1)).get(Vrn("123456789"))

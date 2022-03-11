@@ -20,7 +20,7 @@ import connectors.RegistrationConnector
 import logging.Logging
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.RegistrationRequest
-import models.{Conflict, ETMPException, InsertResult, Registration}
+import models.{Conflict, EtmpException, InsertResult, Registration}
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.{Inject, Singleton}
@@ -35,14 +35,14 @@ class RegistrationServiceEtmpImpl @Inject()(
     registrationConnector.create(request).map {
       case Right(_) => InsertSucceeded
       case Left(Conflict) => AlreadyExists
-      case Left(error) => throw ETMPException(s"There was an error getting Registration from ETMP ${error.body}")
+      case Left(error) => throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
     }
 
   def get(vrn: Vrn): Future[Option[Registration]] = {
     registrationConnector.get(vrn).map {
       case Right(registration) => Some(registration)
       case Left(error) =>
-        logger.error(s"There was an error getting Registration from ETMP ${error.body}")
+        logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
         None
     }
   }
