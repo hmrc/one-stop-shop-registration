@@ -18,23 +18,46 @@ package services
 
 import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
+import connectors.RegistrationConnector
 import models.InsertResult.InsertSucceeded
 import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
+import org.scalatest.BeforeAndAfterEach
+import play.api.test.Helpers.running
 import repositories.RegistrationRepository
 import uk.gov.hmrc.domain.Vrn
 
 import scala.concurrent.Future
 
-class RegistrationServiceSpec extends BaseSpec {
+class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val registrationRequest    = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]
+  private val registrationConnector = mock[RegistrationConnector]
 
-  private val service = new RegistrationService(registrationRepository, stubClock)
+  private val service = new RegistrationServiceRepositoryImpl(registrationRepository, stubClock)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
+
+  override def beforeEach(): Unit = {
+    reset(registrationRepository, registrationConnector)
+    super.beforeEach()
+  }
+
+  "RegistrationServiceRepositoryImpl is bound if the sendRegToEtmp toggle is false" in {
+    val app =
+      applicationBuilder
+        .configure(
+          "features.sendRegToEtmp" -> "false"
+        )
+        .build()
+
+    running(app) {
+      val service = app.injector.instanceOf[RegistrationService]
+      service.getClass mustBe classOf[RegistrationServiceRepositoryImpl]
+    }
+  }
 
   ".createRegistration" - {
 
@@ -46,7 +69,6 @@ class RegistrationServiceSpec extends BaseSpec {
     }
 
     "propagate any error" in {
-
       when(registrationRepository.insert(any())).thenThrow(emulatedFailure)
 
       val caught = intercept[RuntimeException] {
@@ -64,6 +86,5 @@ class RegistrationServiceSpec extends BaseSpec {
       service.get(Vrn("123456789")).futureValue
       verify(registrationRepository, times(1)).get(Vrn("123456789"))
     }
-
   }
 }

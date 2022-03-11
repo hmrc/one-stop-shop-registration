@@ -48,4 +48,6 @@ case object GatewayTimeout extends ErrorResponse {
   override val body: String = "Gateway timeout"
 }
 
+case class EtmpException(message: String) extends Exception(message)
+
 case class UnexpectedResponseStatus(status: Int, body: String) extends ErrorResponse

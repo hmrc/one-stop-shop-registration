@@ -28,11 +28,11 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class RegistrationController @Inject() (
-  cc: ControllerComponents,
-  registrationService: RegistrationService,
-  auth: AuthAction
-)(implicit ec: ExecutionContext) extends BackendController(cc) {
+class RegistrationController @Inject()(
+                                        cc: ControllerComponents,
+                                        registrationService: RegistrationService,
+                                        auth: AuthAction
+                                      )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def create(): Action[RegistrationRequest] = auth(parse.json[RegistrationRequest]).async {
     implicit request =>
@@ -40,7 +40,7 @@ class RegistrationController @Inject() (
         .createRegistration(request.body)
         .map {
           case InsertSucceeded => Created
-          case AlreadyExists   => Conflict
+          case AlreadyExists => Conflict
         }
   }
 
@@ -48,7 +48,7 @@ class RegistrationController @Inject() (
     implicit request =>
       registrationService.get(request.vrn) map {
         case Some(registration) => Ok(Json.toJson(registration))
-        case None               => NotFound
+        case None => NotFound
       }
   }
 

@@ -16,43 +16,37 @@
 
 package services
 
-import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
-import repositories.RegistrationRepository
+import models.requests.RegistrationRequest
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Clock, Instant}
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
-@Singleton
-class RegistrationService @Inject() (
-                                      registrationRepository: RegistrationRepository,
-                                      clock: Clock
-                                    ) {
+trait RegistrationService {
 
-  def createRegistration(request: RegistrationRequest): Future[InsertResult] =
-    registrationRepository.insert(buildRegistration(request))
-
-  private def buildRegistration(request: RegistrationRequest): Registration =
+  def buildRegistration(request: RegistrationRequest, clock: Clock): Registration =
     Registration(
-      vrn                    = request.vrn,
-      registeredCompanyName  = request.registeredCompanyName,
-      tradingNames           = request.tradingNames,
-      vatDetails             = request.vatDetails,
-      euRegistrations        = request.euRegistrations,
-      contactDetails         = request.contactDetails,
-      websites               = request.websites,
-      commencementDate       = request.commencementDate,
-      previousRegistrations  = request.previousRegistrations,
-      bankDetails            = request.bankDetails,
-      isOnlineMarketplace    = request.isOnlineMarketplace,
-      niPresence             = request.niPresence,
-      dateOfFirstSale        = request.dateOfFirstSale,
-      submissionReceived     = Instant.now(clock),
-      lastUpdated            = Instant.now(clock)
+      vrn = request.vrn,
+      registeredCompanyName = request.registeredCompanyName,
+      tradingNames = request.tradingNames,
+      vatDetails = request.vatDetails,
+      euRegistrations = request.euRegistrations,
+      contactDetails = request.contactDetails,
+      websites = request.websites,
+      commencementDate = request.commencementDate,
+      previousRegistrations = request.previousRegistrations,
+      bankDetails = request.bankDetails,
+      isOnlineMarketplace = request.isOnlineMarketplace,
+      niPresence = request.niPresence,
+      dateOfFirstSale = request.dateOfFirstSale,
+      submissionReceived = Instant.now(clock),
+      lastUpdated = Instant.now(clock)
     )
 
-  def get(vrn: Vrn): Future[Option[Registration]] =
-    registrationRepository.get(vrn)
+  def createRegistration(request: RegistrationRequest): Future[InsertResult]
+
+  def get(vrn: Vrn): Future[Option[Registration]]
 }
+
+
