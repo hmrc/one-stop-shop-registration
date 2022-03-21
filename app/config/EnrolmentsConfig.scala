@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package connectors
+package config
 
-import models.ErrorResponse
-import models.des._
-import uk.gov.hmrc.http.{HttpReads, HttpResponse}
+import play.api.Configuration
 
-object VatCustomerInfoHttpParser extends BaseHttpParser {
+import javax.inject.Inject
 
-  override val serviceName: String = "DES"
+class EnrolmentsConfig @Inject()(config: Configuration) {
 
-  type VatCustomerInfoResponse = Either[ErrorResponse, VatCustomerInfo]
-
-  implicit object VatCustomerInfoReads extends HttpReads[VatCustomerInfoResponse] {
-    override def read(method: String, url: String, response: HttpResponse): VatCustomerInfoResponse =
-      parseResponse[VatCustomerInfo](response)
-  }
+  val baseUrl: Service    = config.get[Service]("microservice.services.enrolments")
+  val authorizationToken: String = config.get[String]("microservice.services.enrolments.authorizationToken")
+  val environment: String = config.get[String]("microservice.services.enrolments.environment")
 }

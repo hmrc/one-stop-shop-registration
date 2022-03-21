@@ -16,6 +16,8 @@
 
 package models
 
+import play.api.libs.json.{Json, OFormat}
+
 sealed trait ErrorResponse {
   val body: String
 }
@@ -51,3 +53,9 @@ case object GatewayTimeout extends ErrorResponse {
 case class EtmpException(message: String) extends Exception(message)
 
 case class UnexpectedResponseStatus(status: Int, body: String) extends ErrorResponse
+
+case class TaxEnrolmentErrorResponse(code: String, message: String)
+
+  object TaxEnrolmentErrorResponse {
+    implicit val format: OFormat[TaxEnrolmentErrorResponse] = Json.format[TaxEnrolmentErrorResponse]
+  }
