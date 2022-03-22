@@ -54,7 +54,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
       }
     }
 
-    "must return Left with an error response body ???" in {
+    "must return Left with an error response body when the server responds with an error and response body" in {
 
       val app = application
 
@@ -72,7 +72,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
       }
     }
 
-    "must return Left with an empty error response body ???" in {
+    "must return Left with an empty error response body when the server responds with an error and no response body" in {
 
       val app = application
 
