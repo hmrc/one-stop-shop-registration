@@ -17,7 +17,8 @@
 package services
 
 import base.BaseSpec
-import connectors.RegistrationConnector
+import config.AppConfig
+import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.RegistrationRequest
 import models.{Conflict, EtmpException, NotFound, ServiceUnavailable}
@@ -25,22 +26,27 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.running
+import testutils.RegistrationData
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
 class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
-
-  private val registrationRequest = mock[RegistrationRequest]
+  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
+  private val registrationRequest = RegistrationData.toRegistrationRequest(RegistrationData.registration)
   private val registrationConnector = mock[RegistrationConnector]
+  private val enrolmentsConnector = mock[EnrolmentsConnector]
+  private val mockAppConfig = mock[AppConfig]
 
-  private val service = new RegistrationServiceEtmpImpl(registrationConnector)
+  private val userId = "12345678"
+  private val service = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, mockAppConfig)
 
   override def beforeEach(): Unit = {
-    reset(registrationConnector)
+    reset(registrationConnector, enrolmentsConnector)
     super.beforeEach()
   }
 
@@ -94,6 +100,20 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       when(registrationConnector.get(any())) thenReturn Future.successful(Left(NotFound))
       service.get(Vrn("123456789")).futureValue mustBe None
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
+    }
+  }
+
+  ".addEnrolment" - {
+    "must call the EnrolmentsConnector when the addEnrolment toggle is true" in {
+      when(mockAppConfig.addEnrolment) thenReturn true
+      service.addEnrolment(registrationRequest, userId)
+      verify(enrolmentsConnector, times(1)).assignEnrolment(userId, vrn)
+    }
+
+    "must not call the EnrolmentsConnector when the addEnrolment toggle is false" in {
+      when(mockAppConfig.addEnrolment) thenReturn false
+      service.addEnrolment(registrationRequest, userId)
+      verifyNoInteractions(enrolmentsConnector)
     }
   }
 }

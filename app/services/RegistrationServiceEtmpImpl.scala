@@ -16,20 +16,25 @@
 
 package services
 
-import connectors.RegistrationConnector
+import config.AppConfig
+import connectors.EnrolmentsHttpParser.EnrolmentResultsResponse
+import connectors.{EnrolmentsConnector, RegistrationConnector}
 import logging.Logging
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.RegistrationRequest
 import models.{Conflict, EtmpException, InsertResult, Registration}
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RegistrationServiceEtmpImpl @Inject()(
-                                             registrationConnector: RegistrationConnector
-                                           )(implicit ec: ExecutionContext) extends RegistrationService with Logging {
+                                             registrationConnector: RegistrationConnector,
+                                             enrolmentsConnector: EnrolmentsConnector,
+                                             appConfig: AppConfig
+                                           )(implicit ec: ExecutionContext) extends RegistrationService {
 
   def createRegistration(request: RegistrationRequest): Future[InsertResult] =
     registrationConnector.create(request).map {
@@ -46,4 +51,14 @@ class RegistrationServiceEtmpImpl @Inject()(
         None
     }
   }
+
+
+  override def addEnrolment(request: RegistrationRequest, userId: String)(implicit hc: HeaderCarrier): Future[EnrolmentResultsResponse] =
+    if(appConfig.addEnrolment) {
+      logger.info("Adding an enrolment")
+      enrolmentsConnector.assignEnrolment(userId = userId, request.vrn)
+    } else {
+        logger.info("Skipping the addition of enrolment")
+        Future.successful(Right())
+    }
 }

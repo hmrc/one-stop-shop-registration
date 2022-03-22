@@ -18,6 +18,7 @@ package controllers
 
 import base.BaseSpec
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.TaxEnrolmentErrorResponse
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.when
 import play.api.http.Status.CREATED
@@ -35,10 +36,11 @@ class RegistrationControllerSpec extends BaseSpec {
 
   "create" - {
 
-    "must return 201 when given a valid payload and when the registration is created successfully" in {
+    "must return 201 when given a valid payload, the registration is created successfully and enrolment is added" in {
 
       val mockService = mock[RegistrationServiceRepositoryImpl]
       when(mockService.createRegistration(any())) thenReturn Future.successful(InsertSucceeded)
+      when(mockService.addEnrolment(any(), any())(any())) thenReturn Future.successful(Right())
 
       val app =
         applicationBuilder
@@ -54,6 +56,29 @@ class RegistrationControllerSpec extends BaseSpec {
         val result = route(app, request).value
 
         status(result) mustEqual CREATED
+      }
+    }
+
+    "must return InternalServerError when given a valid payload, the registration is created successfully but adding an enrolment fails" in {
+
+      val mockService = mock[RegistrationServiceRepositoryImpl]
+      when(mockService.createRegistration(any())) thenReturn Future.successful(InsertSucceeded)
+      when(mockService.addEnrolment(any(), any())(any())) thenReturn Future.successful(Left(TaxEnrolmentErrorResponse("123", "Error")))
+
+      val app =
+        applicationBuilder
+          .overrides(bind[RegistrationService].toInstance(mockService))
+          .build()
+
+      running(app) {
+
+        val request =
+          FakeRequest(POST, routes.RegistrationController.create().url)
+            .withJsonBody(Json.toJson(RegistrationData.registration))
+
+        val result = route(app, request).value
+
+        status(result) mustEqual INTERNAL_SERVER_ERROR
       }
     }
 
