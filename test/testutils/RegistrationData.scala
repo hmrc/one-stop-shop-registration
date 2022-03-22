@@ -3,6 +3,7 @@ package testutils
 import models.EuTaxIdentifierType.Vat
 import models.VatDetailSource.UserEntered
 import models._
+import models.requests.RegistrationRequest
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Clock, Instant, LocalDate, ZoneId}
@@ -59,4 +60,23 @@ object RegistrationData {
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""
+
+  def toRegistrationRequest(registration: Registration) = {
+    RegistrationRequest(
+      registration.vrn,
+      registration.registeredCompanyName,
+      registration.tradingNames,
+      registration.vatDetails,
+      registration.euRegistrations,
+      registration.contactDetails,
+      registration.websites,
+      registration.commencementDate,
+      registration.previousRegistrations,
+      registration.bankDetails,
+      registration.isOnlineMarketplace,
+      registration.niPresence,
+      registration.dateOfFirstSale
+    )
+  }
+
 }

@@ -16,14 +16,17 @@
 
 package services
 
+import connectors.EnrolmentsHttpParser.EnrolmentResultsResponse
+import logging.Logging
 import models.{InsertResult, Registration}
 import models.requests.RegistrationRequest
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, Instant}
 import scala.concurrent.Future
 
-trait RegistrationService {
+trait RegistrationService extends Logging {
 
   def buildRegistration(request: RegistrationRequest, clock: Clock): Registration =
     Registration(
@@ -47,6 +50,12 @@ trait RegistrationService {
   def createRegistration(request: RegistrationRequest): Future[InsertResult]
 
   def get(vrn: Vrn): Future[Option[Registration]]
+
+  def addEnrolment(request: RegistrationRequest, userId: String)(implicit hc: HeaderCarrier): Future[EnrolmentResultsResponse] = {
+    logger.info("Skipping the addition of enrolment")
+    Future.successful(Right())
+  }
+
 
 }
 

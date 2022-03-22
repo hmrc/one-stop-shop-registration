@@ -26,6 +26,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.running
+import testutils.RegistrationData
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
@@ -36,9 +37,7 @@ import scala.concurrent.Future
 
 class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
-  private val registrationRequest = RegistrationRequest(
-    vrn = vrn, registeredCompanyName = "Test", tradingNames = Seq(), vatDetails = ???, euRegistrations = ???, contactDetails = ???, websites = ???, commencementDate = ???, previousRegistrations = ???, bankDetails = ???, isOnlineMarketplace = ???, niPresence = ???, dateOfFirstSale = ???
-  )
+  private val registrationRequest = RegistrationData.toRegistrationRequest(RegistrationData.registration)
   private val registrationConnector = mock[RegistrationConnector]
   private val enrolmentsConnector = mock[EnrolmentsConnector]
   private val mockAppConfig = mock[AppConfig]
