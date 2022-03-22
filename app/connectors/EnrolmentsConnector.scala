@@ -21,6 +21,7 @@ import connectors.EnrolmentsHttpParser.{EnrolmentResultsResponse, EnrolmentsResp
 import logging.Logging
 import models.GatewayTimeout
 import play.api.http.HeaderNames
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier, HttpClient, HttpErrorFunctions}
 
 import javax.inject.Inject
@@ -34,7 +35,8 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
     HeaderNames.AUTHORIZATION -> s"Bearer ${enrolments.authorizationToken}"
   )
 
-  def assignEnrolment(userId: String, enrolmentKey: String)(implicit headerCarrier: HeaderCarrier): Future[EnrolmentResultsResponse] = {
+  def assignEnrolment(userId: String, vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[EnrolmentResultsResponse] = {
+    val enrolmentKey = s"${enrolments.ossEnrolmentKey}~VRN~$vrn"
     val url = s"${enrolments.baseUrl}users/$userId/enrolments/$enrolmentKey"
     httpClient.GET[EnrolmentResultsResponse](url = url, headers = headers)
   }

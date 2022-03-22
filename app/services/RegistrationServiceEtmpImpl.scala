@@ -16,19 +16,23 @@
 
 package services
 
-import connectors.RegistrationConnector
+import config.AppConfig
+import connectors.{EnrolmentsConnector, RegistrationConnector}
 import logging.Logging
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.RegistrationRequest
 import models.{Conflict, EtmpException, InsertResult, Registration}
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RegistrationServiceEtmpImpl @Inject()(
-                                             registrationConnector: RegistrationConnector
+                                             registrationConnector: RegistrationConnector,
+                                             enrolmentsConnector: EnrolmentsConnector,
+                                             appConfig: AppConfig
                                            )(implicit ec: ExecutionContext) extends RegistrationService with Logging {
 
   def createRegistration(request: RegistrationRequest): Future[InsertResult] =
@@ -45,5 +49,10 @@ class RegistrationServiceEtmpImpl @Inject()(
         logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
         None
     }
+  }
+
+
+  def addEnrolment(request: RegistrationRequest, userId: String)(implicit hc: HeaderCarrier) = if(appConfig.addEnrolment) {
+    enrolmentsConnector.assignEnrolment(userId = userId, request.vrn)
   }
 }

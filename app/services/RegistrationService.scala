@@ -47,6 +47,7 @@ trait RegistrationService {
   def createRegistration(request: RegistrationRequest): Future[InsertResult]
 
   def get(vrn: Vrn): Future[Option[Registration]]
+
 }
 
 

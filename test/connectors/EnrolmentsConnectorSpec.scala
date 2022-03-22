@@ -17,7 +17,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private val userId = "credId-123456789"
-  private val enrolmentKey = "HMRC-OSS-ORG~VRN~123456789"
+  private val enrolmentKey = s"HMRC-OSS-ORG~VRN~${vrn}"
   private val basePath = "tax-enrolments/"
 
   private val enrolmentsUrl = s"/${basePath}users/$userId/enrolments/$enrolmentKey"
@@ -48,7 +48,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
       running(app) {
         val connector = app.injector.instanceOf[EnrolmentsConnector]
-        val result = connector.assignEnrolment(userId, enrolmentKey).futureValue
+        val result = connector.assignEnrolment(userId, vrn).futureValue
 
         result mustBe Right()
       }
@@ -66,7 +66,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
       running(app) {
 
         val connector = app.injector.instanceOf[EnrolmentsConnector]
-        val result = connector.assignEnrolment(userId, enrolmentKey).futureValue
+        val result = connector.assignEnrolment(userId, vrn).futureValue
 
         result mustBe Left(TaxEnrolmentErrorResponse(NOT_FOUND.toString, errorResponseBody))
       }
@@ -84,7 +84,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
       running(app) {
 
         val connector = app.injector.instanceOf[EnrolmentsConnector]
-        val result = connector.assignEnrolment(userId, enrolmentKey).futureValue
+        val result = connector.assignEnrolment(userId, vrn).futureValue
 
         result mustBe Left(TaxEnrolmentErrorResponse(s"UNEXPECTED_404", "The response body was empty"))
       }
@@ -104,7 +104,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
       running(app) {
 
         val connector = app.injector.instanceOf[EnrolmentsConnector]
-        val result = connector.assignEnrolment(userId, enrolmentKey).futureValue
+        val result = connector.assignEnrolment(userId, vrn).futureValue
 
         result mustBe Left(TaxEnrolmentErrorResponse(s"UNEXPECTED_${status}", Json.toJson(errorResponseBody).toString()))
       }
