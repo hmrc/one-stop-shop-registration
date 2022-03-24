@@ -17,14 +17,13 @@
 package connectors
 
 import config.IfConfig
-import connectors.RegistrationHttpParser.CreateRegistrationResponse
-import connectors.RegistrationHttpParser._
+import connectors.RegistrationHttpParser.{CreateRegistrationResponse, logger, _}
 import logging.Logging
-import models.Registration
+import models.{Registration, UnexpectedResponseStatus}
 import models.requests.RegistrationRequest
 import play.api.http.HeaderNames.AUTHORIZATION
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException}
 
 import java.util.UUID
 import javax.inject.Inject
@@ -46,7 +45,11 @@ class RegistrationConnector @Inject()(
     httpClient.GET[GetRegistrationResponse](
       s"${ifConfig.baseUrl}getRegistration/${vrn.value}",
       headers = headersWithCorrelationId
-    )
+    ).recover {
+      case e: HttpException =>
+        logger.warn(s"Unexpected response from core registration, received status ${e.responseCode}")
+        Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
+    }
   }
 
   def create(registration: RegistrationRequest): Future[CreateRegistrationResponse] = {
@@ -64,6 +67,10 @@ class RegistrationConnector @Inject()(
       s"${ifConfig.baseUrl}createRegistration",
       registration,
       headers = headersWithCorrelationId
-    )
+    ).recover {
+      case e: HttpException =>
+        logger.warn(s"Unexpected response from core registration, received status ${e.responseCode}")
+        Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
+    }
   }
 }
