@@ -6,6 +6,8 @@ import generators.Generators
 import models.requests.RegistrationRequest
 import models._
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalatest.concurrent.PatienceConfiguration.Timeout
+import org.scalatest.time.{Seconds, Span}
 import play.api.Application
 import play.api.http.HeaderNames._
 import play.api.http.MimeTypes
@@ -120,6 +122,35 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
         result mustEqual Left(Conflict)
       }
     }
+
+    "should return Error Response when server responds with Http Exception" in {
+
+      val app = application
+
+      val registration = generateRegistration(vrn)
+
+      val registrationRequest = toRegistrationRequest(registration)
+
+      val requestJson = Json.stringify(Json.toJson(registrationRequest))
+
+      server.stubFor(
+        post(urlEqualTo(createRegistrationUrl))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .withRequestBody(equalTo(requestJson))
+          .willReturn(aResponse()
+            .withStatus(504)
+            .withFixedDelay(21000))
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        whenReady(connector.create(registrationRequest), Timeout(Span(30, Seconds))) { exp =>
+          exp.isLeft mustBe true
+          exp.left.get mustBe a[ErrorResponse]
+        }
+      }
+    }
   }
 
   "get" - {
@@ -163,6 +194,28 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
         val connector = app.injector.instanceOf[RegistrationConnector]
         val result = connector.get(vrn).futureValue
         result mustEqual Left(NotFound)
+      }
+    }
+
+    "should return Error Response when server responds with Http Exception" in {
+
+      val app = application
+
+      server.stubFor(
+        get(urlEqualTo(getRegistrationUrl(vrn)))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .willReturn(aResponse()
+            .withStatus(504)
+            .withFixedDelay(21000))
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        whenReady(connector.get(vrn), Timeout(Span(30, Seconds))) { exp =>
+          exp.isLeft mustBe true
+          exp.left.get mustBe a[ErrorResponse]
+        }
       }
     }
   }
