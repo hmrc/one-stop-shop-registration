@@ -2,9 +2,11 @@ package connectors
 
 import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.{DesAddress, InvalidJson, InvalidVrn, NotFound, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
+import models.{DesAddress, ErrorResponse, GatewayTimeout, InvalidJson, InvalidVrn, NotFound, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
 import models.des._
 import org.scalacheck.Gen
+import org.scalatest.concurrent.PatienceConfiguration.Timeout
+import org.scalatest.time.{Seconds, Span}
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.running
@@ -30,9 +32,7 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
 
   "getVatCustomerInfo" - {
 
-    "when the server returns OK and a recognised payload" - {
-
-      "must return a Right(VatCustomerInfo)" in {
+      "must return a Right(VatCustomerInfo) when the server returns OK and a recognised payload" in {
 
         val app = application
 
@@ -188,6 +188,26 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
           result mustEqual Left(UnexpectedResponseStatus(status, s"Unexpected response from DES, received status $status"))
         }
       }
-    }
+
+    "must return Left(GatewayTimeout) when the server returns a GatewayTimeoutException" in {
+
+        val app = application
+
+        server.stubFor(
+          get(urlEqualTo(desUrl))
+            .willReturn(aResponse()
+              .withStatus(504)
+              .withFixedDelay(21000))
+        )
+
+        running(app) {
+
+          val connector = app.injector.instanceOf[DesConnector]
+          whenReady(connector.getVatCustomerDetails(vrn), Timeout(Span(30, Seconds))) { exp =>
+            exp mustBe Left(GatewayTimeout)
+          }
+        }
+      }
+
   }
 }

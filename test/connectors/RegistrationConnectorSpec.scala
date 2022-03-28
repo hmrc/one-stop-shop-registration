@@ -2,6 +2,7 @@ package connectors
 
 import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
+import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
 import models.requests.RegistrationRequest
 import models._
@@ -98,30 +99,33 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       }
     }
 
-    "should return errors correctly" in {
+    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123")))
+      .foreach { error =>
+        s"should return correct error response when server responds with ${error._1}" in {
 
-      val app = application
+          val app = application
 
-      val registration = generateRegistration(vrn)
+          val registration = generateRegistration(vrn)
 
-      val registrationRequest = toRegistrationRequest(registration)
+          val registrationRequest = toRegistrationRequest(registration)
 
-      val requestJson = Json.stringify(Json.toJson(registrationRequest))
+          val requestJson = Json.stringify(Json.toJson(registrationRequest))
 
-      server.stubFor(
-        post(urlEqualTo(createRegistrationUrl))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .withRequestBody(equalTo(requestJson))
-          .willReturn(aResponse().withStatus(CONFLICT))
-      )
+          server.stubFor(
+            post(urlEqualTo(createRegistrationUrl))
+              .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+              .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+              .withRequestBody(equalTo(requestJson))
+              .willReturn(aResponse().withStatus(error._1))
+          )
 
-      running(app) {
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.create(registrationRequest).futureValue
-        result mustEqual Left(Conflict)
+          running(app) {
+            val connector = app.injector.instanceOf[RegistrationConnector]
+            val result = connector.create(registrationRequest).futureValue
+            result mustBe Left(error._2)
+          }
+        }
       }
-    }
 
     "should return Error Response when server responds with Http Exception" in {
 
@@ -174,28 +178,31 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
         val connector = app.injector.instanceOf[RegistrationConnector]
         val result = connector.get(vrn).futureValue
         val expectedResult = registration
-        result mustEqual Right(expectedResult)
+        result mustBe Right(expectedResult)
 
       }
     }
 
-    "Should return errors correctly" in {
+    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123")))
+      .foreach { error =>
+        s"should return correct error response when server responds with ${error._1}" in {
 
-      val app = application
+          val app = application
 
-      server.stubFor(
-        get(urlEqualTo(getRegistrationUrl(vrn)))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .willReturn(notFound())
-      )
+          server.stubFor(
+            get(urlEqualTo(getRegistrationUrl(vrn)))
+              .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+              .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+              .willReturn(aResponse().withStatus(error._1))
+          )
 
-      running(app) {
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.get(vrn).futureValue
-        result mustEqual Left(NotFound)
+          running(app) {
+            val connector = app.injector.instanceOf[RegistrationConnector]
+            val result = connector.get(vrn).futureValue
+            result mustBe Left(error._2)
+          }
+        }
       }
-    }
 
     "should return Error Response when server responds with Http Exception" in {
 
