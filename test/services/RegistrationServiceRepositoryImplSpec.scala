@@ -18,7 +18,7 @@ package services
 
 import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
-import connectors.RegistrationConnector
+import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.InsertSucceeded
 import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
@@ -27,6 +27,7 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.running
 import repositories.RegistrationRepository
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 
@@ -35,7 +36,7 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
   private val registrationRequest    = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]
   private val registrationConnector = mock[RegistrationConnector]
-
+  private val enrolmentsConnector = mock[EnrolmentsConnector]
   private val service = new RegistrationServiceRepositoryImpl(registrationRepository, stubClock)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
@@ -85,6 +86,15 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
       when(registrationRepository.get(any())) thenReturn Future.successful(None)
       service.get(Vrn("123456789")).futureValue
       verify(registrationRepository, times(1)).get(Vrn("123456789"))
+    }
+  }
+
+  ".addEnrolment" - {
+    "must return Right() and skip the addition of an enrolment" in {
+      implicit lazy val hc: HeaderCarrier = HeaderCarrier()
+      val userId = "1234567"
+      service.addEnrolment(registrationRequest, userId).futureValue mustBe Right()
+      verifyNoInteractions(enrolmentsConnector)
     }
   }
 }
