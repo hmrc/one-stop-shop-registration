@@ -14,8 +14,6 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
 
     "must serialise and deserialise from / to an EU VAT Registration" in {
 
-      val euVatNumberGen = arbitrary[Int].map(_.toString)
-
       forAll(arbitrary[Country],  arbitrary[EuTaxIdentifier]) {
         case (country, vatNumber) =>
 

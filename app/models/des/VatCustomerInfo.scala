@@ -19,7 +19,7 @@ package models.des
 import models.DesAddress
 import models.des.PartyType.{OtherPartyType, VatGroup}
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Json, OFormat, OWrites, Reads, __}
+import play.api.libs.json.{Json, OWrites, Reads, __}
 
 import java.time.LocalDate
 

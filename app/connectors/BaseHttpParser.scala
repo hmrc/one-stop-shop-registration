@@ -17,7 +17,7 @@
 package connectors
 
 import logging.Logging
-import models.{Conflict, ErrorResponse, InvalidJson, InvalidVrn, NotFound, Registration, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
+import models.{Conflict, ErrorResponse, InvalidJson, InvalidVrn, NotFound, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
 import play.api.http.Status.{BAD_REQUEST, CONFLICT, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE}
 import play.api.libs.json.{JsError, JsSuccess, Reads}
 import uk.gov.hmrc.http.HttpResponse
