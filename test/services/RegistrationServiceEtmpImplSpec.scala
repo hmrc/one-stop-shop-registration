@@ -20,7 +20,6 @@ import base.BaseSpec
 import config.AppConfig
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.requests.RegistrationRequest
 import models.{Conflict, EtmpException, NotFound, ServiceUnavailable}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -68,7 +67,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
     "must create a registration from the request, save it and return the result of the save operation" in {
 
-      when(registrationConnector.create(any())) thenReturn Future.successful(Right())
+      when(registrationConnector.create(any())) thenReturn Future.successful(Right(()))
 
       service.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
     }

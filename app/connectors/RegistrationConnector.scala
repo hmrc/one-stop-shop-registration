@@ -17,9 +17,9 @@
 package connectors
 
 import config.IfConfig
-import connectors.RegistrationHttpParser.{CreateRegistrationResponse, logger, _}
+import connectors.RegistrationHttpParser._
 import logging.Logging
-import models.{Registration, UnexpectedResponseStatus}
+import models.UnexpectedResponseStatus
 import models.requests.RegistrationRequest
 import play.api.http.HeaderNames.AUTHORIZATION
 import uk.gov.hmrc.domain.Vrn

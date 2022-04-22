@@ -19,7 +19,6 @@ package services
 import config.AppConfig
 import connectors.EnrolmentsHttpParser.EnrolmentResultsResponse
 import connectors.{EnrolmentsConnector, RegistrationConnector}
-import logging.Logging
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.RegistrationRequest
 import models.{Conflict, EtmpException, InsertResult, Registration}
@@ -59,6 +58,6 @@ class RegistrationServiceEtmpImpl @Inject()(
       enrolmentsConnector.assignEnrolment(userId = userId, request.vrn)
     } else {
         logger.info("Skipping the addition of enrolment")
-        Future.successful(Right())
+        Future.successful(Right(()))
     }
 }

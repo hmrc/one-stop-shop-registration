@@ -16,14 +16,9 @@
 
 package connectors
 
-import connectors.VatCustomerInfoHttpParser.logger
-import logging.Logging
-import models.{Conflict, ErrorResponse, InvalidJson, InvalidVrn, NotFound, Registration, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
+import models.{Conflict, ErrorResponse, InvalidVrn, NotFound, Registration, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
 import play.api.http.Status._
-import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-
-import java.time.Instant
 
 object RegistrationHttpParser extends BaseHttpParser {
 
@@ -37,7 +32,7 @@ object RegistrationHttpParser extends BaseHttpParser {
     override def read(method: String, url: String, response: HttpResponse): CreateRegistrationResponse =
       response.status match {
         case ACCEPTED =>
-          Right()
+          Right(())
         case NOT_FOUND =>
           logger.warn(s"Received NotFound from ${serviceName}")
           Left(NotFound)

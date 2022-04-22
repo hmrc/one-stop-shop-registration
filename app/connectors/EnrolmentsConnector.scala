@@ -19,10 +19,9 @@ package connectors
 import config.EnrolmentsConfig
 import connectors.EnrolmentsHttpParser.{EnrolmentResultsResponse, EnrolmentsResponseReads}
 import logging.Logging
-import models.GatewayTimeout
 import play.api.http.HeaderNames
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier, HttpClient, HttpErrorFunctions}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

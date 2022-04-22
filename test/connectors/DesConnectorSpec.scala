@@ -2,7 +2,7 @@ package connectors
 
 import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.{DesAddress, ErrorResponse, GatewayTimeout, InvalidJson, InvalidVrn, NotFound, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
+import models.{DesAddress, GatewayTimeout, InvalidJson, InvalidVrn, NotFound, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
 import models.des._
 import org.scalacheck.Gen
 import org.scalatest.concurrent.PatienceConfiguration.Timeout

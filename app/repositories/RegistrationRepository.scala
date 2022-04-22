@@ -18,7 +18,7 @@ package repositories
 
 import config.AppConfig
 import crypto.RegistrationEncrypter
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions}
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -27,7 +27,6 @@ import models.{EncryptedRegistration, InsertResult, Registration}
 import repositories.MongoErrors.Duplicate
 import logging.Logging
 
-import java.time.Clock
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 

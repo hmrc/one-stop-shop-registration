@@ -29,7 +29,7 @@ object EnrolmentsHttpParser extends Logging {
   implicit object EnrolmentsResponseReads extends HttpReads[EnrolmentResultsResponse] {
     override def read(method: String, url: String, response: HttpResponse): EnrolmentResultsResponse = {
       response.status match {
-        case CREATED => Right()
+        case CREATED => Right(())
         case status =>
           logger.info(s"Response received from enrolments: ${response.status} with body ${response.body}")
           if (response.body.isEmpty) {

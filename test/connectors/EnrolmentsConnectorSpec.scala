@@ -50,7 +50,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
         val connector = app.injector.instanceOf[EnrolmentsConnector]
         val result = connector.assignEnrolment(userId, vrn).futureValue
 
-        result mustBe Right()
+        result mustBe Right(())
       }
     }
 

@@ -93,7 +93,7 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
     "must return Right() and skip the addition of an enrolment" in {
       implicit lazy val hc: HeaderCarrier = HeaderCarrier()
       val userId = "1234567"
-      service.addEnrolment(registrationRequest, userId).futureValue mustBe Right()
+      service.addEnrolment(registrationRequest, userId).futureValue mustBe Right(())
       verifyNoInteractions(enrolmentsConnector)
     }
   }

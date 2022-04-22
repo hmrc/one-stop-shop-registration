@@ -40,7 +40,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
       val mockService = mock[RegistrationServiceRepositoryImpl]
       when(mockService.createRegistration(any())) thenReturn Future.successful(InsertSucceeded)
-      when(mockService.addEnrolment(any(), any())(any())) thenReturn Future.successful(Right())
+      when(mockService.addEnrolment(any(), any())(any())) thenReturn Future.successful(Right(()))
 
       val app =
         applicationBuilder
