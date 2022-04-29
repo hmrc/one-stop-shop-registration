@@ -115,7 +115,15 @@ trait Generators {
       for {
         country   <- arbitrary[Country]
         taxIdentifier      <- arbitrary[EuTaxIdentifier]
-      } yield RegistrationWithoutFixedEstablishment(country, taxIdentifier)
+        sendsGoods <- arbitrary[Boolean]
+        tradingName <- arbitrary[String]
+        address <- arbitraryInternationalAddress.arbitrary
+      } yield RegistrationWithoutFixedEstablishment(country,
+        taxIdentifier,
+        Some(sendsGoods),
+        if(sendsGoods){Some(tradingName)} else{None},
+        if(sendsGoods){Some(address)} else{None}
+      )
     }
 
   implicit lazy val arbitraryRegistrationWithFixedEstablishment: Arbitrary[RegistrationWithFixedEstablishment] =
