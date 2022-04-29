@@ -157,14 +157,25 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
   private def encryptRegistrationWithoutFixedEstablishment(registration: RegistrationWithoutFixedEstablishment, vrn: Vrn, key: String): EncryptedRegistrationWithoutFixedEstablishment = {
     import registration._
 
-    EncryptedRegistrationWithoutFixedEstablishment(encryptCountry(country, vrn, key),
-      encryptEuTaxIdentifier(taxIdentifier, vrn, key))
+    EncryptedRegistrationWithoutFixedEstablishment(
+      encryptCountry(country, vrn, key),
+      encryptEuTaxIdentifier(taxIdentifier, vrn, key),
+      sendsGoods.map(s => crypto.encrypt(s.toString, vrn.vrn, key)),
+      tradingName.map(crypto.encrypt(_, vrn.vrn, key)),
+      address.map(encryptInternationalAddress(_, vrn, key))
+    )
   }
 
   private def decryptRegistrationWithoutFixedEstablishment(registration: EncryptedRegistrationWithoutFixedEstablishment, vrn: Vrn, key: String): RegistrationWithoutFixedEstablishment = {
     import registration._
 
-    RegistrationWithoutFixedEstablishment(decryptCountry(country, vrn, key), decryptEuTaxIdentifier(taxIdentifier, vrn, key))
+    RegistrationWithoutFixedEstablishment(
+      decryptCountry(country, vrn, key),
+      decryptEuTaxIdentifier(taxIdentifier, vrn, key),
+      sendsGoods.map(crypto.decrypt(_, vrn.vrn, key).toBoolean),
+      tradingName.map(crypto.decrypt(_, vrn.vrn, key)),
+      address.map(decryptInternationalAddress(_, vrn, key))
+    )
   }
 
   private def encryptRegistrationWithFixedEstablishment(
