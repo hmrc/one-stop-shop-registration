@@ -86,7 +86,10 @@ class TestOnlyController @Inject()(
       euRegistrations = Seq(
         RegistrationWithoutFixedEstablishment(
           Country("FR", "France"),
-          EuTaxIdentifier(Vat, "FR123")
+          EuTaxIdentifier(Vat, "FR123"),
+          Some(false),
+          None,
+          None
         ),
         RegistrationWithFixedEstablishment(
           Country("DE", "Germany"),
