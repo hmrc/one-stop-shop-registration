@@ -37,9 +37,7 @@ object RegistrationData {
         RegistrationWithoutFixedEstablishment(
           Country("FR", "France"),
           EuTaxIdentifier(Vat, "FR123"),
-          Some(false),
-          None,
-          None
+          Some(false)
         ),
         RegistrationWithFixedEstablishment(
           Country("DE", "Germany"),
