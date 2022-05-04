@@ -26,12 +26,14 @@ object EuTaxRegistration {
   implicit val reads: Reads[EuTaxRegistration] =
     EuVatRegistration.format.widen[EuTaxRegistration] orElse
       RegistrationWithFixedEstablishment.format.widen[EuTaxRegistration] orElse
+      RegistrationSendingGoods.format.widen[EuTaxRegistration] orElse
       RegistrationWithoutFixedEstablishment.format.widen[EuTaxRegistration] orElse
       RegistrationWithoutTaxId.format.widen[EuTaxRegistration]
 
 
   implicit val writes: Writes[EuTaxRegistration] = Writes {
     case v: EuVatRegistration => Json.toJson(v)(EuVatRegistration.format)
+    case wfe: RegistrationSendingGoods => Json.toJson(wfe)(RegistrationSendingGoods.format)
     case wfe: RegistrationWithoutFixedEstablishment => Json.toJson(wfe)(RegistrationWithoutFixedEstablishment.format)
     case fe: RegistrationWithFixedEstablishment => Json.toJson(fe)(RegistrationWithFixedEstablishment.format)
     case w: RegistrationWithoutTaxId => Json.toJson(w)(RegistrationWithoutTaxId.format)
@@ -45,11 +47,13 @@ object EncryptedEuTaxRegistration {
   implicit val reads: Reads[EncryptedEuTaxRegistration] =
     EncryptedEuVatRegistration.format.widen[EncryptedEuTaxRegistration] orElse
       EncryptedRegistrationWithFixedEstablishment.format.widen[EncryptedEuTaxRegistration] orElse
+      EncryptedRegistrationSendingGoods.format.widen[EncryptedEuTaxRegistration] orElse
       EncryptedRegistrationWithoutFixedEstablishment.format.widen[EncryptedEuTaxRegistration] orElse
       EncryptedRegistrationWithoutTaxId.format.widen[EncryptedEuTaxRegistration]
 
   implicit val writes: Writes[EncryptedEuTaxRegistration] = Writes {
     case v: EncryptedEuVatRegistration => Json.toJson(v)(EncryptedEuVatRegistration.format)
+    case wf: EncryptedRegistrationSendingGoods => Json.toJson(wf)(EncryptedRegistrationSendingGoods.format)
     case wf: EncryptedRegistrationWithoutFixedEstablishment => Json.toJson(wf)(EncryptedRegistrationWithoutFixedEstablishment.format)
     case f: EncryptedRegistrationWithFixedEstablishment => Json.toJson(f)(EncryptedRegistrationWithFixedEstablishment.format)
     case w: EncryptedRegistrationWithoutTaxId => Json.toJson(w)(EncryptedRegistrationWithoutTaxId.format)
@@ -77,13 +81,39 @@ object EncryptedEuVatRegistration {
   implicit val format: OFormat[EncryptedEuVatRegistration] = Json.format[EncryptedEuVatRegistration]
 }
 
+final case class RegistrationSendingGoods(
+                                           country: Country,
+                                           taxIdentifier: EuTaxIdentifier,
+                                           sendsGoods: Boolean,
+                                           tradingName: String,
+                                           address: InternationalAddress
+                                         ) extends EuTaxRegistration
+
+object RegistrationSendingGoods {
+
+  implicit val format: OFormat[RegistrationSendingGoods] =
+    Json.format[RegistrationSendingGoods]
+}
+
+final case class EncryptedRegistrationSendingGoods(
+                                                                 country: EncryptedCountry,
+                                                                 taxIdentifier: EncryptedEuTaxIdentifier,
+                                                                 sendsGoods: EncryptedValue,
+                                                                 tradingName: EncryptedValue,
+                                                                 address: EncryptedInternationalAddress
+                                                               ) extends EncryptedEuTaxRegistration
+
+object EncryptedRegistrationSendingGoods {
+
+  implicit val format: OFormat[EncryptedRegistrationSendingGoods] = Json.format[EncryptedRegistrationSendingGoods]
+}
+
+
 
 final case class RegistrationWithoutFixedEstablishment(
                                                         country: Country,
                                                         taxIdentifier: EuTaxIdentifier,
-                                                        sendsGoods: Option[Boolean],
-                                                        tradingName: Option[String],
-                                                        address: Option[InternationalAddress]
+                                                        sendsGoods: Option[Boolean]
                                                       ) extends EuTaxRegistration
 
 object RegistrationWithoutFixedEstablishment {
@@ -95,9 +125,7 @@ object RegistrationWithoutFixedEstablishment {
 final case class EncryptedRegistrationWithoutFixedEstablishment(
                                                                  country: EncryptedCountry,
                                                                  taxIdentifier: EncryptedEuTaxIdentifier,
-                                                                 sendsGoods: Option[EncryptedValue],
-                                                                 tradingName: Option[EncryptedValue],
-                                                                 address: Option[EncryptedInternationalAddress]
+                                                                 sendsGoods: Option[EncryptedValue]
                                                                ) extends EncryptedEuTaxRegistration
 
 object EncryptedRegistrationWithoutFixedEstablishment {

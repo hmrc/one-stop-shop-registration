@@ -160,9 +160,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     EncryptedRegistrationWithoutFixedEstablishment(
       encryptCountry(country, vrn, key),
       encryptEuTaxIdentifier(taxIdentifier, vrn, key),
-      sendsGoods.map(s => crypto.encrypt(s.toString, vrn.vrn, key)),
-      tradingName.map(crypto.encrypt(_, vrn.vrn, key)),
-      address.map(encryptInternationalAddress(_, vrn, key))
+      sendsGoods.map(s => crypto.encrypt(s.toString, vrn.vrn, key))
     )
   }
 
@@ -172,9 +170,32 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     RegistrationWithoutFixedEstablishment(
       decryptCountry(country, vrn, key),
       decryptEuTaxIdentifier(taxIdentifier, vrn, key),
-      sendsGoods.map(crypto.decrypt(_, vrn.vrn, key).toBoolean),
-      tradingName.map(crypto.decrypt(_, vrn.vrn, key)),
-      address.map(decryptInternationalAddress(_, vrn, key))
+      sendsGoods.map(crypto.decrypt(_, vrn.vrn, key).toBoolean)
+    )
+  }
+
+
+  private def encryptRegistrationSendingGoods(registration: RegistrationSendingGoods, vrn: Vrn, key: String): EncryptedRegistrationSendingGoods = {
+    import registration._
+
+    EncryptedRegistrationSendingGoods(
+      encryptCountry(country, vrn, key),
+      encryptEuTaxIdentifier(taxIdentifier, vrn, key),
+      crypto.encrypt(sendsGoods.toString, vrn.vrn, key),
+      crypto.encrypt(tradingName, vrn.vrn, key),
+      encryptInternationalAddress(address, vrn, key)
+    )
+  }
+
+  private def decryptRegistrationSendingGoods(registration: EncryptedRegistrationSendingGoods, vrn: Vrn, key: String): RegistrationSendingGoods = {
+    import registration._
+
+    RegistrationSendingGoods(
+      decryptCountry(country, vrn, key),
+      decryptEuTaxIdentifier(taxIdentifier, vrn, key),
+      crypto.decrypt(sendsGoods, vrn.vrn, key).toBoolean,
+      crypto.decrypt(tradingName, vrn.vrn, key),
+      decryptInternationalAddress(address, vrn, key)
     )
   }
 
@@ -223,7 +244,8 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
   def encryptEuTaxRegistration(registration: EuTaxRegistration, vrn: Vrn, key: String): EncryptedEuTaxRegistration =
     registration match {
       case v: EuVatRegistration                     => encryptEuVatRegistration(v, vrn, key)
-      case wf: RegistrationWithoutFixedEstablishment                     => encryptRegistrationWithoutFixedEstablishment(wf, vrn, key)
+      case wf: RegistrationSendingGoods             => encryptRegistrationSendingGoods(wf, vrn, key)
+      case wf: RegistrationWithoutFixedEstablishment   => encryptRegistrationWithoutFixedEstablishment(wf, vrn, key)
       case f: RegistrationWithFixedEstablishment    => encryptRegistrationWithFixedEstablishment(f, vrn, key)
       case w: RegistrationWithoutTaxId => encryptRegistrationWithoutFixedEstablishment(w, vrn, key)
     }
@@ -231,7 +253,8 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
   def decryptEuTaxRegistration(registration: EncryptedEuTaxRegistration, vrn: Vrn, key: String): EuTaxRegistration =
     registration match {
       case v: EncryptedEuVatRegistration                    => decryptEuVatRegistration(v, vrn, key)
-      case wf: EncryptedRegistrationWithoutFixedEstablishment                     => decryptRegistrationWithoutFixedEstablishment(wf, vrn, key)
+      case wf: EncryptedRegistrationSendingGoods              => decryptRegistrationSendingGoods(wf, vrn, key)
+      case wf: EncryptedRegistrationWithoutFixedEstablishment   => decryptRegistrationWithoutFixedEstablishment(wf, vrn, key)
       case f: EncryptedRegistrationWithFixedEstablishment    => decryptRegistrationWithFixedEstablishment(f, vrn, key)
       case w: EncryptedRegistrationWithoutTaxId => decryptRegistrationWithoutFixedEstablishment(w, vrn, key)
     }
