@@ -109,9 +109,7 @@ object EncryptedRegistrationWithoutFixedEstablishmentWithTradeDetails {
 final case class RegistrationWithoutFixedEstablishment(
                                                         country: Country,
                                                         taxIdentifier: EuTaxIdentifier,
-                                                        sendsGoods: Option[Boolean],
-                                                        tradingName: Option[String],
-                                                        address: Option[InternationalAddress]
+                                                        sendsGoods: Option[Boolean]
                                                       ) extends EuTaxRegistration
 
 object RegistrationWithoutFixedEstablishment {
@@ -123,9 +121,7 @@ object RegistrationWithoutFixedEstablishment {
 final case class EncryptedRegistrationWithoutFixedEstablishment(
                                                                  country: EncryptedCountry,
                                                                  taxIdentifier: EncryptedEuTaxIdentifier,
-                                                                 sendsGoods: Option[EncryptedValue],
-                                                                 tradingName: Option[EncryptedValue],
-                                                                 address: Option[EncryptedInternationalAddress]
+                                                                 sendsGoods: Option[EncryptedValue]
                                                                ) extends EncryptedEuTaxRegistration
 
 object EncryptedRegistrationWithoutFixedEstablishment {
