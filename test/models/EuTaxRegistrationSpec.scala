@@ -26,7 +26,7 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
 
     "must serialise and deserialise from / to a Registration with Fixed Establishment" in {
 
-      forAll(arbitrary[Country], arbitrary[FixedEstablishment], arbitrary[EuTaxIdentifier]) {
+      forAll(arbitrary[Country], arbitrary[TradeDetails], arbitrary[EuTaxIdentifier]) {
         case (country, fixedEstablishment, taxRef) =>
 
           val euRegistration = RegistrationWithFixedEstablishment(country, taxRef, fixedEstablishment)
@@ -74,7 +74,7 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
         addressCountry <- arbitrary[Country]
       } yield (
         country,
-        EncryptedFixedEstablishment(name, EncryptedInternationalAddress(line1, None, town, None, None, addressCountry)),
+        EncryptedTradeDetails(name, EncryptedInternationalAddress(line1, None, town, None, None, addressCountry)),
         EncryptedEuTaxIdentifier(identifierType, taxRef)
       )
 

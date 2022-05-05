@@ -179,7 +179,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     EncryptedRegistrationWithoutFixedEstablishmentWithTradeDetails(
       encryptCountry(country, vrn, key),
       encryptEuTaxIdentifier(taxIdentifier, vrn, key),
-      encryptSendGoodsTradeDetails(tradeDetails, vrn, key)
+      encryptTradeDetails(tradeDetails, vrn, key)
     )
   }
 
@@ -189,7 +189,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     RegistrationWithoutFixedEstablishmentWithTradeDetails(
       decryptCountry(country, vrn, key),
       decryptEuTaxIdentifier(taxIdentifier, vrn, key),
-      decryptSendGoodsTradeDetails(tradeDetails, vrn, key)
+      decryptTradeDetails(tradeDetails, vrn, key)
     )
   }
 
@@ -203,7 +203,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     EncryptedRegistrationWithFixedEstablishment(
       encryptCountry(country, vrn, key),
       encryptEuTaxIdentifier(taxIdentifier, vrn, key),
-      encryptFixedEstablishment(fixedEstablishment, vrn, key)
+      encryptTradeDetails(fixedEstablishment, vrn, key)
     )
   }
 
@@ -217,7 +217,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     RegistrationWithFixedEstablishment(
       decryptCountry(country, vrn, key),
       decryptEuTaxIdentifier(taxIdentifier, vrn, key),
-      decryptFixedEstablishment(fixedEstablishment, vrn, key)
+      decryptTradeDetails(fixedEstablishment, vrn, key)
     )
   }
 
@@ -253,32 +253,18 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       case w: EncryptedRegistrationWithoutTaxId => decryptRegistrationWithoutFixedEstablishment(w, vrn, key)
     }
 
-  private def encryptFixedEstablishment(fixedEstablishment: FixedEstablishment, vrn: Vrn, key: String): EncryptedFixedEstablishment = {
+  private def encryptTradeDetails(fixedEstablishment: TradeDetails, vrn: Vrn, key: String): EncryptedTradeDetails = {
     def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
     import fixedEstablishment._
 
-    EncryptedFixedEstablishment(e(tradingName), encryptInternationalAddress(address, vrn, key))
+    EncryptedTradeDetails(e(tradingName), encryptInternationalAddress(address, vrn, key))
   }
 
-  private def decryptFixedEstablishment(fixedEstablishment: EncryptedFixedEstablishment, vrn: Vrn, key: String): FixedEstablishment = {
+  private def decryptTradeDetails(fixedEstablishment: EncryptedTradeDetails, vrn: Vrn, key: String): TradeDetails = {
     def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
     import fixedEstablishment._
 
-    FixedEstablishment(d(tradingName), decryptInternationalAddress(address, vrn, key))
-  }
-
-  private def encryptSendGoodsTradeDetails(sendGoodsTradeDetails: SendGoodsTradeDetails, vrn: Vrn, key: String): EncryptedSendGoodsTradeDetails = {
-    def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
-    import sendGoodsTradeDetails._
-
-    EncryptedSendGoodsTradeDetails(e(tradingName), encryptInternationalAddress(address, vrn, key))
-  }
-
-  private def decryptSendGoodsTradeDetails(sendGoodsTradeDetails: EncryptedSendGoodsTradeDetails, vrn: Vrn, key: String): SendGoodsTradeDetails = {
-    def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
-    import sendGoodsTradeDetails._
-
-    SendGoodsTradeDetails(d(tradingName), decryptInternationalAddress(address, vrn, key))
+    TradeDetails(d(tradingName), decryptInternationalAddress(address, vrn, key))
   }
 
   def encryptedPreviousRegistration(registration: PreviousRegistration, vrn: Vrn, key: String): EncryptedPreviousRegistration = {

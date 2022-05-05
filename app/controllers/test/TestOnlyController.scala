@@ -18,7 +18,7 @@ package controllers.test
 
 import models.EuTaxIdentifierType.Vat
 import models.VatDetailSource.UserEntered
-import models.{BankDetails, ContactDetails, Country, DesAddress, EuTaxIdentifier, FixedEstablishment, Iban, InternationalAddress, PreviousRegistration, PrincipalPlaceOfBusinessInNi, Registration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishment, VatDetails}
+import models.{BankDetails, ContactDetails, Country, DesAddress, EuTaxIdentifier, TradeDetails, Iban, InternationalAddress, PreviousRegistration, PrincipalPlaceOfBusinessInNi, Registration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishment, VatDetails}
 import org.mongodb.scala.model.Filters
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.RegistrationRepository
@@ -91,7 +91,7 @@ class TestOnlyController @Inject()(
         RegistrationWithFixedEstablishment(
           Country("DE", "Germany"),
           EuTaxIdentifier(Vat, "DE123"),
-          FixedEstablishment("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
+          TradeDetails("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
         )
       ),
       contactDetails =     new ContactDetails(

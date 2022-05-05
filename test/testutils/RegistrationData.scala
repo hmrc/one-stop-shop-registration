@@ -41,7 +41,7 @@ object RegistrationData {
         RegistrationWithFixedEstablishment(
           Country("DE", "Germany"),
           EuTaxIdentifier(Vat, "DE123"),
-          FixedEstablishment("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
+          TradeDetails("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
         )
       ),
       contactDetails = new ContactDetails(
