@@ -36,8 +36,7 @@ object RegistrationData {
       euRegistrations = Seq(
         RegistrationWithoutFixedEstablishment(
           Country("FR", "France"),
-          EuTaxIdentifier(Vat, "FR123"),
-          Some(false)
+          EuTaxIdentifier(Vat, "FR123")
         ),
         RegistrationWithFixedEstablishment(
           Country("DE", "Germany"),
