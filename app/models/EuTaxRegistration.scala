@@ -84,7 +84,7 @@ object EncryptedEuVatRegistration {
 final case class RegistrationWithoutFixedEstablishmentWithTradeDetails(
                                            country: Country,
                                            taxIdentifier: EuTaxIdentifier,
-                                           tradeDetails: SendGoodsTradeDetails
+                                           tradeDetails: TradeDetails
                                          ) extends EuTaxRegistration
 
 object RegistrationWithoutFixedEstablishmentWithTradeDetails {
@@ -96,7 +96,7 @@ object RegistrationWithoutFixedEstablishmentWithTradeDetails {
 final case class EncryptedRegistrationWithoutFixedEstablishmentWithTradeDetails(
                                                                  country: EncryptedCountry,
                                                                  taxIdentifier: EncryptedEuTaxIdentifier,
-                                                                 tradeDetails: EncryptedSendGoodsTradeDetails
+                                                                 tradeDetails: EncryptedTradeDetails
                                                                ) extends EncryptedEuTaxRegistration
 
 object EncryptedRegistrationWithoutFixedEstablishmentWithTradeDetails {
@@ -130,7 +130,7 @@ object EncryptedRegistrationWithoutFixedEstablishment {
 final case class RegistrationWithFixedEstablishment(
                                                      country: Country,
                                                      taxIdentifier: EuTaxIdentifier,
-                                                     fixedEstablishment: FixedEstablishment
+                                                     fixedEstablishment: TradeDetails
                                                    ) extends EuTaxRegistration
 
 object RegistrationWithFixedEstablishment {
@@ -141,7 +141,7 @@ object RegistrationWithFixedEstablishment {
 final case class EncryptedRegistrationWithFixedEstablishment(
                                                               country: EncryptedCountry,
                                                               taxIdentifier: EncryptedEuTaxIdentifier,
-                                                              fixedEstablishment: EncryptedFixedEstablishment
+                                                              fixedEstablishment: EncryptedTradeDetails
                                                             ) extends EncryptedEuTaxRegistration
 
 object EncryptedRegistrationWithFixedEstablishment {

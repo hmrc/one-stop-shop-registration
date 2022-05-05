@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,19 @@ package models
 import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 
-final case class SendGoodsTradeDetails(tradingName: String, address: InternationalAddress)
+final case class TradeDetails(tradingName: String, address: InternationalAddress)
 
-object SendGoodsTradeDetails {
+object TradeDetails {
 
-  implicit val format: OFormat[SendGoodsTradeDetails] = Json.format[SendGoodsTradeDetails]
+  implicit val format: OFormat[TradeDetails] = Json.format[TradeDetails]
 }
 
-final case class EncryptedSendGoodsTradeDetails(
+final case class EncryptedTradeDetails(
                                               tradingName: EncryptedValue,
                                               address: EncryptedInternationalAddress
                                             )
 
-object EncryptedSendGoodsTradeDetails {
+object EncryptedTradeDetails {
 
-  implicit val format: OFormat[EncryptedSendGoodsTradeDetails] = Json.format[EncryptedSendGoodsTradeDetails]
+  implicit val format: OFormat[EncryptedTradeDetails] = Json.format[EncryptedTradeDetails]
 }
