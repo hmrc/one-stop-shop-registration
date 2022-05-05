@@ -128,12 +128,11 @@ trait Generators {
       for {
         country   <- arbitrary[Country]
         taxIdentifier      <- arbitrary[EuTaxIdentifier]
-        sendsGoods <- arbitrary[Boolean]
         tradingName <- arbitrary[String]
         address <- arbitraryInternationalAddress.arbitrary
       } yield RegistrationWithoutFixedEstablishmentWithTradeDetails(country,
         taxIdentifier,
-        SendGoodsTradeDetails(
+        TradeDetails(
         tradingName,
         address)
       )

@@ -179,7 +179,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     EncryptedRegistrationWithoutFixedEstablishmentWithTradeDetails(
       encryptCountry(country, vrn, key),
       encryptEuTaxIdentifier(taxIdentifier, vrn, key),
-      encryptSendGoodsTradeDetails(tradeDetails, vrn, key)
+      encryptTradeDetails(tradeDetails, vrn, key)
     )
   }
 
@@ -189,7 +189,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     RegistrationWithoutFixedEstablishmentWithTradeDetails(
       decryptCountry(country, vrn, key),
       decryptEuTaxIdentifier(taxIdentifier, vrn, key),
-      decryptSendGoodsTradeDetails(tradeDetails, vrn, key)
+      decryptTradeDetails(tradeDetails, vrn, key)
     )
   }
 
@@ -285,20 +285,6 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     import fixedEstablishment._
 
     TradeDetails(d(tradingName), decryptInternationalAddress(address, vrn, key))
-  }
-
-  private def encryptSendGoodsTradeDetails(sendGoodsTradeDetails: SendGoodsTradeDetails, vrn: Vrn, key: String): EncryptedSendGoodsTradeDetails = {
-    def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
-    import sendGoodsTradeDetails._
-
-    EncryptedSendGoodsTradeDetails(e(tradingName), encryptInternationalAddress(address, vrn, key))
-  }
-
-  private def decryptSendGoodsTradeDetails(sendGoodsTradeDetails: EncryptedSendGoodsTradeDetails, vrn: Vrn, key: String): SendGoodsTradeDetails = {
-    def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
-    import sendGoodsTradeDetails._
-
-    SendGoodsTradeDetails(d(tradingName), decryptInternationalAddress(address, vrn, key))
   }
 
   def encryptedPreviousRegistration(registration: PreviousRegistration, vrn: Vrn, key: String): EncryptedPreviousRegistration = {
