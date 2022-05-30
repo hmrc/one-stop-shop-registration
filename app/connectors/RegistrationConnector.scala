@@ -73,4 +73,20 @@ class RegistrationConnector @Inject()(
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
   }
+
+  def validateRegistration(vrn: Vrn): Future[ValidateRegistrationResponse] = {
+
+    val correlationId = UUID.randomUUID().toString
+    val headersWithCorrelationId = headers(correlationId)
+
+    val url = s"${ifConfig.baseUrl}validateRegistration/${vrn.value}"
+    httpClient.GET[ValidateRegistrationResponse](
+      url = url,
+      headers = headersWithCorrelationId
+    ).recover {
+      case e: HttpException =>
+        logger.warn(s"Unexpected response from core validate registration, received status ${e.responseCode}")
+        Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
+    }
+  }
 }
