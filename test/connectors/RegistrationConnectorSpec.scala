@@ -36,6 +36,9 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
   def createRegistrationUrl = "/one-stop-shop-registration-stub/createRegistration"
 
+  def getValidateRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/validateRegistration/${vrn.value}"
+
+
   def generateRegistration(vrn: Vrn) = Registration(
     vrn                   = vrn,
     registeredCompanyName = arbitrary[String].sample.value,
@@ -223,6 +226,51 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
           exp.isLeft mustBe true
           exp.left.get mustBe a[ErrorResponse]
         }
+      }
+    }
+  }
+
+  "validateRegistration" - {
+
+    "must return a Right(validateRegistration) when the server returns OK with a recognised payload" in {
+
+      val app = application
+
+      val validateRegistration = ValidateRegistration(true)
+
+      val responseJson =  Json.prettyPrint(Json.toJson(validateRegistration))
+      server.stubFor(
+        get(urlEqualTo(getValidateRegistrationUrl(vrn)))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .willReturn(ok(responseJson))
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.validateRegistration(vrn).futureValue
+
+        result mustBe Right(validateRegistration)
+      }
+    }
+
+    "must return Left(NotFound) when the server returns NOT_FOUND" in {
+
+      val app = application
+
+      server.stubFor(
+        get(urlEqualTo(getValidateRegistrationUrl(vrn)))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .willReturn(notFound())
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.validateRegistration(vrn).futureValue
+
+        result mustBe Left(NotFound)
       }
     }
   }
