@@ -236,7 +236,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       val app = application
 
-      val validateRegistration = ValidateRegistration(true)
+      val validateRegistration = RegistrationValidationResult(true)
 
       val responseJson =  Json.prettyPrint(Json.toJson(validateRegistration))
       server.stubFor(
