@@ -18,13 +18,13 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class ValidateRegistration(
+case class RegistrationValidationResult(
                             validRegistration: Boolean
                           )
 
-object ValidateRegistration {
+object RegistrationValidationResult {
 
-  implicit val format: OFormat[ValidateRegistration] = Json.format[ValidateRegistration]
+  implicit val format: OFormat[RegistrationValidationResult] = Json.format[RegistrationValidationResult]
 
 }
 
