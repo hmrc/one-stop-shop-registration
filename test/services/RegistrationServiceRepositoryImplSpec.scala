@@ -20,6 +20,7 @@ import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.InsertSucceeded
+import models.RegistrationValidationResult
 import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -37,7 +38,7 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
   private val registrationRepository = mock[RegistrationRepository]
   private val registrationConnector = mock[RegistrationConnector]
   private val enrolmentsConnector = mock[EnrolmentsConnector]
-  private val service = new RegistrationServiceRepositoryImpl(registrationRepository, stubClock)
+  private val service = new RegistrationServiceRepositoryImpl(registrationRepository, registrationConnector, stubClock)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
@@ -95,6 +96,14 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
       val userId = "1234567"
       service.addEnrolment(registrationRequest, userId).futureValue mustBe Right(())
       verifyNoInteractions(enrolmentsConnector)
+    }
+  }
+
+  ".validate" - {
+    "must make a call to the validate method in RegistrationConnector" in {
+      when(registrationConnector.validateRegistration(any())) thenReturn Future.successful(Right(RegistrationValidationResult(true)))
+      service.validate(vrn).futureValue
+      verify(registrationConnector, times(1)).validateRegistration(vrn)
     }
   }
 }

@@ -20,7 +20,7 @@ import base.BaseSpec
 import config.AppConfig
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.{Conflict, EtmpException, NotFound, ServiceUnavailable}
+import models.{Conflict, EtmpException, NotFound, RegistrationValidationResult, ServiceUnavailable}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
@@ -113,6 +113,14 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       when(mockAppConfig.addEnrolment) thenReturn false
       service.addEnrolment(registrationRequest, userId)
       verifyNoInteractions(enrolmentsConnector)
+    }
+  }
+
+  ".validate" - {
+    "must make a call to the validate method in RegistrationConnector" in {
+      when(registrationConnector.validateRegistration(any())) thenReturn Future.successful(Right(RegistrationValidationResult(true)))
+      service.validate(vrn).futureValue
+      verify(registrationConnector, times(1)).validateRegistration(vrn)
     }
   }
 }

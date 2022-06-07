@@ -17,6 +17,7 @@
 package services
 
 import connectors.EnrolmentsHttpParser.EnrolmentResultsResponse
+import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import logging.Logging
 import models.{InsertResult, Registration}
 import models.requests.RegistrationRequest
@@ -52,6 +53,8 @@ trait RegistrationService extends Logging {
   def get(vrn: Vrn): Future[Option[Registration]]
 
   def addEnrolment(request: RegistrationRequest, userId: String)(implicit hc: HeaderCarrier): Future[EnrolmentResultsResponse]
+
+  def validate(vrn: Vrn): Future[ValidateRegistrationResponse]
 }
 
 

@@ -63,4 +63,11 @@ class RegistrationController @Inject()(
         case None               => NotFound
       }
   }
+
+  def validate(vrn: String): Action[AnyContent] = auth.async {
+    registrationService.validate(Vrn(vrn)) map {
+      case Right(response) => Ok(Json.toJson(response))
+      case Left(_) => InternalServerError
+    }
+  }
 }
