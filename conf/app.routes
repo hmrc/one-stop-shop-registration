@@ -7,3 +7,5 @@ GET        /registration            controllers.RegistrationController.get
 GET        /registration/:vrn       controllers.RegistrationController.getByVrn(vrn: String)
 
 GET        /vat-information         controllers.VatInfoController.get
+
+GET        /validate/:vrn           controllers.RegistrationController.validate(vrn: String)
