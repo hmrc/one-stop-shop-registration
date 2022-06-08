@@ -8,4 +8,4 @@ GET        /registration/:vrn       controllers.RegistrationController.getByVrn(
 
 GET        /vat-information         controllers.VatInfoController.get
 
-GET        /validate/:vrn           controllers.RegistrationController.validate(vrn: String)
+GET        /registration/validate/:vrn           controllers.RegistrationController.validate(vrn: String)
