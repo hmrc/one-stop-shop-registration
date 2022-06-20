@@ -38,14 +38,12 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
   private val registrationRequest = RegistrationData.toRegistrationRequest(RegistrationData.registration)
   private val registrationConnector = mock[RegistrationConnector]
-  private val enrolmentsConnector = mock[EnrolmentsConnector]
-  private val mockAppConfig = mock[AppConfig]
 
   private val userId = "12345678"
-  private val service = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, mockAppConfig)
+  private val service = new RegistrationServiceEtmpImpl(registrationConnector)
 
   override def beforeEach(): Unit = {
-    reset(registrationConnector, enrolmentsConnector)
+    reset(registrationConnector)
     super.beforeEach()
   }
 
@@ -99,20 +97,6 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       when(registrationConnector.get(any())) thenReturn Future.successful(Left(NotFound))
       service.get(Vrn("123456789")).futureValue mustBe None
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
-    }
-  }
-
-  ".addEnrolment" - {
-    "must call the EnrolmentsConnector when the addEnrolment toggle is true" in {
-      when(mockAppConfig.addEnrolment) thenReturn true
-      service.addEnrolment(registrationRequest, userId)
-      verify(enrolmentsConnector, times(1)).assignEnrolment(userId, vrn)
-    }
-
-    "must not call the EnrolmentsConnector when the addEnrolment toggle is false" in {
-      when(mockAppConfig.addEnrolment) thenReturn false
-      service.addEnrolment(registrationRequest, userId)
-      verifyNoInteractions(enrolmentsConnector)
     }
   }
 

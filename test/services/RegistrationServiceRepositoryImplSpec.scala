@@ -90,15 +90,6 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
     }
   }
 
-  ".addEnrolment" - {
-    "must return Right() and skip the addition of an enrolment" in {
-      implicit lazy val hc: HeaderCarrier = HeaderCarrier()
-      val userId = "1234567"
-      service.addEnrolment(registrationRequest, userId).futureValue mustBe Right(())
-      verifyNoInteractions(enrolmentsConnector)
-    }
-  }
-
   ".validate" - {
     "must make a call to the validate method in RegistrationConnector" in {
       when(registrationConnector.validateRegistration(any())) thenReturn Future.successful(Right(RegistrationValidationResult(true)))

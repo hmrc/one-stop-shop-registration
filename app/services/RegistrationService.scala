@@ -52,8 +52,6 @@ trait RegistrationService extends Logging {
 
   def get(vrn: Vrn): Future[Option[Registration]]
 
-  def addEnrolment(request: RegistrationRequest, userId: String)(implicit hc: HeaderCarrier): Future[EnrolmentResultsResponse]
-
   def validate(vrn: Vrn): Future[ValidateRegistrationResponse]
 }
 

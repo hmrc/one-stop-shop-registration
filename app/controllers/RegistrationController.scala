@@ -38,14 +38,9 @@ class RegistrationController @Inject()(
     implicit request =>
       registrationService
         .createRegistration(request.body)
-        .flatMap {
-          case InsertSucceeded =>
-            registrationService.addEnrolment(request.body, request.userId).map{
-              case Right(_) => Created
-              case Left(_) => InternalServerError
-            }
-
-          case AlreadyExists => Future.successful(Conflict)
+        .map{
+          case InsertSucceeded => Created
+          case AlreadyExists => Conflict
         }
   }
 

@@ -34,9 +34,4 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
     HeaderNames.AUTHORIZATION -> s"Bearer ${enrolments.authorizationToken}"
   )
 
-  def assignEnrolment(userId: String, vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[EnrolmentResultsResponse] = {
-    val enrolmentKey = s"${enrolments.ossEnrolmentKey}~VRN~$vrn"
-    val url = s"${enrolments.baseUrl}users/$userId/enrolments/$enrolmentKey"
-    httpClient.GET[EnrolmentResultsResponse](url = url, headers = headers)
-  }
 }
