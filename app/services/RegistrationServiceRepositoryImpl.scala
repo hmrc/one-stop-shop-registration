@@ -17,6 +17,8 @@
 package services
 
 import connectors.EnrolmentsHttpParser.EnrolmentResultsResponse
+import connectors.RegistrationConnector
+import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
 import repositories.RegistrationRepository
@@ -30,6 +32,7 @@ import scala.concurrent.Future
 @Singleton
 class RegistrationServiceRepositoryImpl @Inject()(
                                      registrationRepository: RegistrationRepository,
+                                     registrationConnector: RegistrationConnector,
                                      clock: Clock
                                    ) extends RegistrationService {
 
@@ -43,5 +46,9 @@ class RegistrationServiceRepositoryImpl @Inject()(
   override def addEnrolment(request: RegistrationRequest, userId: String)(implicit hc: HeaderCarrier): Future[EnrolmentResultsResponse] = {
     logger.info("Skipping the addition of enrolment")
     Future.successful(Right(()))
+  }
+
+  override def validate(vrn: Vrn): Future[ValidateRegistrationResponse] = {
+    registrationConnector.validateRegistration(vrn)
   }
 }

@@ -18,6 +18,7 @@ package services
 
 import config.AppConfig
 import connectors.EnrolmentsHttpParser.EnrolmentResultsResponse
+import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.RegistrationRequest
@@ -60,4 +61,8 @@ class RegistrationServiceEtmpImpl @Inject()(
         logger.info("Skipping the addition of enrolment")
         Future.successful(Right(()))
     }
+
+  override def validate(vrn: Vrn): Future[ValidateRegistrationResponse] = {
+    registrationConnector.validateRegistration(vrn)
+  }
 }

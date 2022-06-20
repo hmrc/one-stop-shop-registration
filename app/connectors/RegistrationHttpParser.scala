@@ -16,7 +16,7 @@
 
 package connectors
 
-import models.{Conflict, ErrorResponse, InvalidVrn, NotFound, Registration, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
+import models.{Conflict, ErrorResponse, InvalidVrn, NotFound, Registration, ServerError, ServiceUnavailable, UnexpectedResponseStatus, RegistrationValidationResult}
 import play.api.http.Status._
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
@@ -27,6 +27,8 @@ object RegistrationHttpParser extends BaseHttpParser {
   type CreateRegistrationResponse = Either[ErrorResponse, Unit]
 
   type GetRegistrationResponse = Either[ErrorResponse, Registration]
+
+  type ValidateRegistrationResponse = Either[ErrorResponse, RegistrationValidationResult]
 
   implicit object CreateRegistrationResponseReads extends HttpReads[CreateRegistrationResponse]  {
     override def read(method: String, url: String, response: HttpResponse): CreateRegistrationResponse =
@@ -57,5 +59,10 @@ object RegistrationHttpParser extends BaseHttpParser {
   implicit object GetRegistrationResponseReads extends HttpReads[GetRegistrationResponse]  {
     override def read(method: String, url: String, response: HttpResponse): GetRegistrationResponse =
       parseResponse[Registration](response)
+  }
+
+  implicit object ValidateRegistrationReads extends HttpReads[ValidateRegistrationResponse] {
+    override def read(method: String, url: String, response: HttpResponse): ValidateRegistrationResponse =
+      parseResponse[RegistrationValidationResult](response)
   }
 }
