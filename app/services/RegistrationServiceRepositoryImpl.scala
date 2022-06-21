@@ -43,11 +43,6 @@ class RegistrationServiceRepositoryImpl @Inject()(
       registrationRepository.get(vrn)
   }
 
-  override def addEnrolment(request: RegistrationRequest, userId: String)(implicit hc: HeaderCarrier): Future[EnrolmentResultsResponse] = {
-    logger.info("Skipping the addition of enrolment")
-    Future.successful(Right(()))
-  }
-
   override def validate(vrn: Vrn): Future[ValidateRegistrationResponse] = {
     registrationConnector.validateRegistration(vrn)
   }
