@@ -74,6 +74,28 @@ class RegistrationConnector @Inject()(
     }
   }
 
+  def createWithEnrolment(registration: RegistrationRequest): Future[CreateRegistrationWithEnrolmentResponse] = {
+
+    val correlationId = UUID.randomUUID().toString
+    val headersWithCorrelationId = headers(correlationId)
+
+    val headersWithoutAuth = headersWithCorrelationId.filterNot{
+      case (key, _) => key.matches(AUTHORIZATION)
+    }
+
+    logger.info(s"Sending request to core with headers $headersWithoutAuth")
+
+    httpClient.POST[RegistrationRequest, CreateRegistrationWithEnrolmentResponse](
+      s"${ifConfig.baseUrl}createRegistration",
+      registration,
+      headers = headersWithCorrelationId
+    ).recover {
+      case e: HttpException =>
+        logger.warn(s"Unexpected response from core registration, received status ${e.responseCode}")
+        Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
+    }
+  }
+
   def validateRegistration(vrn: Vrn): Future[ValidateRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString

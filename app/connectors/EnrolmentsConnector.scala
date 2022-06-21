@@ -17,12 +17,13 @@
 package connectors
 
 import config.EnrolmentsConfig
-import connectors.EnrolmentsHttpParser.{EnrolmentResultsResponse, EnrolmentsResponseReads}
 import logging.Logging
+import models.enrolments.SubscriberRequest
 import play.api.http.HeaderNames
-import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
 
+import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -30,8 +31,20 @@ import scala.concurrent.{ExecutionContext, Future}
 class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: HttpClient)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
+  private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
   val headers = Seq(
     HeaderNames.AUTHORIZATION -> s"Bearer ${enrolments.authorizationToken}"
   )
 
+  private val etmpId = UUID.randomUUID().toString
+
+  def confirmEnrolment(subscriptionId: String): Future[HttpResponse] = {
+    httpClient.PUT(
+      s"${enrolments.baseUrl}subscriptions/$subscriptionId/subscriber",
+      Json.toJson(SubscriberRequest(enrolments.ossEnrolmentKey,
+        controllers.routes.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId).url,
+        etmpId)
+      ),
+      headers)
+  }
 }
