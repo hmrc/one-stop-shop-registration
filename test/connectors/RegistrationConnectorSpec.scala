@@ -6,6 +6,7 @@ import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
 import models.requests.RegistrationRequest
 import models._
+import models.enrolments.EtmpEnrolmentResponse
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
@@ -158,6 +159,121 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
         }
       }
     }
+  }
+
+  ".createWithEnrolment" - {
+
+    "should return Registration payload correctly" in {
+
+      val subscriptionId = "123456789"
+
+      val app = application
+
+      val registration = generateRegistration(vrn)
+
+      val registrationRequest = toRegistrationRequest(registration)
+
+      val requestJson = Json.stringify(Json.toJson(registrationRequest))
+
+      server.stubFor(
+        post(urlEqualTo(createRegistrationUrl))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .withRequestBody(equalTo(requestJson))
+          .willReturn(aResponse().withStatus(ACCEPTED)
+            .withBody(Json.stringify(Json.toJson(EtmpEnrolmentResponse(subscriptionId)))))
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.createWithEnrolment(registrationRequest).futureValue
+        result mustEqual Right(EtmpEnrolmentResponse(subscriptionId))
+      }
+    }
+
+    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123")))
+      .foreach { error =>
+        s"should return correct error response when server responds with ${error._1}" in {
+
+          val app = application
+
+          val registration = generateRegistration(vrn)
+
+          val registrationRequest = toRegistrationRequest(registration)
+
+          val requestJson = Json.stringify(Json.toJson(registrationRequest))
+
+          server.stubFor(
+            post(urlEqualTo(createRegistrationUrl))
+              .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+              .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+              .withRequestBody(equalTo(requestJson))
+              .willReturn(aResponse().withStatus(error._1))
+          )
+
+          running(app) {
+            val connector = app.injector.instanceOf[RegistrationConnector]
+            val result = connector.createWithEnrolment(registrationRequest).futureValue
+            result mustBe Left(error._2)
+          }
+        }
+      }
+
+    "should return Error Response when server responds with Http Exception" in {
+
+      val app = application
+
+      val registration = generateRegistration(vrn)
+
+      val registrationRequest = toRegistrationRequest(registration)
+
+      val requestJson = Json.stringify(Json.toJson(registrationRequest))
+
+      server.stubFor(
+        post(urlEqualTo(createRegistrationUrl))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .withRequestBody(equalTo(requestJson))
+          .willReturn(aResponse()
+            .withStatus(504)
+            .withFixedDelay(21000))
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        whenReady(connector.createWithEnrolment(registrationRequest), Timeout(Span(30, Seconds))) { exp =>
+          exp.isLeft mustBe true
+          exp.left.get mustBe a[ErrorResponse]
+        }
+      }
+    }
+
+    "should return Invalid Json when server responds with InvalidJson" in {
+
+      val app = application
+
+      val registration = generateRegistration(vrn)
+
+      val registrationRequest = toRegistrationRequest(registration)
+
+      val requestJson = Json.stringify(Json.toJson(registrationRequest))
+
+      server.stubFor(
+        post(urlEqualTo(createRegistrationUrl))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .withRequestBody(equalTo(requestJson))
+          .willReturn(aResponse()
+            .withStatus(202)
+            .withBody(Json.stringify(Json.toJson("tests" -> "invalid"))))
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.createWithEnrolment(registrationRequest).futureValue
+        result mustEqual Left(InvalidJson)
+        }
+      }
   }
 
   "get" - {
