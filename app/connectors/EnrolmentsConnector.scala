@@ -36,9 +36,10 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
     HeaderNames.AUTHORIZATION -> s"Bearer ${enrolments.authorizationToken}"
   )
 
-  private val etmpId = UUID.randomUUID().toString
-
   def confirmEnrolment(subscriptionId: String): Future[HttpResponse] = {
+
+    val etmpId = UUID.randomUUID().toString
+
     httpClient.PUT(
       s"${enrolments.baseUrl}subscriptions/$subscriptionId/subscriber",
       Json.toJson(SubscriberRequest(enrolments.ossEnrolmentKey,

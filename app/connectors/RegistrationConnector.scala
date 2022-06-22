@@ -91,7 +91,7 @@ class RegistrationConnector @Inject()(
       headers = headersWithCorrelationId
     ).recover {
       case e: HttpException =>
-        logger.warn(s"Unexpected response from core registration, received status ${e.responseCode}")
+        logger.error(s"Unexpected response from core registration, ${e}")
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
   }
