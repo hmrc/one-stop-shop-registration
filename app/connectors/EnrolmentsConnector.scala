@@ -20,9 +20,8 @@ import config.EnrolmentsConfig
 import logging.Logging
 import models.enrolments.SubscriberRequest
 import play.api.http.HeaderNames
-import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
-
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,11 +39,11 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
 
     val etmpId = UUID.randomUUID().toString
 
-    httpClient.PUT(
+    httpClient.PUT[SubscriberRequest, HttpResponse](
       s"${enrolments.baseUrl}subscriptions/$subscriptionId/subscriber",
-      Json.toJson(SubscriberRequest(enrolments.ossEnrolmentKey,
+      SubscriberRequest(enrolments.ossEnrolmentKey,
         controllers.routes.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId).url,
-        etmpId)
+        etmpId
       ),
       headers)
   }

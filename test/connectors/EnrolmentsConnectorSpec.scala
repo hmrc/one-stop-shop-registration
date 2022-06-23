@@ -56,7 +56,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
     Seq(BAD_REQUEST, UNAUTHORIZED).foreach {
       status =>
-        s"must return an Exception when the server returns $status" in {
+        s"must return an Http response with $status when the server returns $status" in {
 
           val app = application
 
@@ -69,10 +69,9 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
           running(app) {
             val connector = app.injector.instanceOf[EnrolmentsConnector]
 
+            val result = connector.confirmEnrolment(subscriptionId).futureValue
 
-            whenReady(connector.confirmEnrolment(subscriptionId).failed) {
-              exp => exp mustBe a[Exception]
-            }
+            result.status mustEqual status
           }
         }
     }
