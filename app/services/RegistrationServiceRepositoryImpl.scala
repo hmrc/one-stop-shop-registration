@@ -16,14 +16,12 @@
 
 package services
 
-import connectors.EnrolmentsHttpParser.EnrolmentResultsResponse
 import connectors.RegistrationConnector
 import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
 import repositories.RegistrationRepository
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.Clock
 import javax.inject.{Inject, Singleton}

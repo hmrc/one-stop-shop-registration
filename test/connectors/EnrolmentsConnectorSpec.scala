@@ -8,12 +8,9 @@ import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, NO_CONTENT, UNAUTHORIZED}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.running
-import uk.gov.hmrc.http.HeaderCarrier
 
 
 class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
-
-  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private val basePath = "tax-enrolments/"
 
@@ -59,7 +56,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
     Seq(BAD_REQUEST, UNAUTHORIZED).foreach {
       status =>
-        s"must return an Exception when the server returns $status" in {
+        s"must return an Http response with $status when the server returns $status" in {
 
           val app = application
 
@@ -72,10 +69,9 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
           running(app) {
             val connector = app.injector.instanceOf[EnrolmentsConnector]
 
+            val result = connector.confirmEnrolment(subscriptionId).futureValue
 
-            whenReady(connector.confirmEnrolment(subscriptionId).failed) {
-              exp => exp mustBe a[Exception]
-            }
+            result.status mustEqual status
           }
         }
     }
