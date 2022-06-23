@@ -23,7 +23,6 @@ import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.RegistrationRequest
 import models.{Conflict, EtmpException, InsertResult, Registration}
 import play.api.http.Status.NO_CONTENT
-import play.api.mvc.Results.NoContent
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.{Inject, Singleton}

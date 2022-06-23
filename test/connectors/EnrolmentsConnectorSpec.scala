@@ -8,12 +8,9 @@ import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, NO_CONTENT, UNAUTHORIZED}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.running
-import uk.gov.hmrc.http.HeaderCarrier
 
 
 class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
-
-  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private val basePath = "tax-enrolments/"
 

@@ -21,7 +21,7 @@ import config.AppConfig
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentResponse
-import models.{Conflict, EtmpException, NotFound, RegistrationValidationResult, ServiceUnavailable}
+import models._
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
@@ -29,20 +29,18 @@ import play.api.test.Helpers.running
 import testutils.RegistrationData
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
 class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
-  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
   private val registrationRequest = RegistrationData.toRegistrationRequest(RegistrationData.registration)
   private val registrationConnector = mock[RegistrationConnector]
   private val enrolmentsConnector = mock[EnrolmentsConnector]
   private val appConfig = mock[AppConfig]
 
-  private val userId = "12345678"
   private val service = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, appConfig)
 
   override def beforeEach(): Unit = {

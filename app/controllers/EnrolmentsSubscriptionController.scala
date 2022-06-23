@@ -23,11 +23,11 @@ import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class EnrolmentsSubscriptionController @Inject()(
                                                   cc: ControllerComponents
-                                                )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
+                                                ) extends BackendController(cc) with Logging {
 
   def authoriseEnrolment(subscriptionId: String): Action[JsValue] =
     Action.async(parse.json) {

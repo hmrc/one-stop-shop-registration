@@ -18,7 +18,7 @@ package services
 
 import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
-import connectors.{EnrolmentsConnector, RegistrationConnector}
+import connectors.RegistrationConnector
 import models.InsertResult.InsertSucceeded
 import models.RegistrationValidationResult
 import models.requests.RegistrationRequest
@@ -28,7 +28,6 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.running
 import repositories.RegistrationRepository
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 
@@ -37,7 +36,6 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
   private val registrationRequest    = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]
   private val registrationConnector = mock[RegistrationConnector]
-  private val enrolmentsConnector = mock[EnrolmentsConnector]
   private val service = new RegistrationServiceRepositoryImpl(registrationRepository, registrationConnector, stubClock)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")

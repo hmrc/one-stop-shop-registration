@@ -16,13 +16,11 @@
 
 package services
 
-import connectors.EnrolmentsHttpParser.EnrolmentResultsResponse
 import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import logging.Logging
-import models.{InsertResult, Registration}
 import models.requests.RegistrationRequest
+import models.{InsertResult, Registration}
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, Instant}
 import scala.concurrent.Future
