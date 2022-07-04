@@ -17,6 +17,7 @@
 package models
 
 import crypto.EncryptedValue
+import models.domain.{EncryptedVatCustomerInfo, VatCustomerInfo}
 import play.api.libs.json.{JsValue, Json, OFormat, OWrites, Reads, __}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
@@ -26,6 +27,7 @@ import java.time.Instant
 case class SavedUserAnswers(
                              vrn: Vrn,
                              data: JsValue,
+                             vatInfo: Option[VatCustomerInfo],
                              lastUpdated: Instant
                            )
 
@@ -37,6 +39,7 @@ object SavedUserAnswers {
 case class EncryptedSavedUserAnswers(
                                       vrn: Vrn,
                                       data: EncryptedValue,
+                                      vatInfo: Option[EncryptedVatCustomerInfo],
                                       lastUpdated: Instant
                                     )
 
@@ -49,6 +52,7 @@ object EncryptedSavedUserAnswers {
     (
       (__ \ "vrn").read[Vrn] and
         (__ \ "data").read[EncryptedValue] and
+        (__ \ "vatInfo").readNullable[EncryptedVatCustomerInfo] and
         (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
       ) (EncryptedSavedUserAnswers.apply _)
   }
@@ -60,6 +64,7 @@ object EncryptedSavedUserAnswers {
     (
       (__ \ "vrn").write[Vrn] and
         (__ \ "data").write[EncryptedValue] and
+        (__ \ "vatInfo").writeNullable[EncryptedVatCustomerInfo] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
       ) (unlift(EncryptedSavedUserAnswers.unapply))
   }
