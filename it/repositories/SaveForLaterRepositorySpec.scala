@@ -2,7 +2,8 @@ package repositories
 
 import config.AppConfig
 import crypto.{SavedUserAnswersEncryptor, SecureGCMCipher}
-import models.{EncryptedSavedUserAnswers, SavedUserAnswers}
+import models.domain.VatCustomerInfo
+import models.{DesAddress, EncryptedSavedUserAnswers, SavedUserAnswers}
 import org.mockito.Mockito.when
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
@@ -15,7 +16,7 @@ import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepositorySupport}
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import scala.concurrent.ExecutionContext.Implicits.global
 import utils.StringUtils
 
@@ -48,7 +49,12 @@ class SaveForLaterRepositorySpec
         ))
         now = Instant.now
       } yield SavedUserAnswers(
-        vrn, data, now)
+        vrn, data, Some(VatCustomerInfo(
+          DesAddress("test", Some("test"), Some("test"), Some("test"), Some("test"), Some("test"), countryCode = "UK"),
+          Some(LocalDate.now),
+          Some(true),
+          Some("name")
+        )), now)
     }
 
   when(appConfig.encryptionKey) thenReturn secretKey
