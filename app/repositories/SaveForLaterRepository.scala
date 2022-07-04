@@ -45,16 +45,16 @@ class SaveForLaterRepository @Inject()(
     domainFormat = EncryptedSavedUserAnswers.format,
     indexes = Seq(
       IndexModel(
-        Indexes.ascending("lastUpdated"),
-        IndexOptions()
-          .name("lastUpdatedIdx")
-          .expireAfter(appConfig.cacheTtl, TimeUnit.DAYS)
-      ),
-      IndexModel(
         Indexes.ascending("vrn"),
         IndexOptions()
           .name("userAnswersRefIndex")
           .unique(true)
+      ),
+      IndexModel(
+        Indexes.ascending("lastUpdated"),
+        IndexOptions()
+          .name("lastUpdatedIdx")
+          .expireAfter(appConfig.cacheTtl, TimeUnit.DAYS)
       )
     )
   ) with Logging {
