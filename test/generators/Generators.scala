@@ -243,7 +243,7 @@ trait Generators {
         ))
         now = Instant.now
       } yield SavedUserAnswers(
-        vrn, data, now)
+        vrn, data, None, now)
     }
 
   implicit val arbitrarySaveForLaterRequest: Arbitrary[SaveForLaterRequest] =
@@ -253,6 +253,6 @@ trait Generators {
         data = JsObject(Seq(
           "test" -> Json.toJson("test")
         ))
-      } yield SaveForLaterRequest(vrn, data)
+      } yield SaveForLaterRequest(vrn, data, None)
     }
 }
