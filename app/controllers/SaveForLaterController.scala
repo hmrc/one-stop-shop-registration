@@ -37,7 +37,6 @@ class SaveForLaterController @Inject()(
 
   def post(): Action[SaveForLaterRequest] = auth(parse.json[SaveForLaterRequest]).async {
     implicit request =>
-      println("trying to save")
       saveForLaterService.saveAnswers(request.body).map {
         answers => Created(Json.toJson(answers))
       }
