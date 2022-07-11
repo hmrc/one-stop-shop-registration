@@ -1,11 +1,14 @@
 package generators
 
 import crypto.EncryptedValue
+import models.requests.SaveForLaterRequest
 import models._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
+import play.api.libs.json.{JsObject, Json}
+import uk.gov.hmrc.domain.Vrn
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 
 trait Generators {
 
@@ -224,5 +227,32 @@ trait Generators {
         telephoneNumber <- arbitrary[String]
         emailAddress    <- arbitrary[String]
       } yield ContactDetails(fullName, telephoneNumber, emailAddress)
+    }
+
+  implicit val arbitraryVrn: Arbitrary[Vrn] =
+    Arbitrary {
+      Gen.listOfN(9, Gen.numChar).map(_.mkString).map(Vrn)
+    }
+
+  implicit val arbitrarySavedUserAnswers: Arbitrary[SavedUserAnswers] =
+    Arbitrary {
+      for {
+        vrn <- arbitrary[Vrn]
+        data = JsObject(Seq(
+          "test" -> Json.toJson("test")
+        ))
+        now = Instant.now
+      } yield SavedUserAnswers(
+        vrn, data, None, now)
+    }
+
+  implicit val arbitrarySaveForLaterRequest: Arbitrary[SaveForLaterRequest] =
+    Arbitrary {
+      for {
+        vrn <- arbitrary[Vrn]
+        data = JsObject(Seq(
+          "test" -> Json.toJson("test")
+        ))
+      } yield SaveForLaterRequest(vrn, data, None)
     }
 }
