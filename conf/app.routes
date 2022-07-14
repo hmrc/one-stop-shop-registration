@@ -1,11 +1,18 @@
 # microservice specific routes
 
-POST       /create                  controllers.RegistrationController.create
+POST       /create                                               controllers.RegistrationController.create
 
-GET        /registration            controllers.RegistrationController.get
+GET        /registration                                         controllers.RegistrationController.get
 
-GET        /registration/:vrn       controllers.RegistrationController.getByVrn(vrn: String)
+GET        /registration/:vrn                                    controllers.RegistrationController.getByVrn(vrn: String)
 
-GET        /vat-information         controllers.VatInfoController.get
+GET        /vat-information                                      controllers.VatInfoController.get
 
-GET        /registration/validate/:vrn           controllers.RegistrationController.validate(vrn: String)
+GET        /registration/validate/:vrn                           controllers.RegistrationController.validate(vrn: String)
+
+POST       /authorised/accept/confirm/:subscriptionId            controllers.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId: String)
+
+POST        /save-for-later                                      controllers.SaveForLaterController.post
+GET         /save-for-later                                      controllers.SaveForLaterController.get
+
+GET         /save-for-later/delete                               controllers.SaveForLaterController.delete

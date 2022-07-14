@@ -17,14 +17,13 @@
 package services
 
 import config.AppConfig
-import connectors.EnrolmentsHttpParser.EnrolmentResultsResponse
 import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.RegistrationRequest
 import models.{Conflict, EtmpException, InsertResult, Registration}
+import play.api.http.Status.NO_CONTENT
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,12 +35,27 @@ class RegistrationServiceEtmpImpl @Inject()(
                                              appConfig: AppConfig
                                            )(implicit ec: ExecutionContext) extends RegistrationService {
 
-  def createRegistration(request: RegistrationRequest): Future[InsertResult] =
-    registrationConnector.create(request).map {
-      case Right(_) => InsertSucceeded
-      case Left(Conflict) => AlreadyExists
-      case Left(error) => throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
+  def createRegistration(request: RegistrationRequest): Future[InsertResult] = {
+    if(appConfig.addEnrolment) {
+      registrationConnector.createWithEnrolment(request).flatMap {
+        case Right(response) =>
+          enrolmentsConnector.confirmEnrolment(response.subscriptionId).map(_.status) map {
+            case NO_CONTENT =>
+              InsertSucceeded
+            case _ =>
+              throw EtmpException("Failed to add enrolment")
+          }
+        case Left(Conflict) => Future.successful(AlreadyExists)
+        case Left(error) => throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
+      }
+    } else {
+      registrationConnector.create(request).map {
+        case Right(_) => InsertSucceeded
+        case Left(Conflict) => AlreadyExists
+        case Left(error) => throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
+      }
     }
+  }
 
   def get(vrn: Vrn): Future[Option[Registration]] = {
     registrationConnector.get(vrn).map {
@@ -51,16 +65,6 @@ class RegistrationServiceEtmpImpl @Inject()(
         None
     }
   }
-
-
-  override def addEnrolment(request: RegistrationRequest, userId: String)(implicit hc: HeaderCarrier): Future[EnrolmentResultsResponse] =
-    if(appConfig.addEnrolment) {
-      logger.info("Adding an enrolment")
-      enrolmentsConnector.assignEnrolment(userId = userId, request.vrn)
-    } else {
-        logger.info("Skipping the addition of enrolment")
-        Future.successful(Right(()))
-    }
 
   override def validate(vrn: Vrn): Future[ValidateRegistrationResponse] = {
     registrationConnector.validateRegistration(vrn)

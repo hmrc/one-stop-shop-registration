@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package config
+package models.requests
 
-import play.api.Configuration
+import models.domain.VatCustomerInfo
+import play.api.libs.json.{JsObject, Json, OFormat}
+import uk.gov.hmrc.domain.Vrn
 
-import javax.inject.{Inject, Singleton}
 
-@Singleton
-class AppConfig @Inject()(config: Configuration) {
+case class SaveForLaterRequest(
+                                vrn: Vrn,
+                                data: JsObject,
+                                vatInfo: Option[VatCustomerInfo]
+                              )
 
-  val encryptionKey: String = config.get[String]("mongodb.encryption.key")
-  val addEnrolment: Boolean = config.get[Boolean]("features.addEnrolment")
-  val cacheTtl: Int = config.get[Int]("mongodb.timeToLiveInDays")
+object SaveForLaterRequest {
+
+  implicit val format: OFormat[SaveForLaterRequest] = Json.format[SaveForLaterRequest]
 }

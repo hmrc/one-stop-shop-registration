@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package config
+package models.enrolments
 
-import play.api.Configuration
+import play.api.libs.json._
 
-import javax.inject.{Inject, Singleton}
+case class SubscriberRequest(serviceName: String, callback: String, etmpId: String)
 
-@Singleton
-class AppConfig @Inject()(config: Configuration) {
+object SubscriberRequest {
+  implicit val format: OFormat[SubscriberRequest] = Json.format[SubscriberRequest]
 
-  val encryptionKey: String = config.get[String]("mongodb.encryption.key")
-  val addEnrolment: Boolean = config.get[Boolean]("features.addEnrolment")
-  val cacheTtl: Int = config.get[Int]("mongodb.timeToLiveInDays")
 }

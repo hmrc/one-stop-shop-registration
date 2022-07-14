@@ -16,14 +16,12 @@
 
 package services
 
-import connectors.EnrolmentsHttpParser.EnrolmentResultsResponse
 import connectors.RegistrationConnector
 import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
 import repositories.RegistrationRepository
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.Clock
 import javax.inject.{Inject, Singleton}
@@ -41,11 +39,6 @@ class RegistrationServiceRepositoryImpl @Inject()(
 
   def get(vrn: Vrn): Future[Option[Registration]] = {
       registrationRepository.get(vrn)
-  }
-
-  override def addEnrolment(request: RegistrationRequest, userId: String)(implicit hc: HeaderCarrier): Future[EnrolmentResultsResponse] = {
-    logger.info("Skipping the addition of enrolment")
-    Future.successful(Right(()))
   }
 
   override def validate(vrn: Vrn): Future[ValidateRegistrationResponse] = {

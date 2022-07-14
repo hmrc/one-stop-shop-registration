@@ -3,24 +3,16 @@ package connectors
 import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models._
-import org.scalacheck.Gen
 import play.api.Application
-import play.api.http.Status.NOT_FOUND
+import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, NO_CONTENT, UNAUTHORIZED}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.running
-import uk.gov.hmrc.http.HeaderCarrier
 
 
 class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
-  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
-
-  private val userId = "credId-123456789"
-  private val enrolmentKey = s"HMRC-OSS-ORG~VRN~${vrn}"
   private val basePath = "tax-enrolments/"
-
-  private val enrolmentsUrl = s"/${basePath}users/$userId/enrolments/$enrolmentKey"
 
   val errorResponseBody = "Error"
   val response: JsValue = Json.toJson(TaxEnrolmentErrorResponse(NOT_FOUND.toString, errorResponseBody))
@@ -30,84 +22,60 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
       .configure(
         "microservice.services.enrolments.host" -> "127.0.0.1",
         "microservice.services.enrolments.port" -> server.port,
-        "microservice.services.des.authorizationToken" -> "auth-token",
+        "microservice.services.enrolments.authorizationToken" -> "auth-token",
         "microservice.services.enrolments.basePath" -> basePath
       )
       .build()
 
-  "assignEnrolment" - {
+  private val subscriptionId = "123456789"
 
-    "must return Right() when a user is a assigned an enrolment" in {
+  private val url = s"/${basePath}subscriptions/$subscriptionId/subscriber"
 
-      val app = application
+  ".confirmEnrolment" - {
 
-      server.stubFor(
-        get(urlEqualTo(enrolmentsUrl))
-          .willReturn(created)
-      )
 
-      running(app) {
-        val connector = app.injector.instanceOf[EnrolmentsConnector]
-        val result = connector.assignEnrolment(userId, vrn).futureValue
-
-        result mustBe Right(())
-      }
-    }
-
-    "must return Left with an error response body when the server responds with an error and response body" in {
+    "must return an HttpResponse with status NoContent when the server returns NoContent" in {
 
       val app = application
 
       server.stubFor(
-        get(urlEqualTo(enrolmentsUrl))
-          .willReturn(notFound.withBody(response.toString()))
+        put(urlEqualTo(url))
+          .withHeader("Authorization", equalTo("Bearer auth-token"))
+          .willReturn(aResponse().withStatus(NO_CONTENT))
       )
 
       running(app) {
-
         val connector = app.injector.instanceOf[EnrolmentsConnector]
-        val result = connector.assignEnrolment(userId, vrn).futureValue
+        val result = connector.confirmEnrolment(subscriptionId).futureValue
 
-        result mustBe Left(TaxEnrolmentErrorResponse(NOT_FOUND.toString, errorResponseBody))
+
+        result.status mustEqual NO_CONTENT
       }
     }
 
-    "must return Left with an empty error response body when the server responds with an error and no response body" in {
 
-      val app = application
+    Seq(BAD_REQUEST, UNAUTHORIZED).foreach {
+      status =>
+        s"must return an Http response with $status when the server returns $status" in {
 
-      server.stubFor(
-        get(urlEqualTo(enrolmentsUrl))
-          .willReturn(notFound())
-      )
+          val app = application
 
-      running(app) {
+          server.stubFor(
+            put(urlEqualTo(url))
+              .withHeader("Authorization", equalTo("Bearer auth-token"))
+              .willReturn(aResponse().withStatus(status))
+          )
 
-        val connector = app.injector.instanceOf[EnrolmentsConnector]
-        val result = connector.assignEnrolment(userId, vrn).futureValue
+          running(app) {
+            val connector = app.injector.instanceOf[EnrolmentsConnector]
 
-        result mustBe Left(TaxEnrolmentErrorResponse(s"UNEXPECTED_404", "The response body was empty"))
-      }
+            val result = connector.confirmEnrolment(subscriptionId).futureValue
+
+            result.status mustEqual status
+          }
+        }
     }
 
-    "must return Left(UnexpectedResponse) when the server returns an unexpected response code" in {
-
-      val app = application
-
-      val status = Gen.oneOf(401, 402, 403, 501, 502).sample.value
-
-      server.stubFor(
-        get(urlEqualTo(enrolmentsUrl))
-          .willReturn(aResponse().withStatus(status).withBody(Json.toJson(errorResponseBody).toString()))
-      )
-
-      running(app) {
-
-        val connector = app.injector.instanceOf[EnrolmentsConnector]
-        val result = connector.assignEnrolment(userId, vrn).futureValue
-
-        result mustBe Left(TaxEnrolmentErrorResponse(s"UNEXPECTED_${status}", Json.toJson(errorResponseBody).toString()))
-      }
-    }
   }
+
 }

@@ -26,7 +26,7 @@ import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class RegistrationController @Inject()(
                                         cc: ControllerComponents,
@@ -38,14 +38,9 @@ class RegistrationController @Inject()(
     implicit request =>
       registrationService
         .createRegistration(request.body)
-        .flatMap {
-          case InsertSucceeded =>
-            registrationService.addEnrolment(request.body, request.userId).map{
-              case Right(_) => Created
-              case Left(_) => InternalServerError
-            }
-
-          case AlreadyExists => Future.successful(Conflict)
+        .map{
+          case InsertSucceeded => Created
+          case AlreadyExists => Conflict
         }
   }
 
