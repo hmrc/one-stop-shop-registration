@@ -16,8 +16,8 @@
 
 package connectors
 
-import models.enrolments.EtmpEnrolmentResponse
-import models.{Conflict, ErrorResponse, InvalidJson, InvalidVrn, NotFound, Registration, RegistrationValidationResult, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
+import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
+import models.{Conflict, ErrorResponse, EtmpEnrolmentError, InvalidJson, InvalidVrn, NotFound, Registration, RegistrationValidationResult, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -63,12 +63,19 @@ object RegistrationHttpParser extends BaseHttpParser {
   implicit object CreateRegistrationWithEnrolment extends HttpReads[CreateRegistrationWithEnrolmentResponse] {
     override def read(method: String, url: String, response: HttpResponse): CreateRegistrationWithEnrolmentResponse =
       response.status match {
-        case ACCEPTED => response.json.validate[EtmpEnrolmentResponse] match {
+        case OK | CREATED => response.json.validate[EtmpEnrolmentResponse] match {
           case JsSuccess(enrolmentResponse, _) => Right(enrolmentResponse)
           case JsError(errors) =>
             logger.warn("Failed trying to parse JSON", errors)
             Left(InvalidJson)
         }
+        case UNPROCESSABLE_ENTITY => response.json.validate[EtmpEnrolmentErrorResponse] match {
+          case JsSuccess(enrolmentResponse, _) => Left(EtmpEnrolmentError(enrolmentResponse.code, enrolmentResponse.text))
+          case JsError(errors) =>
+            logger.warn("Failed trying to parse JSON", errors)
+            Left(InvalidJson)
+        }
+
         case NOT_FOUND =>
           logger.warn(s"Received NotFound from ${serviceName}")
           Left(NotFound)
