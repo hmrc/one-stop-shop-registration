@@ -6,7 +6,7 @@ import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
 import models.requests.RegistrationRequest
 import models._
-import models.enrolments.EtmpEnrolmentResponse
+import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
@@ -163,9 +163,96 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
   ".createWithEnrolment" - {
 
-    "should return Registration payload correctly" in {
+    Seq(OK, CREATED).foreach {
+      status =>
+        s"when status is $status" - {
+          "should return Registration payload correctly" in {
 
-      val subscriptionId = "123456789"
+            val subscriptionId = "123456789"
+
+            val app = application
+
+            val registration = generateRegistration(vrn)
+
+            val registrationRequest = toRegistrationRequest(registration)
+
+            val requestJson = Json.stringify(Json.toJson(registrationRequest))
+
+            server.stubFor(
+              post(urlEqualTo(createRegistrationUrl))
+                .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+                .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+                .withRequestBody(equalTo(requestJson))
+                .willReturn(aResponse().withStatus(status)
+                  .withBody(Json.stringify(Json.toJson(EtmpEnrolmentResponse(subscriptionId)))))
+            )
+
+            running(app) {
+              val connector = app.injector.instanceOf[RegistrationConnector]
+              val result = connector.createWithEnrolment(registrationRequest).futureValue
+              result mustEqual Right(EtmpEnrolmentResponse(subscriptionId))
+            }
+          }
+
+          "should return Invalid Json when server responds with InvalidJson" in {
+
+            val app = application
+
+            val registration = generateRegistration(vrn)
+
+            val registrationRequest = toRegistrationRequest(registration)
+
+            val requestJson = Json.stringify(Json.toJson(registrationRequest))
+
+            server.stubFor(
+              post(urlEqualTo(createRegistrationUrl))
+                .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+                .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+                .withRequestBody(equalTo(requestJson))
+                .willReturn(aResponse()
+                  .withStatus(status)
+                  .withBody(Json.stringify(Json.toJson("tests" -> "invalid"))))
+            )
+
+            running(app) {
+              val connector = app.injector.instanceOf[RegistrationConnector]
+              val result = connector.createWithEnrolment(registrationRequest).futureValue
+              result mustEqual Left(InvalidJson)
+            }
+          }
+        }
+
+    }
+
+    "should return EtmpError when server responds with status 422 and correct error response json" in {
+
+      val app = application
+
+      val registration = generateRegistration(vrn)
+
+      val registrationRequest = toRegistrationRequest(registration)
+
+      val requestJson = Json.stringify(Json.toJson(registrationRequest))
+
+      val errorResponse = EtmpEnrolmentErrorResponse(LocalDate.now(stubClock), "123", "error")
+
+      server.stubFor(
+        post(urlEqualTo(createRegistrationUrl))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .withRequestBody(equalTo(requestJson))
+          .willReturn(aResponse().withStatus(UNPROCESSABLE_ENTITY)
+            .withBody(Json.stringify(Json.toJson(errorResponse))))
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.createWithEnrolment(registrationRequest).futureValue
+        result mustEqual Left(EtmpEnrolmentError("123", "error"))
+      }
+    }
+
+    "should return Invalid Json when server responds with status 422 and incorrect error response json" in {
 
       val app = application
 
@@ -180,16 +267,17 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
           .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
           .withRequestBody(equalTo(requestJson))
-          .willReturn(aResponse().withStatus(ACCEPTED)
-            .withBody(Json.stringify(Json.toJson(EtmpEnrolmentResponse(subscriptionId)))))
+          .willReturn(aResponse().withStatus(UNPROCESSABLE_ENTITY)
+            .withBody(Json.stringify(Json.toJson("tests" -> "invalid"))))
       )
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
         val result = connector.createWithEnrolment(registrationRequest).futureValue
-        result mustEqual Right(EtmpEnrolmentResponse(subscriptionId))
+        result mustEqual Left(InvalidJson)
       }
     }
+
 
     Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123")))
       .foreach { error =>
@@ -248,32 +336,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       }
     }
 
-    "should return Invalid Json when server responds with InvalidJson" in {
 
-      val app = application
-
-      val registration = generateRegistration(vrn)
-
-      val registrationRequest = toRegistrationRequest(registration)
-
-      val requestJson = Json.stringify(Json.toJson(registrationRequest))
-
-      server.stubFor(
-        post(urlEqualTo(createRegistrationUrl))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .withRequestBody(equalTo(requestJson))
-          .willReturn(aResponse()
-            .withStatus(202)
-            .withBody(Json.stringify(Json.toJson("tests" -> "invalid"))))
-      )
-
-      running(app) {
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.createWithEnrolment(registrationRequest).futureValue
-        result mustEqual Left(InvalidJson)
-        }
-      }
   }
 
   "get" - {

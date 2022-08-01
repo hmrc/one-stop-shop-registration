@@ -20,8 +20,9 @@ import config.AppConfig
 import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.enrolments.EtmpEnrolmentErrorResponse
 import models.requests.RegistrationRequest
-import models.{Conflict, EtmpException, InsertResult, Registration}
+import models.{Conflict, EtmpEnrolmentError, EtmpException, InsertResult, Registration}
 import play.api.http.Status.NO_CONTENT
 import uk.gov.hmrc.domain.Vrn
 
@@ -46,7 +47,8 @@ class RegistrationServiceEtmpImpl @Inject()(
               throw EtmpException("Failed to add enrolment")
           }
         case Left(Conflict) => Future.successful(AlreadyExists)
-        case Left(error) => throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
+        case Left(EtmpEnrolmentError(EtmpEnrolmentErrorResponse.alreadyActiveSubscriptionErrorCode, _)) => Future.successful(AlreadyExists)
+        case Left(error) => throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
       }
     } else {
       registrationConnector.create(request).map {

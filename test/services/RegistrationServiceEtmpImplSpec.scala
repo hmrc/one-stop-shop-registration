@@ -75,6 +75,22 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         service.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
       }
 
+      "must return Already Exists when connector returns Conflict" in {
+        when(enrolmentsConnector.confirmEnrolment(any())) thenReturn Future.successful(HttpResponse(204, ""))
+        when(appConfig.addEnrolment) thenReturn true
+        when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(Conflict))
+
+        service.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
+      }
+
+      "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
+        when(enrolmentsConnector.confirmEnrolment(any())) thenReturn Future.successful(HttpResponse(204, ""))
+        when(appConfig.addEnrolment) thenReturn true
+        when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(EtmpEnrolmentError("007", "error")))
+
+        service.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
+      }
+
       "must throw EtmpException when connector returns any other error" in {
 
         when(enrolmentsConnector.confirmEnrolment(any())) thenReturn Future.successful(HttpResponse(204, ""))
@@ -82,7 +98,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
         whenReady(service.createRegistration(registrationRequest).failed) {
-          exp => exp mustBe EtmpException(s"There was an error getting Registration from ETMP: ${ServiceUnavailable.body}")
+          exp => exp mustBe EtmpException(s"There was an error creating Registration enrolment from ETMP: ${ServiceUnavailable.body}")
         }
       }
     }
