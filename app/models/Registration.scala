@@ -17,6 +17,7 @@
 package models
 
 import crypto.EncryptedValue
+import models.etmp.{EtmpRegistration, EtmpSchemeDetails}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -42,6 +43,26 @@ case class Registration(
 
 object Registration {
   implicit val format: OFormat[Registration] = Json.format[Registration]
+
+  def fromRegistration(registration: Registration): EtmpRegistration = {
+    EtmpRegistration(
+      vrn = registration.vrn,
+      tradingNames = registration.tradingNames,
+      vatDetails = registration.vatDetails,
+      schemeDetails = EtmpSchemeDetails(
+        commencementDate = registration.commencementDate,
+        firstSaleDate = registration.dateOfFirstSale,
+        euRegistrationDetails = registration.euRegistrations,
+        previousEURegistrationDetails = ???,
+        onlineMarketPlace = registration.isOnlineMarketplace,
+        websites = registration.websites,
+        contactName = registration.contactDetails.fullName,
+        businessTelephoneNumber = registration.contactDetails.telephoneNumber,
+        businessEmailId = registration.contactDetails.emailAddress)
+
+
+    )
+  }
 }
 
 case class EncryptedRegistration(
