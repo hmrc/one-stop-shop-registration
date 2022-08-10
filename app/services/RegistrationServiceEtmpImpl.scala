@@ -21,6 +21,7 @@ import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
+import models.etmp.EtmpRegistrationRequest
 import models.requests.RegistrationRequest
 import models.{Conflict, EtmpEnrolmentError, EtmpException, InsertResult, Registration}
 import play.api.http.Status.NO_CONTENT
@@ -38,9 +39,10 @@ class RegistrationServiceEtmpImpl @Inject()(
 
   def createRegistration(request: RegistrationRequest): Future[InsertResult] = {
     if(appConfig.addEnrolment) {
-      registrationConnector.createWithEnrolment(request).flatMap {
+      val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
+      registrationConnector.createWithEnrolment(registrationRequest).flatMap {
         case Right(response) =>
-          enrolmentsConnector.confirmEnrolment(response.subscriptionId).map(_.status) map {
+          enrolmentsConnector.confirmEnrolment(response.formBundleNumber).map(_.status) map {
             case NO_CONTENT =>
               InsertSucceeded
             case _ =>

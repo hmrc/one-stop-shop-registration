@@ -20,6 +20,7 @@ import config.IfConfig
 import connectors.RegistrationHttpParser._
 import logging.Logging
 import models.UnexpectedResponseStatus
+import models.etmp.EtmpRegistrationRequest
 import models.requests.RegistrationRequest
 import play.api.http.HeaderNames.AUTHORIZATION
 import uk.gov.hmrc.domain.Vrn
@@ -74,7 +75,7 @@ class RegistrationConnector @Inject()(
     }
   }
 
-  def createWithEnrolment(registration: RegistrationRequest): Future[CreateRegistrationWithEnrolmentResponse] = {
+  def createWithEnrolment(registration: EtmpRegistrationRequest): Future[CreateRegistrationWithEnrolmentResponse] = {
 
     val correlationId = UUID.randomUUID().toString
     val headersWithCorrelationId = headers(correlationId)
@@ -85,7 +86,7 @@ class RegistrationConnector @Inject()(
 
     logger.info(s"Sending request to core with headers $headersWithoutAuth")
 
-    httpClient.POST[RegistrationRequest, CreateRegistrationWithEnrolmentResponse](
+    httpClient.POST[EtmpRegistrationRequest, CreateRegistrationWithEnrolmentResponse](
       s"${ifConfig.baseUrl}createRegistration",
       registration,
       headers = headersWithCorrelationId

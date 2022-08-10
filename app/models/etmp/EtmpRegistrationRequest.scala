@@ -16,11 +16,12 @@
 
 package models.etmp
 
-import models.{BankDetails, Registration}
+import models.requests.RegistrationRequest
+import models.BankDetails
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
-case class EtmpRegistration(
+case class EtmpRegistrationRequest(
                              vrn: Vrn,
                              tradingNames: Seq[EtmpTradingNames],
                              schemeDetails: EtmpSchemeDetails,
@@ -28,10 +29,10 @@ case class EtmpRegistration(
                            ) {
 }
 
-object EtmpRegistration {
+object EtmpRegistrationRequest {
 
-  def fromRegistration(registration: Registration): EtmpRegistration = {
-    EtmpRegistration(
+  def fromRegistrationRequest(registration: RegistrationRequest): EtmpRegistrationRequest = {
+    EtmpRegistrationRequest(
       vrn = registration.vrn,
       tradingNames = registration.tradingNames.map(EtmpTradingNames(_)),
       schemeDetails = EtmpSchemeDetails(
@@ -48,6 +49,6 @@ object EtmpRegistration {
     )
   }
 
-  implicit val format: OFormat[EtmpRegistration] = Json.format[EtmpRegistration]
+  implicit val format: OFormat[EtmpRegistrationRequest] = Json.format[EtmpRegistrationRequest]
 }
 

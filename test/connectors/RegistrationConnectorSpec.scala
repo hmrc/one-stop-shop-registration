@@ -163,20 +163,18 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
   ".createWithEnrolment" - {
 
-    Seq(OK, CREATED).foreach {
+    Seq(CREATED).foreach {
       status =>
         s"when status is $status" - {
           "should return Registration payload correctly" in {
 
-            val subscriptionId = "123456789"
+            val now = LocalDate.now()
+
+            val formBundleNumber = "123456789"
 
             val app = application
 
-            val registration = generateRegistration(vrn)
-
-            val registrationRequest = toRegistrationRequest(registration)
-
-            val requestJson = Json.stringify(Json.toJson(registrationRequest))
+            val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
 
             server.stubFor(
               post(urlEqualTo(createRegistrationUrl))
@@ -184,13 +182,13 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
                 .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
                 .withRequestBody(equalTo(requestJson))
                 .willReturn(aResponse().withStatus(status)
-                  .withBody(Json.stringify(Json.toJson(EtmpEnrolmentResponse(subscriptionId)))))
+                  .withBody(Json.stringify(Json.toJson(EtmpEnrolmentResponse(now, vrn.vrn, formBundleNumber)))))
             )
 
             running(app) {
               val connector = app.injector.instanceOf[RegistrationConnector]
-              val result = connector.createWithEnrolment(registrationRequest).futureValue
-              result mustEqual Right(EtmpEnrolmentResponse(subscriptionId))
+              val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
+              result mustEqual Right(EtmpEnrolmentResponse(now, vrn.vrn, formBundleNumber))
             }
           }
 
@@ -198,11 +196,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
             val app = application
 
-            val registration = generateRegistration(vrn)
-
-            val registrationRequest = toRegistrationRequest(registration)
-
-            val requestJson = Json.stringify(Json.toJson(registrationRequest))
+            val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
 
             server.stubFor(
               post(urlEqualTo(createRegistrationUrl))
@@ -216,7 +210,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
             running(app) {
               val connector = app.injector.instanceOf[RegistrationConnector]
-              val result = connector.createWithEnrolment(registrationRequest).futureValue
+              val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
               result mustEqual Left(InvalidJson)
             }
           }
@@ -228,11 +222,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       val app = application
 
-      val registration = generateRegistration(vrn)
-
-      val registrationRequest = toRegistrationRequest(registration)
-
-      val requestJson = Json.stringify(Json.toJson(registrationRequest))
+      val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
 
       val errorResponse = EtmpEnrolmentErrorResponse(LocalDate.now(stubClock), "123", "error")
 
@@ -247,7 +237,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.createWithEnrolment(registrationRequest).futureValue
+        val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
         result mustEqual Left(EtmpEnrolmentError("123", "error"))
       }
     }
@@ -256,11 +246,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       val app = application
 
-      val registration = generateRegistration(vrn)
-
-      val registrationRequest = toRegistrationRequest(registration)
-
-      val requestJson = Json.stringify(Json.toJson(registrationRequest))
+      val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
 
       server.stubFor(
         post(urlEqualTo(createRegistrationUrl))
@@ -273,7 +259,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.createWithEnrolment(registrationRequest).futureValue
+        val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
         result mustEqual Left(InvalidJson)
       }
     }
@@ -285,11 +271,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
           val app = application
 
-          val registration = generateRegistration(vrn)
-
-          val registrationRequest = toRegistrationRequest(registration)
-
-          val requestJson = Json.stringify(Json.toJson(registrationRequest))
+          val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
 
           server.stubFor(
             post(urlEqualTo(createRegistrationUrl))
@@ -301,7 +283,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
           running(app) {
             val connector = app.injector.instanceOf[RegistrationConnector]
-            val result = connector.createWithEnrolment(registrationRequest).futureValue
+            val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
             result mustBe Left(error._2)
           }
         }
@@ -311,11 +293,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       val app = application
 
-      val registration = generateRegistration(vrn)
-
-      val registrationRequest = toRegistrationRequest(registration)
-
-      val requestJson = Json.stringify(Json.toJson(registrationRequest))
+      val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
 
       server.stubFor(
         post(urlEqualTo(createRegistrationUrl))
@@ -329,7 +307,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        whenReady(connector.createWithEnrolment(registrationRequest), Timeout(Span(30, Seconds))) { exp =>
+        whenReady(connector.createWithEnrolment(etmpRegistrationRequest), Timeout(Span(30, Seconds))) { exp =>
           exp.isLeft mustBe true
           exp.left.get mustBe a[ErrorResponse]
         }
