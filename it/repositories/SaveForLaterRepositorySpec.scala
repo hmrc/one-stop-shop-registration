@@ -33,7 +33,6 @@ class SaveForLaterRepositorySpec
   private val encryptor = new SavedUserAnswersEncryptor(cipher)
   private val appConfig = mock[AppConfig]
   private val secretKey = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
-  private val instant = Instant.now
 
   implicit val arbitraryVrn: Arbitrary[Vrn] =
     Arbitrary {

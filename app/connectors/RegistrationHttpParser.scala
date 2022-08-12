@@ -63,7 +63,7 @@ object RegistrationHttpParser extends BaseHttpParser {
   implicit object CreateRegistrationWithEnrolment extends HttpReads[CreateRegistrationWithEnrolmentResponse] {
     override def read(method: String, url: String, response: HttpResponse): CreateRegistrationWithEnrolmentResponse =
       response.status match {
-        case OK | CREATED => response.json.validate[EtmpEnrolmentResponse] match {
+        case CREATED => response.json.validate[EtmpEnrolmentResponse] match {
           case JsSuccess(enrolmentResponse, _) => Right(enrolmentResponse)
           case JsError(errors) =>
             logger.warn("Failed trying to parse JSON", errors)

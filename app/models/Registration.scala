@@ -42,6 +42,7 @@ case class Registration(
 
 object Registration {
   implicit val format: OFormat[Registration] = Json.format[Registration]
+
 }
 
 case class EncryptedRegistration(

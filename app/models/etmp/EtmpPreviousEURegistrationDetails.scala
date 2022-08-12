@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package models.enrolments
+package models.etmp
 
 import play.api.libs.json.{Json, OFormat}
 
-import java.time.LocalDate
+case class EtmpPreviousEURegistrationDetails(euCountry: String, vatNumber: String)
 
-case class EtmpEnrolmentResponse(processingDateTime: LocalDate, vrn: String, formBundleNumber: String)
+object EtmpPreviousEURegistrationDetails {
 
-object EtmpEnrolmentResponse {
-  implicit val format: OFormat[EtmpEnrolmentResponse] = Json.format[EtmpEnrolmentResponse]
+  implicit val format: OFormat[EtmpPreviousEURegistrationDetails] = Json.format[EtmpPreviousEURegistrationDetails]
 }
