@@ -22,8 +22,8 @@ import java.time.format.DateTimeFormatter
 
 case class EtmpSchemeDetails(commencementDate: String,
                              firstSaleDate: Option[String],
-                             euRegistrationDetails: Option[Seq[EtmpEuRegistrationDetails]],
-                             previousEURegistrationDetails: Option[Seq[EtmpPreviousEURegistrationDetails]],
+                             euRegistrationDetails: Seq[EtmpEuRegistrationDetails],
+                             previousEURegistrationDetails: Seq[EtmpPreviousEURegistrationDetails],
                              onlineMarketPlace: Boolean,
                              websites: Seq[Website],
                              contactName: String,

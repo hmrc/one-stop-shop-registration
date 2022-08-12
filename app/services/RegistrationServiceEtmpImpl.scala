@@ -39,7 +39,7 @@ class RegistrationServiceEtmpImpl @Inject()(
 
   def createRegistration(request: RegistrationRequest): Future[InsertResult] = {
     if(appConfig.addEnrolment) {
-      val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
+        val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
       registrationConnector.createWithEnrolment(registrationRequest).flatMap {
         case Right(response) =>
           enrolmentsConnector.confirmEnrolment(response.formBundleNumber).map(_.status) map {

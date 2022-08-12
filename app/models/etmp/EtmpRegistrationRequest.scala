@@ -38,8 +38,8 @@ object EtmpRegistrationRequest {
       schemeDetails = EtmpSchemeDetails(
         commencementDate = registration.commencementDate.format(EtmpSchemeDetails.dateFormatter),
         firstSaleDate = registration.dateOfFirstSale.map(_.format(EtmpSchemeDetails.dateFormatter)),
-        euRegistrationDetails = Some(registration.euRegistrations.map(registration => EtmpEuRegistrationDetails.create(registration))),
-        previousEURegistrationDetails = Some(registration.previousRegistrations.map(previous => EtmpPreviousEURegistrationDetails(previous.country.code, previous.vatNumber))),
+        euRegistrationDetails = registration.euRegistrations.map(registration => EtmpEuRegistrationDetails.create(registration)),
+        previousEURegistrationDetails = registration.previousRegistrations.map(previous => EtmpPreviousEURegistrationDetails(previous.country.code, previous.vatNumber)),
         onlineMarketPlace = registration.isOnlineMarketplace,
         websites = registration.websites.map(Website(_)),
         contactName = registration.contactDetails.fullName,
