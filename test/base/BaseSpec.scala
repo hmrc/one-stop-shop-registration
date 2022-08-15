@@ -70,8 +70,9 @@ trait BaseSpec
           postcode = None)
       ),
       previousEURegistrationDetails = Seq(EtmpPreviousEURegistrationDetails(
-        euCountry = "DE",
-        vatNumber = "DE123"
+        issuedBy = "DE",
+        registrationNumber = "DE123",
+        schemeType = SchemeType.OSSUnion
       )),
       onlineMarketPlace = false,
       websites = Seq(

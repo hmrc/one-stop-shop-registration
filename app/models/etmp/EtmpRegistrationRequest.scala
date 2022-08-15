@@ -39,7 +39,7 @@ object EtmpRegistrationRequest {
         commencementDate = registration.commencementDate.format(EtmpSchemeDetails.dateFormatter),
         firstSaleDate = registration.dateOfFirstSale.map(_.format(EtmpSchemeDetails.dateFormatter)),
         euRegistrationDetails = registration.euRegistrations.map(registration => EtmpEuRegistrationDetails.create(registration)),
-        previousEURegistrationDetails = registration.previousRegistrations.map(previous => EtmpPreviousEURegistrationDetails(previous.country.code, previous.vatNumber)),
+        previousEURegistrationDetails = registration.previousRegistrations.map(previous => EtmpPreviousEURegistrationDetails(previous.country.code, previous.vatNumber, SchemeType.OSSUnion)),
         onlineMarketPlace = registration.isOnlineMarketplace,
         websites = registration.websites.map(Website(_)),
         contactName = registration.contactDetails.fullName,
