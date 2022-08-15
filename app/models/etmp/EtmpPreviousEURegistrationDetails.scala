@@ -16,9 +16,26 @@
 
 package models.etmp
 
+import models.{Enumerable, WithName}
 import play.api.libs.json.{Json, OFormat}
 
-case class EtmpPreviousEURegistrationDetails(euCountry: String, vatNumber: String)
+sealed trait SchemeType
+
+object SchemeType extends Enumerable.Implicits {
+  case object OSSUnion extends WithName("OSSUnion") with SchemeType
+  case object OSSNonUnion extends WithName("OSSNonUnion") with SchemeType
+  case object IOSSWithoutIntermediary extends WithName("IOSSWithoutIntermediary") with SchemeType
+  case object IOSSWithIntermediary extends WithName("IOSSWithIntermediary") with SchemeType
+
+  val values: Seq[SchemeType] = Seq(
+    OSSUnion, OSSNonUnion, IOSSWithoutIntermediary, IOSSWithIntermediary
+  )
+
+  implicit val enumerable: Enumerable[SchemeType] =
+    Enumerable(values.map(v => v.toString -> v): _*)
+}
+
+case class EtmpPreviousEURegistrationDetails(issuedBy: String, registrationNumber: String, schemeType: SchemeType)
 
 object EtmpPreviousEURegistrationDetails {
 
