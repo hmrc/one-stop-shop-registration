@@ -1,8 +1,9 @@
 package base
 
 import controllers.actions.{AuthAction, FakeAuthAction}
+import models.Quarter.Q3
 import models.etmp._
-import models.{BankDetails, Bic, Iban}
+import models.{BankDetails, Bic, Iban, Period}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -31,6 +32,7 @@ trait BaseSpec
   val iban: Iban = Iban("GB33BUKB20201555555555").right.get
   val bic: Bic = Bic("ABCDGB2A").get
 
+  val period: Period = Period(2021, Q3)
 
   protected def applicationBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder().overrides(bind[AuthAction].to[FakeAuthAction])

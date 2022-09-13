@@ -17,6 +17,7 @@
 package models
 
 import crypto.EncryptedValue
+import models.exclusions.ExcludedTrader
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -37,7 +38,8 @@ case class Registration(
                          niPresence: Option[NiPresence],
                          dateOfFirstSale: Option[LocalDate],
                          submissionReceived: Instant,
-                         lastUpdated: Instant
+                         lastUpdated: Instant,
+                         excludedTrader: Option[ExcludedTrader] = None
                        )
 
 object Registration {

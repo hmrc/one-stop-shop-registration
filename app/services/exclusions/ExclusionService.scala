@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package config
+package services.exclusions
 
+import config.AppConfig
+import logging.Logging
 import models.exclusions.ExcludedTrader
-import play.api.Configuration
+import uk.gov.hmrc.domain.Vrn
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
+import scala.concurrent.Future
 
-@Singleton
-class AppConfig @Inject()(config: Configuration) {
+class ExclusionService @Inject()(appConfig: AppConfig) extends Logging {
 
-  val encryptionKey: String = config.get[String]("mongodb.encryption.key")
-  val addEnrolment: Boolean = config.get[Boolean]("features.addEnrolment")
-  val cacheTtl: Int = config.get[Int]("mongodb.timeToLiveInDays")
+  def findExcludedTrader(vrn: Vrn): Future[Option[ExcludedTrader]] =
+    Future.successful(appConfig.excludedTraders.find(e => e.vrn.vrn == vrn.vrn))
 
-  val exclusionsEnabled: Boolean = config.get[Boolean]("features.exclusions.enabled")
-  val excludedTraders: Seq[ExcludedTrader] = config.get[Seq[ExcludedTrader]]("features.exclusions.excluded-traders")
 }
