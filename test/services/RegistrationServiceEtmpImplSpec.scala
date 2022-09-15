@@ -22,10 +22,12 @@ import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentResponse
 import models._
+import models.exclusions.ExcludedTrader
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.running
+import services.exclusions.ExclusionService
 import testutils.RegistrationData
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
@@ -42,10 +44,12 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   private val enrolmentsConnector = mock[EnrolmentsConnector]
   private val appConfig = mock[AppConfig]
 
-  private val service = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, appConfig)
+  private val exclusionService = mock[ExclusionService]
+  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, appConfig, exclusionService)
 
   override def beforeEach(): Unit = {
     reset(registrationConnector)
+    reset(exclusionService)
     super.beforeEach()
   }
 
@@ -74,7 +78,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(
           Right(EtmpEnrolmentResponse(LocalDate.now(), vrn.vrn, "test")))
 
-        service.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
+        registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
       }
 
       "must return Already Exists when connector returns Conflict" in {
@@ -82,7 +86,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(appConfig.addEnrolment) thenReturn true
         when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(Conflict))
 
-        service.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
+        registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
       }
 
       "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
@@ -90,7 +94,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(appConfig.addEnrolment) thenReturn true
         when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(EtmpEnrolmentError("007", "error")))
 
-        service.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
+        registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
       }
 
       "must throw EtmpException when connector returns any other error" in {
@@ -99,7 +103,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(appConfig.addEnrolment) thenReturn true
         when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
-        whenReady(service.createRegistration(registrationRequest).failed) {
+        whenReady(registrationService.createRegistration(registrationRequest).failed) {
           exp => exp mustBe EtmpException(s"There was an error creating Registration enrolment from ETMP: ${ServiceUnavailable.body}")
         }
       }
@@ -112,7 +116,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(appConfig.addEnrolment) thenReturn false
         when(registrationConnector.create(any())) thenReturn Future.successful(Right(()))
 
-        service.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
+        registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
       }
 
       "must return Already Exists when connector returns conflict" in {
@@ -120,7 +124,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(appConfig.addEnrolment) thenReturn false
         when(registrationConnector.create(any())) thenReturn Future.successful(Left(Conflict))
 
-        service.createRegistration(registrationRequest).futureValue mustBe AlreadyExists
+        registrationService.createRegistration(registrationRequest).futureValue mustBe AlreadyExists
       }
 
       "must throw Exception when connector returns any other error" in {
@@ -128,7 +132,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(appConfig.addEnrolment) thenReturn false
         when(registrationConnector.create(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
-        whenReady(service.createRegistration(registrationRequest).failed) {
+        whenReady(registrationService.createRegistration(registrationRequest).failed) {
           exp => exp mustBe EtmpException(s"There was an error getting Registration from ETMP: ${ServiceUnavailable.body}")
         }
       }
@@ -139,13 +143,26 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
     "must return a Some(registration) when the connector returns right" in {
       when(registrationConnector.get(any())) thenReturn Future.successful(Right(registration))
-      service.get(Vrn("123456789")).futureValue mustBe Some(registration)
+      registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration)
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
+    }
+
+    "when exclusion is enabled and trader is excluded" - {
+
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, "HMRC", 4, period)
+
+      "must return a Some(registration) when the connector returns right" in {
+        when(registrationConnector.get(any())) thenReturn Future.successful(Right(registration))
+        when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
+        when(appConfig.exclusionsEnabled) thenReturn(true)
+        registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration.copy(excludedTrader = Some(excludedTrader)))
+        verify(registrationConnector, times(1)).get(Vrn("123456789"))
+      }
     }
 
     "must return a None when the connector returns Left(error)" in {
       when(registrationConnector.get(any())) thenReturn Future.successful(Left(NotFound))
-      service.get(Vrn("123456789")).futureValue mustBe None
+      registrationService.get(Vrn("123456789")).futureValue mustBe None
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
     }
   }
@@ -153,7 +170,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   ".validate" - {
     "must make a call to the validate method in RegistrationConnector" in {
       when(registrationConnector.validateRegistration(any())) thenReturn Future.successful(Right(RegistrationValidationResult(true)))
-      service.validate(vrn).futureValue
+      registrationService.validate(vrn).futureValue
       verify(registrationConnector, times(1)).validateRegistration(vrn)
     }
   }
