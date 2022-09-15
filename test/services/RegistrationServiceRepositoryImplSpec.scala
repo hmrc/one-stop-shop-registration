@@ -18,30 +18,38 @@ package services
 
 import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
+import config.AppConfig
 import connectors.RegistrationConnector
 import models.InsertResult.InsertSucceeded
 import models.RegistrationValidationResult
+import models.exclusions.ExcludedTrader
 import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.running
 import repositories.RegistrationRepository
+import services.exclusions.ExclusionService
+import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val registrationRequest    = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]
   private val registrationConnector = mock[RegistrationConnector]
-  private val service = new RegistrationServiceRepositoryImpl(registrationRepository, registrationConnector, stubClock)
+  private val mockConfig = mock[AppConfig]
+  private val exclusionService = mock[ExclusionService]
+  private val registrationService = new RegistrationServiceRepositoryImpl(registrationRepository, registrationConnector, stubClock, mockConfig, exclusionService)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
   override def beforeEach(): Unit = {
     reset(registrationRepository, registrationConnector)
+    reset(exclusionService)
     super.beforeEach()
   }
 
@@ -65,14 +73,14 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
 
       when(registrationRepository.insert(any())).thenReturn(successful(InsertSucceeded))
 
-      service.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
+      registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
     }
 
     "propagate any error" in {
       when(registrationRepository.insert(any())).thenThrow(emulatedFailure)
 
       val caught = intercept[RuntimeException] {
-        service.createRegistration(registrationRequest).futureValue
+        registrationService.createRegistration(registrationRequest).futureValue
       }
 
       caught mustBe emulatedFailure
@@ -83,15 +91,31 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
 
     "must call registrationRepository.get" in {
       when(registrationRepository.get(any())) thenReturn Future.successful(None)
-      service.get(Vrn("123456789")).futureValue
+      when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(None)
+      registrationService.get(Vrn("123456789")).futureValue
       verify(registrationRepository, times(1)).get(Vrn("123456789"))
     }
+
+
+    "when exclusion is enabled and trader is excluded" - {
+
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, "HMRC", 4, period)
+
+      "must return a Some(registration) when the connector returns right" in {
+        when(registrationRepository.get(any())) thenReturn Future.successful(Some(registration))
+        when(mockConfig.exclusionsEnabled) thenReturn(true)
+        when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
+        registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration.copy(excludedTrader = Some(excludedTrader)))
+        verify(registrationRepository, times(1)).get(Vrn("123456789"))
+      }
+    }
+
   }
 
   ".validate" - {
     "must make a call to the validate method in RegistrationConnector" in {
       when(registrationConnector.validateRegistration(any())) thenReturn Future.successful(Right(RegistrationValidationResult(true)))
-      service.validate(vrn).futureValue
+      registrationService.validate(vrn).futureValue
       verify(registrationConnector, times(1)).validateRegistration(vrn)
     }
   }

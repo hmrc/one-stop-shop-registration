@@ -50,6 +50,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     reset(registrationConnector)
     reset(exclusionService)
+    reset(appConfig)
     super.beforeEach()
   }
 
@@ -153,8 +154,8 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
       "must return a Some(registration) when the connector returns right" in {
         when(registrationConnector.get(any())) thenReturn Future.successful(Right(registration))
-        when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
         when(appConfig.exclusionsEnabled) thenReturn(true)
+        when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
         registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationConnector, times(1)).get(Vrn("123456789"))
       }
