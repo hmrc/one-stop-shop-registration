@@ -30,11 +30,24 @@ case class ExcludedTrader(
                            effectivePeriod: Period
                          )
 
+case class HashedExcludedTrader(
+                                 hashedVrn: String,
+                                 exclusionSource: String,
+                                 exclusionReason: Int,
+                                 effectivePeriod: Period
+                               )
+
 object ExcludedTrader extends Logging {
 
   implicit val format: OFormat[ExcludedTrader] = Json.format[ExcludedTrader]
 
-  implicit lazy val configLoader: ConfigLoader[ExcludedTrader] = ConfigLoader {
+}
+
+object HashedExcludedTrader extends Logging {
+
+  implicit val format: OFormat[HashedExcludedTrader] = Json.format[HashedExcludedTrader]
+
+  implicit lazy val configLoader: ConfigLoader[HashedExcludedTrader] = ConfigLoader {
     config =>
       prefix =>
 
@@ -46,15 +59,15 @@ object ExcludedTrader extends Logging {
 
         Period.fromString(effectivePeriod) match {
           case Some(excludedPeriod) =>
-            ExcludedTrader(Vrn(vrn), exclusionSource, exclusionReason, excludedPeriod)
+            HashedExcludedTrader(vrn, exclusionSource, exclusionReason, excludedPeriod)
           case _ =>
             logger.error("Unable to parse period")
             throw new Exception("Unable to parse period")
         }
   }
 
-  implicit val seqExcludedTrader: ConfigLoader[Seq[ExcludedTrader]] = new ConfigLoader[Seq[ExcludedTrader]] {
-    override def load(rootConfig: Config, path: String): Seq[ExcludedTrader] = {
+  implicit val seqExcludedTrader: ConfigLoader[Seq[HashedExcludedTrader]] = new ConfigLoader[Seq[HashedExcludedTrader]] {
+    override def load(rootConfig: Config, path: String): Seq[HashedExcludedTrader] = {
       import scala.collection.JavaConverters._
 
       val config = rootConfig.getConfig(path)
@@ -62,8 +75,8 @@ object ExcludedTrader extends Logging {
       rootConfig.getObject(path).keySet().asScala.map { key =>
         val value = config.getConfig(key)
 
-        ExcludedTrader(
-          Vrn(value.getString("vrn")),
+        HashedExcludedTrader(
+          value.getString("vrn"),
           value.getString("exclusionSource"),
           value.getInt("exclusionReason"),
           Period.fromString(value.getString("effectivePeriod")) match {

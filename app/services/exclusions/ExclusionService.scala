@@ -19,14 +19,24 @@ package services.exclusions
 import config.AppConfig
 import logging.Logging
 import models.exclusions.ExcludedTrader
+import uk.gov.hmrc.crypto.{PlainText, Scrambled, Sha512Crypto}
 import uk.gov.hmrc.domain.Vrn
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
+@Singleton
 class ExclusionService @Inject()(appConfig: AppConfig) extends Logging {
 
+  lazy val crypto = new Sha512Crypto(appConfig.exclusionsHashingKey)
+
   def findExcludedTrader(vrn: Vrn): Future[Option[ExcludedTrader]] =
-    Future.successful(appConfig.excludedTraders.find(e => e.vrn.vrn == vrn.vrn))
+    Future.successful(
+      appConfig.excludedTraders.find{e =>
+        crypto.verify(PlainText(vrn.vrn), Scrambled(e.hashedVrn))
+      }.map { e =>
+        ExcludedTrader(vrn, e.exclusionSource, e.exclusionReason, e.effectivePeriod)
+      }
+    )
 
 }
