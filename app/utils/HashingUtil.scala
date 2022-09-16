@@ -14,31 +14,24 @@
  * limitations under the License.
  */
 
-package services.exclusions
+package utils
 
 import config.AppConfig
-import logging.Logging
-import models.exclusions.ExcludedTrader
 import uk.gov.hmrc.crypto.{PlainText, Scrambled, Sha512Crypto}
-import uk.gov.hmrc.domain.Vrn
-import utils.HashingUtil
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
 
 @Singleton
-class ExclusionService @Inject()(
-                                  hashingUtil: HashingUtil,
-                                  appConfig: AppConfig
-                                ) extends Logging {
+class HashingUtil @Inject()(appConfig: AppConfig) {
 
-  def findExcludedTrader(vrn: Vrn): Future[Option[ExcludedTrader]] =
-    Future.successful(
-      appConfig.excludedTraders.find { e =>
-        hashingUtil.verifyValue(vrn.vrn, e.hashedVrn)
-      }.map { e =>
-        ExcludedTrader(vrn, e.exclusionSource, e.exclusionReason, e.effectivePeriod)
-      }
-    )
+  lazy val crypto = new Sha512Crypto(appConfig.exclusionsHashingKey)
+
+  def hashValue(value: String): String = {
+    crypto.hash(PlainText(value)).value
+  }
+
+  def verifyValue(value: String, hashedValue: String): Boolean = {
+    crypto.verify(PlainText(value), Scrambled(hashedValue))
+  }
 
 }
