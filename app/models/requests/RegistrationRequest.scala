@@ -35,7 +35,9 @@ case class RegistrationRequest(
                                 bankDetails: BankDetails,
                                 isOnlineMarketplace: Boolean,
                                 niPresence: Option[NiPresence],
-                                dateOfFirstSale: Option[LocalDate]
+                                dateOfFirstSale: Option[LocalDate],
+                                nonCompliantReturns: Option[Int],
+                                nonCompliantPayments: Option[Int]
                               )
 
 object RegistrationRequest {

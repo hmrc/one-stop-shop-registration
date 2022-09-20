@@ -207,7 +207,9 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         niPresence            = None,
         dateOfFirstSale       = None,
         submissionReceived    = Instant.now(stubClock),
-        lastUpdated           = Instant.now(stubClock)
+        lastUpdated           = Instant.now(stubClock),
+        nonCompliantReturns   = None,
+        nonCompliantPayments  = None
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)
@@ -233,7 +235,9 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         niPresence            = Some(arbitrary[NiPresence].sample.value),
         dateOfFirstSale       = Some(LocalDate.now),
         submissionReceived    = Instant.now(stubClock),
-        lastUpdated           = Instant.now(stubClock)
+        lastUpdated           = Instant.now(stubClock),
+        nonCompliantReturns   = None,
+        nonCompliantPayments  = None
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)

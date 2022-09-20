@@ -55,7 +55,9 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
     niPresence            = None,
     dateOfFirstSale       = None,
     submissionReceived    = Instant.now(stubClock),
-    lastUpdated           = Instant.now(stubClock)
+    lastUpdated           = Instant.now(stubClock),
+    nonCompliantReturns   = None,
+    nonCompliantPayments  = None
   )
 
   def toRegistrationRequest(registration: Registration) = {
@@ -72,7 +74,9 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       registration.bankDetails,
       registration.isOnlineMarketplace,
       registration.niPresence,
-      registration.dateOfFirstSale
+      registration.dateOfFirstSale,
+      registration.nonCompliantReturns,
+      registration.nonCompliantPayments
     )
   }
 

@@ -44,7 +44,9 @@ object EtmpRegistrationRequest {
         websites = registration.websites.map(Website(_)),
         contactName = registration.contactDetails.fullName,
         businessTelephoneNumber = registration.contactDetails.telephoneNumber,
-        businessEmailId = registration.contactDetails.emailAddress),
+        businessEmailId = registration.contactDetails.emailAddress,
+        nonCompliantReturns = registration.nonCompliantReturns,
+        nonCompliantPayments = registration.nonCompliantPayments),
       bankDetails = registration.bankDetails
     )
   }

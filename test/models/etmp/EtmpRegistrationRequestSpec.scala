@@ -57,7 +57,9 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             bankDetails = BankDetails("Account name", Some(bic), iban),
             isOnlineMarketplace = false,
             niPresence = Some(PrincipalPlaceOfBusinessInNi),
-            dateOfFirstSale = Some(LocalDate.now)
+            dateOfFirstSale = Some(LocalDate.now),
+            nonCompliantReturns = None,
+            nonCompliantPayments = None
           )
 
         EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest) mustBe etmpRegistrationRequest

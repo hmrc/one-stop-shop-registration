@@ -285,7 +285,9 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       niPresence            = registration.niPresence,
       dateOfFirstSale       = registration.dateOfFirstSale,
       submissionReceived    = registration.submissionReceived,
-      lastUpdated           = registration.lastUpdated
+      lastUpdated           = registration.lastUpdated,
+      nonCompliantReturns   = registration.nonCompliantReturns,
+      nonCompliantPayments  = registration.nonCompliantPayments
     )
   }
 
@@ -307,7 +309,9 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       niPresence            = registration.niPresence,
       dateOfFirstSale       = registration.dateOfFirstSale,
       submissionReceived    = registration.submissionReceived,
-      lastUpdated           = registration.lastUpdated
+      lastUpdated           = registration.lastUpdated,
+      nonCompliantReturns   = registration.nonCompliantReturns,
+      nonCompliantPayments  = registration.nonCompliantPayments
     )
   }
 }

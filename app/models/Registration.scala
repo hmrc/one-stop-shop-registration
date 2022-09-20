@@ -39,7 +39,9 @@ case class Registration(
                          dateOfFirstSale: Option[LocalDate],
                          submissionReceived: Instant,
                          lastUpdated: Instant,
-                         excludedTrader: Option[ExcludedTrader] = None
+                         excludedTrader: Option[ExcludedTrader] = None,
+                         nonCompliantReturns: Option[Int] = None,
+                         nonCompliantPayments: Option[Int] = None
                        )
 
 object Registration {
@@ -62,7 +64,9 @@ case class EncryptedRegistration(
                                   niPresence: Option[NiPresence],
                                   submissionReceived: Instant,
                                   lastUpdated: Instant,
-                                  dateOfFirstSale: Option[LocalDate]
+                                  dateOfFirstSale: Option[LocalDate],
+                                  nonCompliantReturns: Option[Int],
+                                  nonCompliantPayments: Option[Int]
                                 )
 
 object EncryptedRegistration {

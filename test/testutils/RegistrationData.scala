@@ -56,7 +56,9 @@ object RegistrationData {
       niPresence = Some(PrincipalPlaceOfBusinessInNi),
       dateOfFirstSale = Some(LocalDate.now),
       submissionReceived = Instant.now(stubClock),
-      lastUpdated = Instant.now(stubClock)
+      lastUpdated = Instant.now(stubClock),
+      nonCompliantReturns = None,
+      nonCompliantPayments = None
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""
@@ -75,7 +77,9 @@ object RegistrationData {
       registration.bankDetails,
       registration.isOnlineMarketplace,
       registration.niPresence,
-      registration.dateOfFirstSale
+      registration.dateOfFirstSale,
+      registration.nonCompliantReturns,
+      registration.nonCompliantPayments
     )
   }
 
