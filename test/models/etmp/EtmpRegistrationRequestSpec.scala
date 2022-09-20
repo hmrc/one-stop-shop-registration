@@ -58,8 +58,8 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             isOnlineMarketplace = false,
             niPresence = Some(PrincipalPlaceOfBusinessInNi),
             dateOfFirstSale = Some(LocalDate.now),
-            nonCompliantReturns = None,
-            nonCompliantPayments = None
+            nonCompliantReturns = Some(1),
+            nonCompliantPayments = Some(2)
           )
 
         EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest) mustBe etmpRegistrationRequest

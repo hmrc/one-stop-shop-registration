@@ -57,8 +57,8 @@ object RegistrationData {
       dateOfFirstSale = Some(LocalDate.now),
       submissionReceived = Instant.now(stubClock),
       lastUpdated = Instant.now(stubClock),
-      nonCompliantReturns = None,
-      nonCompliantPayments = None
+      nonCompliantReturns = Some(1),
+      nonCompliantPayments = Some(2)
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""

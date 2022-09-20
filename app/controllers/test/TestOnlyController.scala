@@ -107,8 +107,8 @@ class TestOnlyController @Inject()(
       dateOfFirstSale = Some(LocalDate.now),
       submissionReceived = Instant.now(clock),
       lastUpdated = Instant.now(clock),
-      nonCompliantReturns =  None,
-      nonCompliantPayments = None
+      nonCompliantReturns =  Some(1),
+      nonCompliantPayments = Some(2)
     )
 
 }
