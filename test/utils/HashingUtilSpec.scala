@@ -28,7 +28,7 @@ class HashingUtilSpec extends BaseSpec with BeforeAndAfterEach {
 
       val hashedValue = hashingUtil.hashValue(originalValue)
 
-      hashingUtil.crypto.verify(PlainText(originalValue), Scrambled(hashedValue)) mustBe true
+      hashingUtil.verifyValue(originalValue, hashedValue) mustBe true
     }
 
     // Use this for producing the hashing VRNs
@@ -43,13 +43,14 @@ class HashingUtilSpec extends BaseSpec with BeforeAndAfterEach {
         "123456789",
         "100005123",
         "600000011",
-        "600000012"
+        "600000012",
+        "600000013"
       )
 
       valuesToBeHashed.zipWithIndex.foreach { case (valueToBeHashed, index) =>
         val hashedValue = hashingUtil.hashValue(valueToBeHashed)
-        println(s"Value $valueToBeHashed has index $index")
-        println(s"features.exclusions.excluded-traders.$index.vrn = $hashedValue")
+        println(s"Value $valueToBeHashed has index ${index + 1}")
+        println(s"""features.exclusions.excluded-traders.${index + 1}.vrn: "$hashedValue"""")
       }
 
       true mustBe true // this is just here to make this test pass
