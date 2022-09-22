@@ -16,7 +16,7 @@
 
 package config
 
-import models.exclusions.ExcludedTrader
+import models.exclusions.HashedExcludedTrader
 import play.api.Configuration
 
 import javax.inject.{Inject, Singleton}
@@ -29,5 +29,6 @@ class AppConfig @Inject()(config: Configuration) {
   val cacheTtl: Int = config.get[Int]("mongodb.timeToLiveInDays")
 
   val exclusionsEnabled: Boolean = config.get[Boolean]("features.exclusions.enabled")
-  val excludedTraders: Seq[ExcludedTrader] = config.get[Seq[ExcludedTrader]]("features.exclusions.excluded-traders")
+  val exclusionsHashingKey: String = config.get[String]("features.exclusions.hashing-key")
+  val excludedTraders: Seq[HashedExcludedTrader] = config.get[Seq[HashedExcludedTrader]]("features.exclusions.excluded-traders")
 }
