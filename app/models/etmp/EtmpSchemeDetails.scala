@@ -28,7 +28,9 @@ case class EtmpSchemeDetails(commencementDate: String,
                              websites: Seq[Website],
                              contactName: String,
                              businessTelephoneNumber: String,
-                             businessEmailId: String)
+                             businessEmailId: String,
+                             nonCompliantReturns: Option[Int],
+                             nonCompliantPayments: Option[Int])
 
 object EtmpSchemeDetails {
 

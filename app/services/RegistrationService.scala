@@ -43,7 +43,9 @@ trait RegistrationService extends Logging {
       niPresence = request.niPresence,
       dateOfFirstSale = request.dateOfFirstSale,
       submissionReceived = Instant.now(clock),
-      lastUpdated = Instant.now(clock)
+      lastUpdated = Instant.now(clock),
+      nonCompliantReturns = request.nonCompliantReturns,
+      nonCompliantPayments = request.nonCompliantPayments
     )
 
   def createRegistration(request: RegistrationRequest): Future[InsertResult]
