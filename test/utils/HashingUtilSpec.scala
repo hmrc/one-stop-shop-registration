@@ -5,7 +5,6 @@ import config.AppConfig
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
-import uk.gov.hmrc.crypto.{PlainText, Scrambled}
 
 class HashingUtilSpec extends BaseSpec with BeforeAndAfterEach {
 

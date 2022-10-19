@@ -26,7 +26,7 @@ import java.time.LocalDate
 case class VatCustomerInfo(
                             address: DesAddress,
                             registrationDate: Option[LocalDate],
-                            partOfVatGroup: Option[Boolean],
+                            partOfVatGroup: Boolean,
                             organisationName: Option[String]
                           )
 
@@ -39,11 +39,11 @@ object VatCustomerInfo {
                               organisationName: Option[String]
                             ): VatCustomerInfo =
     VatCustomerInfo(
-      address          = address,
+      address = address,
       registrationDate = registrationDate,
-      partOfVatGroup   = partyType map {
-        case VatGroup       => true
-        case OtherPartyType => false
+      partOfVatGroup = partyType match {
+        case Some(VatGroup) => true
+        case _ => false
       },
       organisationName = organisationName
     )
@@ -51,10 +51,10 @@ object VatCustomerInfo {
   implicit val desReads: Reads[VatCustomerInfo] =
     (
       (__ \ "approvedInformation" \ "PPOB" \ "address").read[DesAddress] and
-      (__ \ "approvedInformation" \ "customerDetails" \ "effectiveRegistrationDate").readNullable[LocalDate] and
-      (__ \ "approvedInformation" \ "customerDetails" \ "partyType").readNullable[PartyType] and
-      (__ \ "approvedInformation" \ "customerDetails" \ "organisationName").readNullable[String]
-    )(VatCustomerInfo.fromDesPayload _)
+        (__ \ "approvedInformation" \ "customerDetails" \ "effectiveRegistrationDate").readNullable[LocalDate] and
+        (__ \ "approvedInformation" \ "customerDetails" \ "partyType").readNullable[PartyType] and
+        (__ \ "approvedInformation" \ "customerDetails" \ "organisationName").readNullable[String]
+      ) (VatCustomerInfo.fromDesPayload _)
 
   implicit val writes: OWrites[VatCustomerInfo] =
     Json.writes[VatCustomerInfo]

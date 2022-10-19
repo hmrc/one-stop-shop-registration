@@ -69,7 +69,7 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
           val expectedResult = VatCustomerInfo(
             registrationDate = Some(LocalDate.of(2000, 1, 1)),
             address          = DesAddress("line 1", Some("line 2"), None, None, None, Some("AA11 1AA"), "GB"),
-            partOfVatGroup   = Some(true),
+            partOfVatGroup   = true,
             organisationName = Some("Foo")
           )
 
