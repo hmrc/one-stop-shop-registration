@@ -24,7 +24,7 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object RegistrationHttpParser extends BaseHttpParser {
 
-  override val serviceName: String = "core registration"
+  override val serviceName: String = "etmp registration"
 
   type CreateRegistrationResponse = Either[ErrorResponse, Unit]
 

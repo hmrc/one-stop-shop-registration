@@ -48,7 +48,7 @@ class RegistrationConnector @Inject()(
       headers = headersWithCorrelationId
     ).recover {
       case e: HttpException =>
-        logger.warn(s"Unexpected response from core registration, received status ${e.responseCode}")
+        logger.error(s"Unexpected response from etmp registration, received status ${e.responseCode}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
   }
@@ -62,7 +62,7 @@ class RegistrationConnector @Inject()(
       case (key, _) => key.matches(AUTHORIZATION)
     }
 
-    logger.info(s"Sending request to core with headers $headersWithoutAuth")
+    logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
 
     httpClient.POST[RegistrationRequest, CreateRegistrationResponse](
       s"${ifConfig.baseUrl}createRegistration",
@@ -70,7 +70,7 @@ class RegistrationConnector @Inject()(
       headers = headersWithCorrelationId
     ).recover {
       case e: HttpException =>
-        logger.warn(s"Unexpected response from core registration, received status ${e.responseCode}")
+        logger.error(s"Unexpected response from etmp registration, received status ${e.responseCode}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
   }
@@ -84,7 +84,7 @@ class RegistrationConnector @Inject()(
       case (key, _) => key.matches(AUTHORIZATION)
     }
 
-    logger.info(s"Sending request to core with headers $headersWithoutAuth")
+    logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
 
     httpClient.POST[EtmpRegistrationRequest, CreateRegistrationWithEnrolmentResponse](
       s"${ifConfig.baseUrl}createRegistration",
@@ -92,7 +92,7 @@ class RegistrationConnector @Inject()(
       headers = headersWithCorrelationId
     ).recover {
       case e: HttpException =>
-        logger.error(s"Unexpected response from core registration, ${e}")
+        logger.error(s"Unexpected response from etmp registration ${e.getMessage}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
   }
@@ -108,7 +108,7 @@ class RegistrationConnector @Inject()(
       headers = headersWithCorrelationId
     ).recover {
       case e: HttpException =>
-        logger.warn(s"Unexpected response from core validate registration, received status ${e.responseCode}")
+        logger.error(s"Unexpected response from core validate registration, received status ${e.responseCode}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
   }
