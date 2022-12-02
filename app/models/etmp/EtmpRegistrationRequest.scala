@@ -17,7 +17,7 @@
 package models.etmp
 
 import models.requests.RegistrationRequest
-import models.BankDetails
+import models.{BankDetails, PreviousRegistration, PreviousScheme}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -39,7 +39,7 @@ object EtmpRegistrationRequest {
         commencementDate = registration.commencementDate.format(EtmpSchemeDetails.dateFormatter),
         firstSaleDate = registration.dateOfFirstSale.map(_.format(EtmpSchemeDetails.dateFormatter)),
         euRegistrationDetails = registration.euRegistrations.map(registration => EtmpEuRegistrationDetails.create(registration)),
-        previousEURegistrationDetails = registration.previousRegistrations.map(previous => EtmpPreviousEURegistrationDetails(previous.country.code, previous.vatNumber, SchemeType.OSSUnion)),
+        previousEURegistrationDetails = mapPreviousRegistrations(registration.previousRegistrations),
         onlineMarketPlace = registration.isOnlineMarketplace,
         websites = registration.websites.map(Website(_)),
         contactName = registration.contactDetails.fullName,
@@ -49,6 +49,29 @@ object EtmpRegistrationRequest {
         nonCompliantPayments = registration.nonCompliantPayments),
       bankDetails = registration.bankDetails
     )
+  }
+
+  private def mapPreviousRegistrations(previousRegistrations: Seq[PreviousRegistration]): Seq[EtmpPreviousEURegistrationDetails] = {
+    previousRegistrations.flatMap { previousRegistration =>
+      previousRegistration.previousSchemesDetails.map { previousSchemeDetails =>
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = previousRegistration.country.code,
+          registrationNumber = previousSchemeDetails.previousSchemeNumbers.previousSchemeNumber,
+          schemeType = convertSchemeType(previousSchemeDetails.previousScheme),
+          intermediaryNumber = previousSchemeDetails.previousSchemeNumbers.previousIntermediaryNumber
+        )
+      }
+    }
+  }
+
+  private def convertSchemeType(previousScheme: PreviousScheme): SchemeType = {
+    previousScheme match {
+      case PreviousScheme.OSSU => SchemeType.OSSUnion
+      case PreviousScheme.OSSNU => SchemeType.OSSNonUnion
+      case PreviousScheme.IOSSWOI => SchemeType.IOSSWithoutIntermediary
+      case PreviousScheme.IOSSWI => SchemeType.IOSSWithIntermediary
+      case _ => throw new Exception("Unknown scheme, unable to convert")
+    }
   }
 
   implicit val format: OFormat[EtmpRegistrationRequest] = Json.format[EtmpRegistrationRequest]

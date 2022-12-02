@@ -19,16 +19,51 @@ package models
 import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 
-case class PreviousRegistration(country: Country, vatNumber: String)
+case class PreviousRegistration(country: Country, previousSchemesDetails: Seq[PreviousSchemeDetails])
 
 object PreviousRegistration {
 
   implicit val format: OFormat[PreviousRegistration] = Json.format[PreviousRegistration]
 }
 
-case class EncryptedPreviousRegistration(country: EncryptedCountry, vatNumber: EncryptedValue)
+case class EncryptedPreviousRegistration(country: EncryptedCountry, previousSchemeDetails: Seq[EncryptedPreviousSchemeDetails])
 
 object EncryptedPreviousRegistration {
 
   implicit val format: OFormat[EncryptedPreviousRegistration] = Json.format[EncryptedPreviousRegistration]
+}
+
+case class PreviousSchemeDetails(previousScheme: PreviousScheme, previousSchemeNumbers: PreviousSchemeNumbers)
+
+object PreviousSchemeDetails {
+
+  implicit val format: OFormat[PreviousSchemeDetails] = Json.format[PreviousSchemeDetails]
+}
+
+
+case class EncryptedPreviousSchemeDetails(previousScheme: EncryptedValue, previousSchemeNumbers: EncryptedPreviousSchemeNumbers)
+
+object EncryptedPreviousSchemeDetails {
+
+  implicit val format: OFormat[EncryptedPreviousSchemeDetails] = Json.format[EncryptedPreviousSchemeDetails]
+}
+
+case class PreviousSchemeNumbers(
+                                  previousSchemeNumber: String,
+                                  previousIntermediaryNumber: Option[String]
+                                )
+
+object PreviousSchemeNumbers {
+
+  implicit val format: OFormat[PreviousSchemeNumbers] = Json.format[PreviousSchemeNumbers]
+}
+
+case class EncryptedPreviousSchemeNumbers(
+                                  previousSchemeNumber: EncryptedValue,
+                                  previousIntermediaryNumber: Option[EncryptedValue]
+                                )
+
+object EncryptedPreviousSchemeNumbers {
+
+  implicit val format: OFormat[EncryptedPreviousSchemeNumbers] = Json.format[EncryptedPreviousSchemeNumbers]
 }

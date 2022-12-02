@@ -100,12 +100,20 @@ trait Generators {
       Gen.oneOf(VatDetailSource.values)
     )
 
+  implicit lazy val arbitraryPreviousSchemeDetails: Arbitrary[PreviousSchemeDetails] =
+    Arbitrary {
+      for {
+        previousScheme <- Gen.oneOf(PreviousScheme.values)
+        previousSchemeNumber <- Gen.listOfN(11, Gen.alphaChar).map(_.mkString)
+      } yield PreviousSchemeDetails(previousScheme, PreviousSchemeNumbers(previousSchemeNumber, None))
+    }
+
   implicit lazy val arbitraryPreviousRegistration: Arbitrary[PreviousRegistration] =
     Arbitrary {
       for {
         country   <- arbitrary[Country]
-        vatNumber <- Gen.listOfN(11, Gen.alphaChar).map(_.mkString)
-      } yield PreviousRegistration(country, vatNumber)
+        previousSchemeDetails <- Gen.listOfN(2, arbitrary[PreviousSchemeDetails])
+      } yield PreviousRegistration(country, previousSchemeDetails)
     }
 
   implicit lazy val arbitraryEuTaxRegistration: Arbitrary[EuTaxRegistration] =

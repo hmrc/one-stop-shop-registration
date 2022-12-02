@@ -17,7 +17,6 @@
 package crypto
 
 import models._
-import models.EuTaxIdentifierType._
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.Inject
@@ -131,6 +130,8 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
 
   def decryptEuTaxIdentifier(identifier: EncryptedEuTaxIdentifier, vrn: Vrn, key: String): EuTaxIdentifier = {
     def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
+
+    import models.EuTaxIdentifierType._
 
     def decryptIdentifierType(field: EncryptedValue): EuTaxIdentifierType =
       EuTaxIdentifierType.withName(d(field)).getOrElse(throw new Exception("Unable to decrypt value"))
@@ -287,18 +288,49 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     TradeDetails(d(tradingName), decryptInternationalAddress(address, vrn, key))
   }
 
-  def encryptedPreviousRegistration(registration: PreviousRegistration, vrn: Vrn, key: String): EncryptedPreviousRegistration = {
-    def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
+  def encryptPreviousRegistration(registration: PreviousRegistration, vrn: Vrn, key: String): EncryptedPreviousRegistration = {
     import registration._
 
-    EncryptedPreviousRegistration(encryptCountry(country, vrn, key), e(vatNumber))
+    EncryptedPreviousRegistration(encryptCountry(country, vrn, key), previousSchemesDetails.map(encryptPreviousSchemeDetails(_, vrn, key)))
   }
 
-  def decryptedPreviousRegistration(registration: EncryptedPreviousRegistration, vrn: Vrn, key: String): PreviousRegistration = {
+  def decryptPreviousRegistration(registration: EncryptedPreviousRegistration, vrn: Vrn, key: String): PreviousRegistration = {
     def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
     import registration._
 
-    PreviousRegistration(decryptCountry(country, vrn, key), d(vatNumber))
+    PreviousRegistration(decryptCountry(country, vrn, key), previousSchemeDetails.map(decryptPreviousSchemeDetails(_, vrn, key)))
+  }
+
+  def encryptPreviousSchemeDetails(previousSchemeDetails: PreviousSchemeDetails, vrn: Vrn, key: String): EncryptedPreviousSchemeDetails = {
+    def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
+    import previousSchemeDetails._
+
+    EncryptedPreviousSchemeDetails(e(previousScheme.toString), encryptPreviousSchemeNumbers(previousSchemeNumbers, vrn, key))
+  }
+
+  def decryptPreviousSchemeDetails(previousSchemeDetails: EncryptedPreviousSchemeDetails, vrn: Vrn, key: String): PreviousSchemeDetails = {
+    def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
+    import previousSchemeDetails._
+    import models.PreviousScheme._
+
+    def decryptPreviousScheme(field: EncryptedValue): PreviousScheme =
+      PreviousScheme.withName(d(field)).getOrElse(throw new Exception("Unable to decrypt value"))
+
+    PreviousSchemeDetails(decryptPreviousScheme(previousScheme), decryptPreviousSchemeNumbers(previousSchemeNumbers, vrn, key))
+  }
+
+  def encryptPreviousSchemeNumbers(previousSchemeNumbers: PreviousSchemeNumbers, vrn: Vrn, key: String): EncryptedPreviousSchemeNumbers = {
+    def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
+    import previousSchemeNumbers._
+
+    EncryptedPreviousSchemeNumbers(e(previousSchemeNumber), previousIntermediaryNumber.map(e))
+  }
+
+  def decryptPreviousSchemeNumbers(previousSchemeNumbers: EncryptedPreviousSchemeNumbers, vrn: Vrn, key: String): PreviousSchemeNumbers = {
+    def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
+    import previousSchemeNumbers._
+
+    PreviousSchemeNumbers(d(previousSchemeNumber), previousIntermediaryNumber.map(d))
   }
 
   def encryptVatDetails(vatDetails: VatDetails, vrn: Vrn, key: String): EncryptedVatDetails = {
@@ -327,7 +359,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       contactDetails        = encryptContactDetails(registration.contactDetails, vrn, key),
       websites              = registration.websites.map(e),
       commencementDate      = registration.commencementDate,
-      previousRegistrations = registration.previousRegistrations.map(encryptedPreviousRegistration(_, vrn, key)),
+      previousRegistrations = registration.previousRegistrations.map(encryptPreviousRegistration(_, vrn, key)),
       bankDetails           = encryptBankDetails(registration.bankDetails, vrn, key),
       isOnlineMarketplace   = e(registration.isOnlineMarketplace.toString),
       niPresence            = registration.niPresence,
@@ -351,7 +383,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       contactDetails        = decryptContactDetails(registration.contactDetails, vrn, key),
       websites              = registration.websites.map(d),
       commencementDate      = registration.commencementDate,
-      previousRegistrations = registration.previousRegistrations.map(decryptedPreviousRegistration(_, vrn, key)),
+      previousRegistrations = registration.previousRegistrations.map(decryptPreviousRegistration(_, vrn, key)),
       bankDetails           = decryptBankDetails(registration.bankDetails, vrn, key),
       isOnlineMarketplace   = d(registration.isOnlineMarketplace).toBoolean,
       niPresence            = registration.niPresence,
