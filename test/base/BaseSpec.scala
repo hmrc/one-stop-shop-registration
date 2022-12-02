@@ -74,7 +74,8 @@ trait BaseSpec
       previousEURegistrationDetails = Seq(EtmpPreviousEURegistrationDetails(
         issuedBy = "DE",
         registrationNumber = "DE123",
-        schemeType = SchemeType.OSSUnion
+        schemeType = SchemeType.OSSUnion,
+        intermediaryNumber = None
       )),
       onlineMarketPlace = false,
       websites = Seq(

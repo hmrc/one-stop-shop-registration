@@ -167,8 +167,8 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
 
       forAll(arbitrary[PreviousRegistration]) {
         registration =>
-          val e = encrypter.encryptedPreviousRegistration(registration, vrn, secretKey)
-          val d = encrypter.decryptedPreviousRegistration(e, vrn, secretKey)
+          val e = encrypter.encryptPreviousRegistration(registration, vrn, secretKey)
+          val d = encrypter.decryptPreviousRegistration(e, vrn, secretKey)
 
           d mustEqual registration
       }
