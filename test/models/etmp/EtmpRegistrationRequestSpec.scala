@@ -41,7 +41,7 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
               RegistrationWithFixedEstablishment(
                 Country("DE", "Germany"),
                 EuTaxIdentifier(Vat, "DE123"),
-                FixedEstablishment("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
+                TradeDetails("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
               )
             ),
             contactDetails = new ContactDetails(
@@ -52,7 +52,18 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             websites = List("website1", "website2"),
             commencementDate = LocalDate.now,
             previousRegistrations = Seq(
-              PreviousRegistration(Country("DE", "Germany"), "DE123")
+              PreviousRegistration(
+                country = Country("DE", "Germany"),
+                previousSchemesDetails = Seq(
+                  PreviousSchemeDetails(
+                    previousScheme = PreviousScheme.OSSU,
+                    previousSchemeNumbers = PreviousSchemeNumbers(
+                      previousSchemeNumber = "DE123",
+                      previousIntermediaryNumber = None
+                    )
+                  )
+                )
+              )
             ),
             bankDetails = BankDetails("Account name", Some(bic), iban),
             isOnlineMarketplace = false,
