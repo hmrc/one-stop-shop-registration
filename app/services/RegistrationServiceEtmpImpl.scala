@@ -48,17 +48,28 @@ class RegistrationServiceEtmpImpl @Inject()(
             case NO_CONTENT =>
               InsertSucceeded
             case _ =>
+              logger.error("Failed to add enrolment")
               throw EtmpException("Failed to add enrolment")
           }
-        case Left(Conflict) => Future.successful(AlreadyExists)
-        case Left(EtmpEnrolmentError(EtmpEnrolmentErrorResponse.alreadyActiveSubscriptionErrorCode, _)) => Future.successful(AlreadyExists)
-        case Left(error) => throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
+        case Left(Conflict) =>
+          logger.warn("Account already exists")
+          Future.successful(AlreadyExists)
+        case Left(EtmpEnrolmentError(EtmpEnrolmentErrorResponse.alreadyActiveSubscriptionErrorCode, _)) =>
+          logger.warn("Account / subscription already exists")
+          Future.successful(AlreadyExists)
+        case Left(error) =>
+          logger.error(s"There was an error while calling ETMP ${error.body} ")
+          throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
       }
     } else {
       registrationConnector.create(request).map {
         case Right(_) => InsertSucceeded
-        case Left(Conflict) => AlreadyExists
-        case Left(error) => throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
+        case Left(Conflict) =>
+          logger.warn("Account already exists")
+          AlreadyExists
+        case Left(error) =>
+          logger.error(s"There was an error while creating a registration: ${error.body}")
+          throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
       }
     }
   }
