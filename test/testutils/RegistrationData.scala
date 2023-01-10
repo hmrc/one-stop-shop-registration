@@ -52,7 +52,18 @@ object RegistrationData {
       websites = List("website1", "website2"),
       commencementDate = LocalDate.now,
       previousRegistrations = Seq(
-        PreviousRegistration(Country("DE", "Germany"), "DE123")
+        PreviousRegistration(
+          country = Country("DE", "Germany"),
+          previousSchemesDetails = Seq(
+            PreviousSchemeDetails(
+              previousScheme = PreviousScheme.OSSU,
+              previousSchemeNumbers = PreviousSchemeNumbers(
+                previousSchemeNumber = "DE123",
+                previousIntermediaryNumber = None
+              )
+            )
+          )
+        )
       ),
       bankDetails = BankDetails("Account name", Some(bic), iban),
       isOnlineMarketplace = false,

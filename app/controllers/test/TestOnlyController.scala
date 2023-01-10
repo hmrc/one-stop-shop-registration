@@ -18,7 +18,7 @@ package controllers.test
 
 import models.EuTaxIdentifierType.Vat
 import models.VatDetailSource.UserEntered
-import models.{BankDetails, ContactDetails, Country, DesAddress, EuTaxIdentifier, TradeDetails, Iban, InternationalAddress, PreviousRegistration, PrincipalPlaceOfBusinessInNi, Registration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishment, VatDetails}
+import models.{BankDetails, ContactDetails, Country, DesAddress, EuTaxIdentifier, TradeDetails, Iban, InternationalAddress, PreviousRegistration, PreviousScheme, PreviousSchemeDetails, PreviousSchemeNumbers, PrincipalPlaceOfBusinessInNi, Registration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishment, VatDetails}
 import org.mongodb.scala.model.Filters
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.RegistrationRepository
@@ -102,7 +102,9 @@ class TestOnlyController @Inject()(
       websites = List("website1", "website2"),
       commencementDate = LocalDate.now,
       previousRegistrations = Seq(
-        PreviousRegistration(Country("DE", "Germany"), "DE123")
+        PreviousRegistration(Country("DE", "Germany"),
+          Seq(PreviousSchemeDetails(PreviousScheme.OSSU, PreviousSchemeNumbers("DE123", None)))
+        )
       ),
       bankDetails = BankDetails("Account name", None, iban),
       isOnlineMarketplace = false,

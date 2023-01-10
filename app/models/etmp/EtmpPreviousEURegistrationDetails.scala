@@ -35,7 +35,7 @@ object SchemeType extends Enumerable.Implicits {
     Enumerable(values.map(v => v.toString -> v): _*)
 }
 
-case class EtmpPreviousEURegistrationDetails(issuedBy: String, registrationNumber: String, schemeType: SchemeType)
+case class EtmpPreviousEURegistrationDetails(issuedBy: String, registrationNumber: String, schemeType: SchemeType, intermediaryNumber: Option[String])
 
 object EtmpPreviousEURegistrationDetails {
 
