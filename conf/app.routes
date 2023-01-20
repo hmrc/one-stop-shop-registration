@@ -17,4 +17,4 @@ GET         /save-for-later                                      controllers.Sav
 
 GET         /save-for-later/delete                               controllers.SaveForLaterController.delete
 
-POST        /validate-core-registration                          controllers.ValidateCoreRegistrationController.post()
+POST        /validate-core-registration                          controllers.ValidateCoreRegistrationController.post
