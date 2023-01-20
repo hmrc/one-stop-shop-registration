@@ -16,6 +16,7 @@
 
 package models
 
+import models.core.EisErrorResponse
 import play.api.libs.json.{Json, OFormat}
 
 sealed trait ErrorResponse {
@@ -61,3 +62,10 @@ case class TaxEnrolmentErrorResponse(code: String, message: String)
   }
 
 case class EtmpEnrolmentError(code: String, body: String) extends ErrorResponse
+
+case class EisError(eisErrorResponse: EisErrorResponse) extends ErrorResponse {
+  override val body: String =
+    s"${eisErrorResponse.timestamp} " +
+      s"${eisErrorResponse.error} " +
+      s"${eisErrorResponse.errorMessage} "
+}

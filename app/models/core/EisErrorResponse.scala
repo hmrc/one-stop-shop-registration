@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package models.binders
+package models.core
 
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import play.api.libs.json.{Json, OFormat}
 
-object Format {
+import java.time.Instant
 
-  val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter
-    .ofPattern("yyyy-MM-dd")
-    .withLocale(Locale.UK)
-    .withZone(ZoneId.systemDefault())
+case class EisErrorResponse(
+                             timestamp: Instant,
+                             error: String,
+                             errorMessage: String
+                           )
 
-  val eisDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z")
-    .withLocale(Locale.UK)
-    .withZone(ZoneId.of("GMT"))
+object EisErrorResponse {
+
+  implicit val format: OFormat[EisErrorResponse] = Json.format[EisErrorResponse]
+
 }
