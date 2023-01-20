@@ -21,7 +21,7 @@ import controllers.actions.AuthAction
 import logging.Logging
 import models.core.CoreRegistrationRequest
 import play.api.libs.json.Json
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.mvc._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -35,13 +35,13 @@ class ValidateCoreRegistrationController @Inject()(
                                                   (implicit ec: ExecutionContext)
   extends BackendController(cc) with Logging {
 
-  def post: Action[CoreRegistrationRequest] = auth(parse.json[CoreRegistrationRequest]).async {
+  def post(): Action[CoreRegistrationRequest] = auth(parse.json[CoreRegistrationRequest]).async {
     implicit request =>
 
       validateCoreRegistrationConnector.validateCoreRegistration(request.body).map {
         case Left(value) => InternalServerError(Json.toJson(value.body))
         case Right(value) =>
-          logger.info(s"Receive ${Json.toJson(value)} from core validation endpoint")
+          logger.info(s"Received ${Json.toJson(value)} from core validation endpoint")
           Ok(Json.toJson(value))
 
       }
