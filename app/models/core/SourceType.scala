@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 
-package models
+package models.core
 
-sealed trait SalesChannels
+import models.{Enumerable, WithName}
 
-object SalesChannels extends Enumerable.Implicits {
+sealed trait SourceType
 
-  case object OnlineMarketplaces extends WithName("onlineMarketplaces") with SalesChannels
-  case object Mixed extends WithName("mixed") with SalesChannels
-  case object NotOnlineMarketplaces extends WithName("notOnlineMarketplaces") with SalesChannels
+object SourceType extends Enumerable.Implicits {
+  case object VATNumber extends WithName("VATNumber") with SourceType
+  case object EUVATNumber extends WithName("EUVATNumber") with SourceType
+  case object EUTraderId extends WithName("EUTraderId") with SourceType
+  case object TraderId extends WithName("TraderId") with SourceType
 
-  val values: Seq[SalesChannels] = Seq(
-    OnlineMarketplaces, Mixed, NotOnlineMarketplaces
+  val values: Seq[SourceType] = Seq(
+    VATNumber,
+    EUVATNumber,
+    EUTraderId,
+    TraderId
   )
 
-  implicit val enumerable: Enumerable[SalesChannels] =
+  implicit val enumerable: Enumerable[SourceType] =
     Enumerable(values.map(v => v.toString -> v): _*)
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package models
 
+import models.core.EisErrorResponse
 import play.api.libs.json.{Json, OFormat}
 
 sealed trait ErrorResponse {
@@ -61,3 +62,10 @@ case class TaxEnrolmentErrorResponse(code: String, message: String)
   }
 
 case class EtmpEnrolmentError(code: String, body: String) extends ErrorResponse
+
+case class EisError(eisErrorResponse: EisErrorResponse) extends ErrorResponse {
+  override val body: String =
+    s"${eisErrorResponse.timestamp} " +
+      s"${eisErrorResponse.error} " +
+      s"${eisErrorResponse.errorMessage} "
+}
