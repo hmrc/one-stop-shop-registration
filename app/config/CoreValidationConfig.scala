@@ -16,33 +16,28 @@
 
 package config
 
+import models.binders.Format
 import play.api.Configuration
 import play.api.http.HeaderNames._
 import play.api.http.MimeTypes
 
-import java.time.format.DateTimeFormatter
-import java.time.{Clock, LocalDateTime, ZoneId}
-import java.util.Locale
+import java.time.{Clock, LocalDateTime}
 import javax.inject.Inject
 
-class IfConfig @Inject()(config: Configuration, clock: Clock) {
+class CoreValidationConfig @Inject()(config: Configuration, clock: Clock) {
 
-  val baseUrl: Service = config.get[Service]("microservice.services.if")
-  val authorizationToken: String = config.get[String]("microservice.services.if.authorizationToken")
-  val environment: String = config.get[String]("microservice.services.if.environment")
-
-  private val dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z")
-    .withLocale(Locale.UK)
-    .withZone(ZoneId.of("GMT"))
+  val coreValidationUrl: Service = config.get[Service]("microservice.services.core-validation")
 
   private val XCorrelationId = "X-Correlation-Id"
+  private val authorizationToken: String = config.get[String]("microservice.services.core-validation.authorizationToken")
 
-  def ifHeaders(correlationId: String): Seq[(String, String)] = Seq(
+  def eisHeaders(correlationId: String): Seq[(String, String)] = Seq(
+    XCorrelationId -> correlationId,
+    X_FORWARDED_HOST -> "MDTP",
     CONTENT_TYPE -> MimeTypes.JSON,
     ACCEPT -> MimeTypes.JSON,
-    AUTHORIZATION -> s"Bearer $authorizationToken",
-    DATE -> dateTimeFormatter.format(LocalDateTime.now(clock)),
-    XCorrelationId -> correlationId,
-    X_FORWARDED_HOST -> "MDTP"
+    DATE -> Format.eisDateTimeFormatter.format(LocalDateTime.now(clock)),
+    AUTHORIZATION -> s"Bearer $authorizationToken"
   )
+
 }

@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 
-package models
+package models.core
 
-import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 
-final case class TradeDetails(tradingName: String, address: InternationalAddress)
+import java.time.Instant
 
-object TradeDetails {
+case class EisErrorResponse(
+                             timestamp: Instant,
+                             error: String,
+                             errorMessage: String
+                           )
 
-  implicit val format: OFormat[TradeDetails] = Json.format[TradeDetails]
-}
+object EisErrorResponse {
 
-final case class EncryptedTradeDetails(
-                                              tradingName: EncryptedValue,
-                                              address: EncryptedInternationalAddress
-                                            )
+  implicit val format: OFormat[EisErrorResponse] = Json.format[EisErrorResponse]
 
-object EncryptedTradeDetails {
-
-  implicit val format: OFormat[EncryptedTradeDetails] = Json.format[EncryptedTradeDetails]
 }

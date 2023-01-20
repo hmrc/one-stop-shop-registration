@@ -14,24 +14,16 @@
  * limitations under the License.
  */
 
-package models
+package models.core
 
-import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 
-final case class TradeDetails(tradingName: String, address: InternationalAddress)
+case class CoreRegistrationRequest(source: String,
+                                   scheme: Option[String],
+                                   searchId: String,
+                                   searchIntermediary: Option[String],
+                                   searchIdIssuedBy: String)
 
-object TradeDetails {
-
-  implicit val format: OFormat[TradeDetails] = Json.format[TradeDetails]
-}
-
-final case class EncryptedTradeDetails(
-                                              tradingName: EncryptedValue,
-                                              address: EncryptedInternationalAddress
-                                            )
-
-object EncryptedTradeDetails {
-
-  implicit val format: OFormat[EncryptedTradeDetails] = Json.format[EncryptedTradeDetails]
+object CoreRegistrationRequest {
+  implicit val format: OFormat[CoreRegistrationRequest] = Json.format[CoreRegistrationRequest]
 }
