@@ -35,7 +35,7 @@ class ValidateCoreRegistrationController @Inject()(
                                                   (implicit ec: ExecutionContext)
   extends BackendController(cc) with Logging {
 
-  def post(): Action[CoreRegistrationRequest] = auth(parse.json[CoreRegistrationRequest]).async {
+  def post: Action[CoreRegistrationRequest] = auth(parse.json[CoreRegistrationRequest]).async {
     implicit request =>
 
       validateCoreRegistrationConnector.validateCoreRegistration(request.body).map {
