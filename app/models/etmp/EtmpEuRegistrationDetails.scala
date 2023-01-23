@@ -16,7 +16,7 @@
 
 package models.etmp
 
-import models.{EuTaxRegistration, EuVatRegistration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishment, RegistrationWithoutTaxId}
+import models.{CountryWithValidationDetails, EuTaxRegistration, EuVatRegistration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishment, RegistrationWithoutTaxId}
 import play.api.libs.json.{Json, OFormat}
 
 case class EtmpEuRegistrationDetails(countryOfRegistration: String,
@@ -37,11 +37,13 @@ object EtmpEuRegistrationDetails {
   def create(euTaxRegistration: EuTaxRegistration): EtmpEuRegistrationDetails = {
     euTaxRegistration match {
       case euVatRegistration: EuVatRegistration =>
-        EtmpEuRegistrationDetails(euVatRegistration.country.code, Some(euVatRegistration.vatNumber))
+        val vatRegistrationNumber = CountryWithValidationDetails.convertTaxIdentifierForTransfer(euVatRegistration.vatNumber, euVatRegistration.country.code)
+        EtmpEuRegistrationDetails(euVatRegistration.country.code, Some(vatRegistrationNumber))
       case registrationWithFE: RegistrationWithFixedEstablishment =>
+        val registrationNumber = CountryWithValidationDetails.convertTaxIdentifierForTransfer(registrationWithFE.taxIdentifier.value, registrationWithFE.country.code)
         EtmpEuRegistrationDetails(
           countryOfRegistration = registrationWithFE.country.code,
-          taxIdentificationNumber = Some(registrationWithFE.taxIdentifier.value),
+          taxIdentificationNumber = Some(registrationNumber),
           fixedEstablishment = Some(true),
           tradingName = Some(registrationWithFE.fixedEstablishment.tradingName),
           fixedEstablishmentAddressLine1 = Some(registrationWithFE.fixedEstablishment.address.line1),
@@ -51,9 +53,10 @@ object EtmpEuRegistrationDetails {
           postcode = registrationWithFE.fixedEstablishment.address.postCode
         )
       case registrationWithoutFE: RegistrationWithoutFixedEstablishment =>
+        val registrationNumber = CountryWithValidationDetails.convertTaxIdentifierForTransfer(registrationWithoutFE.taxIdentifier.value, registrationWithoutFE.country.code)
         EtmpEuRegistrationDetails(
           countryOfRegistration = registrationWithoutFE.country.code,
-          taxIdentificationNumber = Some(registrationWithoutFE.taxIdentifier.value)
+          taxIdentificationNumber = Some(registrationNumber)
         )
       case registrationWithoutTaxId: RegistrationWithoutTaxId =>
         EtmpEuRegistrationDetails(
