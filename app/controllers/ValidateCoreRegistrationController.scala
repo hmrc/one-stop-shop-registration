@@ -40,7 +40,9 @@ class ValidateCoreRegistrationController @Inject()(
 
       validateCoreRegistrationConnector.validateCoreRegistration(request.body).map {
         case Left(value) => InternalServerError(Json.toJson(value.body))
-        case Right(value) => Ok(Json.toJson(value))
+        case Right(value) =>
+          logger.info(s"Receive ${Json.toJson(value)} from core validation endpoint")
+          Ok(Json.toJson(value))
 
       }
   }
