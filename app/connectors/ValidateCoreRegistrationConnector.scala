@@ -22,6 +22,7 @@ import logging.Logging
 import models.core.{CoreRegistrationRequest, EisErrorResponse}
 import models.EisError
 import play.api.http.HeaderNames.AUTHORIZATION
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpException}
 
 import java.time.Instant
@@ -50,7 +51,7 @@ class ValidateCoreRegistrationConnector @Inject()(
       case (key, _) => key.matches(AUTHORIZATION)
     }
 
-    logger.info(s"Sending request to EIS with headers $headersWithoutAuth")
+    logger.info(s"Sending request to EIS with headers $headersWithoutAuth and request ${Json.toJson(coreRegistrationRequest)}")
 
     val url = s"$baseUrl"
     httpClient.POST[CoreRegistrationRequest, ValidateCoreRegistrationResponse](
