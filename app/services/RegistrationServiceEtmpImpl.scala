@@ -49,7 +49,6 @@ class RegistrationServiceEtmpImpl @Inject()(
             case _ =>
               throw EtmpException("Failed to add enrolment")
           }
-        case Left(Conflict) => Future.successful(AlreadyExists)
         case Left(EtmpEnrolmentError(EtmpEnrolmentErrorResponse.alreadyActiveSubscriptionErrorCode, _)) => Future.successful(AlreadyExists)
         case Left(error) => throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
       }

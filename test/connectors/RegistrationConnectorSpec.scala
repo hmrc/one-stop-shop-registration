@@ -4,9 +4,9 @@ import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
-import models.requests.RegistrationRequest
 import models._
-import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
+import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse, EtmpErrorDetail}
+import models.requests.RegistrationRequest
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
@@ -103,7 +103,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
         val result = connector.create(registrationRequest).futureValue
-        result mustEqual Right((): Unit)
+        result mustBe Right((): Unit)
       }
     }
 
@@ -192,7 +192,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
             running(app) {
               val connector = app.injector.instanceOf[RegistrationConnector]
               val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
-              result mustEqual Right(EtmpEnrolmentResponse(now, vrn.vrn, formBundleNumber))
+              result mustBe Right(EtmpEnrolmentResponse(now, vrn.vrn, formBundleNumber))
             }
           }
 
@@ -215,7 +215,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
             running(app) {
               val connector = app.injector.instanceOf[RegistrationConnector]
               val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
-              result mustEqual Left(InvalidJson)
+              result mustBe Left(InvalidJson)
             }
           }
         }
@@ -228,7 +228,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
 
-      val errorResponse = EtmpEnrolmentErrorResponse(LocalDate.now(stubClock), "123", "error")
+      val errorResponse = EtmpEnrolmentErrorResponse(EtmpErrorDetail(LocalDate.now(stubClock), "correlation-id1", "123", "error", "source"))
 
       server.stubFor(
         post(urlEqualTo(createRegistrationUrl))
@@ -242,7 +242,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
         val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
-        result mustEqual Left(EtmpEnrolmentError("123", "error"))
+        result mustBe Left(EtmpEnrolmentError("123", "error"))
       }
     }
 
@@ -264,7 +264,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
         val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
-        result mustEqual Left(InvalidJson)
+        result mustBe Left(UnexpectedResponseStatus(UNPROCESSABLE_ENTITY, "Unexpected response from etmp registration, received status 422"))
       }
     }
 
@@ -288,7 +288,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
           running(app) {
             val connector = app.injector.instanceOf[RegistrationConnector]
             val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
-            result mustBe Left(error._2)
+            result mustBe Left(UnexpectedResponseStatus(error._1, s"Unexpected response from etmp registration, received status ${error._1}"))
           }
         }
       }
