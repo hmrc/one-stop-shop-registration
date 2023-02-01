@@ -19,6 +19,8 @@
 
     <logger name="application.controllers.ValidateCoreRegistrationController" level="${logger.controllers.ValidateCoreRegistrationController:-INFO}"/>
 
+    <logger name="application.connectors.RegistrationConnector" level="${logger.connectors.RegistrationConnector:-INFO}"/>
+
     <root level="${logger.application:-WARN}">
         <appender-ref ref="STDOUT"/>
     </root>
