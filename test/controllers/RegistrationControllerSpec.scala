@@ -18,7 +18,6 @@ package controllers
 
 import base.BaseSpec
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.{RegistrationValidationResult, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.when
 import play.api.http.Status.CREATED
