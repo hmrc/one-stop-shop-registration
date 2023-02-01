@@ -64,36 +64,23 @@ object RegistrationHttpParser extends BaseHttpParser {
         case CREATED => response.json.validate[EtmpEnrolmentResponse] match {
           case JsSuccess(enrolmentResponse, _) => Right(enrolmentResponse)
           case JsError(errors) =>
-            logger.error(s"Failed trying to parse JSON ${response.body}", errors)
+            logger.error(s"Failed trying to parse JSON, but was successfully created ${response.body}", errors)
             Left(InvalidJson)
         }
-        case UNPROCESSABLE_ENTITY => response.json.validate[EtmpEnrolmentErrorResponse] match {
-          case JsSuccess(enrolmentResponse, _) =>
-            logger.error(s"There was an error processing ETMP registration request ${enrolmentResponse.code} ${enrolmentResponse.text} ${enrolmentResponse.processingDate}")
-            Left(EtmpEnrolmentError(enrolmentResponse.code, enrolmentResponse.text))
-          case JsError(errors) =>
-            logger.error(s"Failed trying to parse JSON ${response.body}", errors)
-            Left(InvalidJson)
-        }
-
-        case NOT_FOUND =>
-          logger.error(s"Received NotFound from ${serviceName} ${response.body}")
-          Left(NotFound)
-        case CONFLICT =>
-          logger.error(s"Received Conflict from ${serviceName} ${response.body}")
-          Left(Conflict)
-        case INTERNAL_SERVER_ERROR =>
-          logger.error(s"Received InternalServerError from ${serviceName} ${response.body}")
-          Left(ServerError)
-        case BAD_REQUEST =>
-          logger.error(s"Received BadRequest from ${serviceName} ${response.body}")
-          Left(InvalidVrn)
-        case SERVICE_UNAVAILABLE =>
-          logger.error(s"Received Service Unavailable from ${serviceName} ${response.body}")
-          Left(ServiceUnavailable)
         case status =>
-          logger.error(s"Unexpected response from core registration, received status $status ${response.body}")
-          Left(UnexpectedResponseStatus(status, s"Unexpected response from ${serviceName}, received status $status"))
+          if(response.body.nonEmpty) {
+            response.json.validate[EtmpEnrolmentErrorResponse] match {
+              case JsSuccess(enrolmentResponse, _) => Left(EtmpEnrolmentError(enrolmentResponse.errorDetail.errorCode, enrolmentResponse.errorDetail.errorMessage))
+              case JsError(errors) =>
+                logger.error(s"Failed trying to parse JSON with status ${response.status} and body ${response.body}", errors)
+                logger.warn(s"Unexpected response from core registration, received status $status")
+                Left(UnexpectedResponseStatus(status, s"Unexpected response from ${serviceName}, received status $status"))
+            }
+          } else {
+            logger.error(s"Failed trying to parse JSON with status ${response.status} and body ${response.body}")
+            logger.warn(s"Unexpected response from core registration, received status $status")
+            Left(UnexpectedResponseStatus(status, s"Unexpected response from ${serviceName}, received status $status"))
+          }
       }
   }
 

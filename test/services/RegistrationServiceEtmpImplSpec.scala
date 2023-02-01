@@ -82,14 +82,6 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
       }
 
-      "must return Already Exists when connector returns Conflict" in {
-        when(enrolmentsConnector.confirmEnrolment(any())) thenReturn Future.successful(HttpResponse(204, ""))
-        when(appConfig.addEnrolment) thenReturn true
-        when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(Conflict))
-
-        registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
-      }
-
       "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
         when(enrolmentsConnector.confirmEnrolment(any())) thenReturn Future.successful(HttpResponse(204, ""))
         when(appConfig.addEnrolment) thenReturn true

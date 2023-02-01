@@ -20,9 +20,15 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
-case class EtmpEnrolmentErrorResponse(processingDate: LocalDate, code: String, text: String)
+case class EtmpEnrolmentErrorResponse(errorDetail: EtmpErrorDetail)
+
+case class EtmpErrorDetail(timestamp: LocalDate, correlationId: String, errorCode: String, errorMessage: String, source: String)
 
 object EtmpEnrolmentErrorResponse {
   implicit val format: OFormat[EtmpEnrolmentErrorResponse] = Json.format[EtmpEnrolmentErrorResponse]
   val alreadyActiveSubscriptionErrorCode = "007"
+}
+
+object EtmpErrorDetail {
+  implicit val format: OFormat[EtmpErrorDetail] = Json.format[EtmpErrorDetail]
 }
