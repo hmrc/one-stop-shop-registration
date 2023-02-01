@@ -65,7 +65,7 @@ class RegistrationConnector @Inject()(
     logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
 
     httpClient.POST[RegistrationRequest, CreateRegistrationResponse](
-      s"${ifConfig.baseUrl}createRegistration",
+      s"${ifConfig.baseUrl}",
       registration,
       headers = headersWithCorrelationId
     ).recover {
@@ -87,7 +87,7 @@ class RegistrationConnector @Inject()(
     logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
 
     httpClient.POST[EtmpRegistrationRequest, CreateRegistrationWithEnrolmentResponse](
-      s"${ifConfig.baseUrl}createRegistration",
+      s"${ifConfig.baseUrl}",
       registration,
       headers = headersWithCorrelationId
     ).recover {
