@@ -38,22 +38,22 @@ object RegistrationHttpParser extends BaseHttpParser {
         case ACCEPTED =>
           Right(())
         case NOT_FOUND =>
-          logger.warn(s"Received NotFound from ${serviceName}")
+          logger.warn(s"Received NotFound from ${serviceName} ${response.body}")
           Left(NotFound)
         case CONFLICT =>
-          logger.warn(s"Received Conflict from ${serviceName}")
+          logger.warn(s"Received Conflict from ${serviceName} ${response.body}")
           Left(Conflict)
         case INTERNAL_SERVER_ERROR =>
-          logger.warn(s"Received InternalServerError from ${serviceName}")
+          logger.warn(s"Received InternalServerError from ${serviceName} ${response.body}")
           Left(ServerError)
         case BAD_REQUEST =>
-          logger.error(s"Received BadRequest from ${serviceName}")
+          logger.error(s"Received BadRequest from ${serviceName} ${response.body}")
           Left(InvalidVrn)
         case SERVICE_UNAVAILABLE =>
-          logger.warn(s"Received Service Unavailable from ${serviceName}")
+          logger.error(s"Received Service Unavailable from ${serviceName} ${response.body}")
           Left(ServiceUnavailable)
         case status =>
-          logger.warn(s"Unexpected response from core registration, received status $status")
+          logger.error(s"Unexpected response from core registration, received status $status ${response.body}")
           Left(UnexpectedResponseStatus(status, s"Unexpected response from ${serviceName}, received status $status"))
       }
   }
@@ -64,33 +64,35 @@ object RegistrationHttpParser extends BaseHttpParser {
         case CREATED => response.json.validate[EtmpEnrolmentResponse] match {
           case JsSuccess(enrolmentResponse, _) => Right(enrolmentResponse)
           case JsError(errors) =>
-            logger.warn("Failed trying to parse JSON", errors)
+            logger.error(s"Failed trying to parse JSON ${response.body}", errors)
             Left(InvalidJson)
         }
         case UNPROCESSABLE_ENTITY => response.json.validate[EtmpEnrolmentErrorResponse] match {
-          case JsSuccess(enrolmentResponse, _) => Left(EtmpEnrolmentError(enrolmentResponse.code, enrolmentResponse.text))
+          case JsSuccess(enrolmentResponse, _) =>
+            logger.error(s"There was an error processing ETMP registration request ${enrolmentResponse.code} ${enrolmentResponse.text} ${enrolmentResponse.processingDate}")
+            Left(EtmpEnrolmentError(enrolmentResponse.code, enrolmentResponse.text))
           case JsError(errors) =>
-            logger.warn("Failed trying to parse JSON", errors)
+            logger.error(s"Failed trying to parse JSON ${response.body}", errors)
             Left(InvalidJson)
         }
 
         case NOT_FOUND =>
-          logger.warn(s"Received NotFound from ${serviceName}")
+          logger.error(s"Received NotFound from ${serviceName} ${response.body}")
           Left(NotFound)
         case CONFLICT =>
-          logger.warn(s"Received Conflict from ${serviceName}")
+          logger.error(s"Received Conflict from ${serviceName} ${response.body}")
           Left(Conflict)
         case INTERNAL_SERVER_ERROR =>
-          logger.warn(s"Received InternalServerError from ${serviceName}")
+          logger.error(s"Received InternalServerError from ${serviceName} ${response.body}")
           Left(ServerError)
         case BAD_REQUEST =>
-          logger.error(s"Received BadRequest from ${serviceName}")
+          logger.error(s"Received BadRequest from ${serviceName} ${response.body}")
           Left(InvalidVrn)
         case SERVICE_UNAVAILABLE =>
-          logger.warn(s"Received Service Unavailable from ${serviceName}")
+          logger.error(s"Received Service Unavailable from ${serviceName} ${response.body}")
           Left(ServiceUnavailable)
         case status =>
-          logger.warn(s"Unexpected response from core registration, received status $status")
+          logger.error(s"Unexpected response from core registration, received status $status ${response.body}")
           Left(UnexpectedResponseStatus(status, s"Unexpected response from ${serviceName}, received status $status"))
       }
   }
