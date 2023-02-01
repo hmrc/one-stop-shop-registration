@@ -52,7 +52,6 @@ trait RegistrationService extends Logging {
 
   def get(vrn: Vrn): Future[Option[Registration]]
 
-  def validate(vrn: Vrn): Future[ValidateRegistrationResponse]
 }
 
 

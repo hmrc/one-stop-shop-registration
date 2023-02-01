@@ -168,11 +168,4 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     }
   }
 
-  ".validate" - {
-    "must make a call to the validate method in RegistrationConnector" in {
-      when(registrationConnector.validateRegistration(any())) thenReturn Future.successful(Right(RegistrationValidationResult(true)))
-      registrationService.validate(vrn).futureValue
-      verify(registrationConnector, times(1)).validateRegistration(vrn)
-    }
-  }
 }
