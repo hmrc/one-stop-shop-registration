@@ -65,7 +65,7 @@ class RegistrationConnector @Inject()(
     logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
 
     httpClient.POST[RegistrationRequest, CreateRegistrationResponse](
-      s"${ifConfig.baseUrl}createRegistration",
+      s"${ifConfig.baseUrl}vec/ossregistration/regdatatransfer/v1",
       registration,
       headers = headersWithCorrelationId
     ).recover {
@@ -87,7 +87,7 @@ class RegistrationConnector @Inject()(
     logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
 
     httpClient.POST[EtmpRegistrationRequest, CreateRegistrationWithEnrolmentResponse](
-      s"${ifConfig.baseUrl}createRegistration",
+      s"${ifConfig.baseUrl}vec/ossregistration/regdatatransfer/v1",
       registration,
       headers = headersWithCorrelationId
     ).recover {
@@ -97,19 +97,4 @@ class RegistrationConnector @Inject()(
     }
   }
 
-  def validateRegistration(vrn: Vrn): Future[ValidateRegistrationResponse] = {
-
-    val correlationId = UUID.randomUUID().toString
-    val headersWithCorrelationId = headers(correlationId)
-
-    val url = s"${ifConfig.baseUrl}validateRegistration/${vrn.value}"
-    httpClient.GET[ValidateRegistrationResponse](
-      url = url,
-      headers = headersWithCorrelationId
-    ).recover {
-      case e: HttpException =>
-        logger.error(s"Unexpected response from core validate registration, received status ${e.responseCode}", e)
-        Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
-    }
-  }
 }

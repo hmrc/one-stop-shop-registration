@@ -17,8 +17,6 @@
 package services
 
 import config.AppConfig
-import connectors.RegistrationConnector
-import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
 import repositories.RegistrationRepository
@@ -32,7 +30,6 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RegistrationServiceRepositoryImpl @Inject()(
                                      registrationRepository: RegistrationRepository,
-                                     registrationConnector: RegistrationConnector,
                                      clock: Clock,
                                      appConfig: AppConfig,
                                      exclusionService: ExclusionService
@@ -54,9 +51,5 @@ class RegistrationServiceRepositoryImpl @Inject()(
         }
       }
     }
-  }
-
-  override def validate(vrn: Vrn): Future[ValidateRegistrationResponse] = {
-    registrationConnector.validateRegistration(vrn)
   }
 }

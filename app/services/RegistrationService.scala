@@ -16,7 +16,6 @@
 
 package services
 
-import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import logging.Logging
 import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
@@ -52,7 +51,6 @@ trait RegistrationService extends Logging {
 
   def get(vrn: Vrn): Future[Option[Registration]]
 
-  def validate(vrn: Vrn): Future[ValidateRegistrationResponse]
 }
 
 

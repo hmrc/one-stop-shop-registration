@@ -17,7 +17,6 @@
 package services
 
 import config.AppConfig
-import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
@@ -79,7 +78,4 @@ class RegistrationServiceEtmpImpl @Inject()(
     }
   }
 
-  override def validate(vrn: Vrn): Future[ValidateRegistrationResponse] = {
-    registrationConnector.validateRegistration(vrn)
-  }
 }
