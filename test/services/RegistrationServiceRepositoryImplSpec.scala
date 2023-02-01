@@ -96,7 +96,6 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
       verify(registrationRepository, times(1)).get(Vrn("123456789"))
     }
 
-
     "when exclusion is enabled and trader is excluded" - {
 
       val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, "HMRC", 4, period)
@@ -112,11 +111,4 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
 
   }
 
-  ".validate" - {
-    "must make a call to the validate method in RegistrationConnector" in {
-      when(registrationConnector.validateRegistration(any())) thenReturn Future.successful(Right(RegistrationValidationResult(true)))
-      registrationService.validate(vrn).futureValue
-      verify(registrationConnector, times(1)).validateRegistration(vrn)
-    }
-  }
 }

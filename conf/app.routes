@@ -8,8 +8,6 @@ GET        /registration/:vrn                                    controllers.Reg
 
 GET        /vat-information                                      controllers.VatInfoController.get
 
-GET        /registration/validate/:vrn                           controllers.RegistrationController.validate(vrn: String)
-
 POST       /authorised/accept/confirm/:subscriptionId            controllers.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId: String)
 
 POST        /save-for-later                                      controllers.SaveForLaterController.post

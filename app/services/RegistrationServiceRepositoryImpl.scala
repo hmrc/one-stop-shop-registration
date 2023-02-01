@@ -55,8 +55,4 @@ class RegistrationServiceRepositoryImpl @Inject()(
       }
     }
   }
-
-  override def validate(vrn: Vrn): Future[ValidateRegistrationResponse] = {
-    registrationConnector.validateRegistration(vrn)
-  }
 }
