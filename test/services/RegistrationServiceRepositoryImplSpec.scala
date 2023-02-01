@@ -19,9 +19,7 @@ package services
 import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import config.AppConfig
-import connectors.RegistrationConnector
 import models.InsertResult.InsertSucceeded
-import models.RegistrationValidationResult
 import models.exclusions.ExcludedTrader
 import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
@@ -40,15 +38,14 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
 
   private val registrationRequest    = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]
-  private val registrationConnector = mock[RegistrationConnector]
   private val mockConfig = mock[AppConfig]
   private val exclusionService = mock[ExclusionService]
-  private val registrationService = new RegistrationServiceRepositoryImpl(registrationRepository, registrationConnector, stubClock, mockConfig, exclusionService)
+  private val registrationService = new RegistrationServiceRepositoryImpl(registrationRepository, stubClock, mockConfig, exclusionService)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
   override def beforeEach(): Unit = {
-    reset(registrationRepository, registrationConnector)
+    reset(registrationRepository)
     reset(exclusionService)
     super.beforeEach()
   }

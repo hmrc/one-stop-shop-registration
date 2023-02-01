@@ -16,7 +16,6 @@
 
 package services
 
-import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import logging.Logging
 import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
