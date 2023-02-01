@@ -23,6 +23,7 @@ import models.UnexpectedResponseStatus
 import models.etmp.EtmpRegistrationRequest
 import models.requests.RegistrationRequest
 import play.api.http.HeaderNames.AUTHORIZATION
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException}
 
@@ -85,6 +86,8 @@ class RegistrationConnector @Inject()(
     }
 
     logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
+
+    logger.info(s"Send request for $correlationId: ${Json.toJson(registration)}") // TODO remove post smoke test
 
     httpClient.POST[EtmpRegistrationRequest, CreateRegistrationWithEnrolmentResponse](
       s"${ifConfig.baseUrl}vec/ossregistration/regdatatransfer/v1",
