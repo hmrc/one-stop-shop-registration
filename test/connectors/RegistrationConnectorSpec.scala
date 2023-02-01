@@ -35,7 +35,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
   def getRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/getRegistration/${vrn.value}"
 
-  def createRegistrationUrl = "/one-stop-shop-registration-stub/createRegistration"
+  def createRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/regdatatransfer/v1"
 
   def getValidateRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/validateRegistration/${vrn.value}"
 
