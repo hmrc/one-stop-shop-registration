@@ -37,12 +37,13 @@ trait BaseSpec
   protected def applicationBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder().overrides(bind[AuthAction].to[FakeAuthAction])
 
-  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy MM dd")
+  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     .withLocale(Locale.UK)
     .withZone(ZoneId.of("GMT"))
 
   val etmpRegistrationRequest: EtmpRegistrationRequest = EtmpRegistrationRequest(
-    vrn = vrn,
+    administration = EtmpAdministration(),
+    customerIdentification = EtmpCustomerIdentification(vrn),
     tradingNames = Seq(EtmpTradingNames("Foo")),
     schemeDetails = EtmpSchemeDetails(
       commencementDate = LocalDate.now().format(dateFormatter),

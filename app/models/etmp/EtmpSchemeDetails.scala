@@ -34,7 +34,7 @@ case class EtmpSchemeDetails(commencementDate: String,
 
 object EtmpSchemeDetails {
 
-  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy MM dd")
+  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   implicit val format: OFormat[EtmpSchemeDetails] = Json.format[EtmpSchemeDetails]
 }
