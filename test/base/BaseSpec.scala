@@ -42,7 +42,8 @@ trait BaseSpec
     .withZone(ZoneId.of("GMT"))
 
   val etmpRegistrationRequest: EtmpRegistrationRequest = EtmpRegistrationRequest(
-    vrn = vrn,
+    administration = EtmpAdministration(),
+    customerIdentification = EtmpCustomerIdentification(vrn),
     tradingNames = Seq(EtmpTradingNames("Foo")),
     schemeDetails = EtmpSchemeDetails(
       commencementDate = LocalDate.now().format(dateFormatter),
