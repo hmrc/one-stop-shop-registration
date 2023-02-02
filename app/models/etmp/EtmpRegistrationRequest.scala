@@ -23,18 +23,19 @@ import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 case class EtmpRegistrationRequest(
-                                    vrn: Vrn,
+                                    administration: EtmpAdministration,
+                                    customerIdentification: EtmpCustomerIdentification,
                                     tradingNames: Seq[EtmpTradingNames],
                                     schemeDetails: EtmpSchemeDetails,
                                     bankDetails: BankDetails
-                                  ) {
-}
+                                  )
 
 object EtmpRegistrationRequest {
 
   def fromRegistrationRequest(registration: RegistrationRequest): EtmpRegistrationRequest = {
     EtmpRegistrationRequest(
-      vrn = registration.vrn,
+      administration = EtmpAdministration(),
+      customerIdentification = EtmpCustomerIdentification(registration.vrn),
       tradingNames = registration.tradingNames.map(EtmpTradingNames(_)),
       schemeDetails = EtmpSchemeDetails(
         commencementDate = registration.commencementDate.format(EtmpSchemeDetails.dateFormatter),
