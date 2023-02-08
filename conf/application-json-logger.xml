@@ -21,6 +21,8 @@
 
     <logger name="application.connectors.RegistrationConnector" level="${logger.connectors.RegistrationConnector:-INFO}"/>
 
+    <logger name="application.services.RegistrationServiceEtmpImpl" level="${logger.services.RegistrationServiceEtmpImpl:-INFO}"/>
+
     <root level="${logger.application:-WARN}">
         <appender-ref ref="STDOUT"/>
     </root>
