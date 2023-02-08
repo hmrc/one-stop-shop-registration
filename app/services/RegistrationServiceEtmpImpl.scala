@@ -39,16 +39,20 @@ class RegistrationServiceEtmpImpl @Inject()(
                                            )(implicit ec: ExecutionContext) extends RegistrationService {
 
   def createRegistration(request: RegistrationRequest): Future[InsertResult] = {
-    if(appConfig.addEnrolment) {
-        val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
+    if (appConfig.addEnrolment) {
+      val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
       registrationConnector.createWithEnrolment(registrationRequest).flatMap {
         case Right(response) =>
-          enrolmentsConnector.confirmEnrolment(response.formBundleNumber).map(_.status) map {
-            case NO_CONTENT =>
-              InsertSucceeded
-            case _ =>
-              logger.error("Failed to add enrolment")
-              throw EtmpException("Failed to add enrolment")
+          enrolmentsConnector.confirmEnrolment(response.formBundleNumber).map { enrolmentResponse =>
+            enrolmentResponse.status match {
+              case NO_CONTENT =>
+                logger.info("Insert succeeded")
+                InsertSucceeded
+              case status =>
+                logger.error(s"Failed to add enrolment - $status with body ${enrolmentResponse.body}")
+                logger.error("Failed to add enrolment")
+              throw EtmpException(s"Failed to add enrolment - ${enrolmentResponse.body}")
+            }
           }
         case Left(Conflict) =>
           logger.warn("Account already exists")
@@ -57,7 +61,7 @@ class RegistrationServiceEtmpImpl @Inject()(
           logger.warn("Account / subscription already exists")
           Future.successful(AlreadyExists)
         case Left(error) =>
-          logger.error(s"There was an error while calling ETMP ${error.body} ")
+          logger.error(s"There was an error while calling ETMP $error ")
           throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
       }
     } else {
@@ -76,7 +80,7 @@ class RegistrationServiceEtmpImpl @Inject()(
   def get(vrn: Vrn): Future[Option[Registration]] = {
     registrationConnector.get(vrn).flatMap {
       case Right(registration) =>
-        if(appConfig.exclusionsEnabled) {
+        if (appConfig.exclusionsEnabled) {
           exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
             Some(registration.copy(excludedTrader = maybeExcludedTrader))
           }
