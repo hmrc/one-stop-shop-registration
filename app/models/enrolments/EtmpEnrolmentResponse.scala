@@ -18,9 +18,9 @@ package models.enrolments
 
 import play.api.libs.json.{Json, OFormat}
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
-case class EtmpEnrolmentResponse(processingDateTime: LocalDate, vrn: String, formBundleNumber: String)
+case class EtmpEnrolmentResponse(processingDateTime: LocalDateTime, vrn: String, formBundleNumber: String)
 
 object EtmpEnrolmentResponse {
   implicit val format: OFormat[EtmpEnrolmentResponse] = Json.format[EtmpEnrolmentResponse]

@@ -64,7 +64,7 @@ object RegistrationHttpParser extends BaseHttpParser {
         case CREATED => response.json.validate[EtmpEnrolmentResponse] match {
           case JsSuccess(enrolmentResponse, _) => Right(enrolmentResponse)
           case JsError(errors) =>
-            logger.error(s"Failed trying to parse JSON, but was successfully created ${response.body}", errors)
+            logger.error(s"Failed trying to parse JSON, but was successfully created ${response.body} ${errors}", errors)
             Left(InvalidJson)
         }
         case status =>
