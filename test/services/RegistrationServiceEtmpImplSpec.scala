@@ -33,7 +33,7 @@ import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HttpResponse
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -77,7 +77,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(enrolmentsConnector.confirmEnrolment(any())) thenReturn Future.successful(HttpResponse(204, ""))
         when(appConfig.addEnrolment) thenReturn true
         when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(
-          Right(EtmpEnrolmentResponse(LocalDate.now(), vrn.vrn, "test")))
+          Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
 
         registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
       }
