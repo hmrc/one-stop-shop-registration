@@ -19,7 +19,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate}
+import java.time.{Instant, LocalDate, LocalDateTime}
 
 class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Generators {
 
@@ -172,7 +172,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
         s"when status is $status" - {
           "should return Registration payload correctly" in {
 
-            val now = LocalDate.now()
+            val now = LocalDateTime.now()
 
             val formBundleNumber = "123456789"
 
