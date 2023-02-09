@@ -22,6 +22,7 @@ import models.{InsertResult, Registration}
 import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.Clock
 import javax.inject.{Inject, Singleton}
@@ -35,7 +36,7 @@ class RegistrationServiceRepositoryImpl @Inject()(
                                      exclusionService: ExclusionService
                                    )(implicit ec: ExecutionContext) extends RegistrationService {
 
-  def createRegistration(request: RegistrationRequest): Future[InsertResult] =
+  def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult] =
     registrationRepository.insert(buildRegistration(request, clock))
 
   def get(vrn: Vrn): Future[Option[Registration]] = {

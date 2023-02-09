@@ -26,6 +26,7 @@ import models.{Conflict, EtmpEnrolmentError, EtmpException, InsertResult, Regist
 import play.api.http.Status.NO_CONTENT
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,7 +39,7 @@ class RegistrationServiceEtmpImpl @Inject()(
                                              exclusionService: ExclusionService
                                            )(implicit ec: ExecutionContext) extends RegistrationService {
 
-  def createRegistration(request: RegistrationRequest): Future[InsertResult] = {
+  def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult] = {
     if (appConfig.addEnrolment) {
       val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
       registrationConnector.createWithEnrolment(registrationRequest).flatMap {

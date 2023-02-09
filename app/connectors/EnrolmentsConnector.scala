@@ -30,12 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: HttpClient)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
-  private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
-  val headers = Seq(
-    HeaderNames.AUTHORIZATION -> s"Bearer ${enrolments.authorizationToken}"
-  )
-
-  def confirmEnrolment(subscriptionId: String): Future[HttpResponse] = {
+  def confirmEnrolment(subscriptionId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     val etmpId = UUID.randomUUID().toString
 
@@ -44,7 +39,6 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
       SubscriberRequest(enrolments.ossEnrolmentKey,
         controllers.routes.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId).url,
         etmpId
-      ),
-      headers)
+      ))
   }
 }
