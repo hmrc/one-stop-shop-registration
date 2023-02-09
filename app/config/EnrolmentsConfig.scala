@@ -23,7 +23,6 @@ import javax.inject.Inject
 class EnrolmentsConfig @Inject()(config: Configuration) {
 
   val baseUrl: Service    = config.get[Service]("microservice.services.enrolments")
-  val authorizationToken: String = config.get[String]("microservice.services.enrolments.authorizationToken")
   val environment: String = config.get[String]("microservice.services.enrolments.environment")
   val ossEnrolmentKey: String = config.get[String]("ossEnrolmentKey")
 }
