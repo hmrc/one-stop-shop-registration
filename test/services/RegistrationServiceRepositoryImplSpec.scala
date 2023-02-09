@@ -30,11 +30,14 @@ import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfterEach {
+
+  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private val registrationRequest    = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]

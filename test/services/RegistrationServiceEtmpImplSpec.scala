@@ -31,7 +31,7 @@ import services.exclusions.ExclusionService
 import testutils.RegistrationData
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,6 +39,9 @@ import scala.concurrent.Future
 
 
 class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
+
+  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
+
   private val registrationRequest = RegistrationData.toRegistrationRequest(RegistrationData.registration)
   private val registrationConnector = mock[RegistrationConnector]
   private val enrolmentsConnector = mock[EnrolmentsConnector]
@@ -74,7 +77,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
       "must create a registration from the request, save it and return the result of the save operation" in {
 
-        when(enrolmentsConnector.confirmEnrolment(any())) thenReturn Future.successful(HttpResponse(204, ""))
+        when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
         when(appConfig.addEnrolment) thenReturn true
         when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(
           Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
@@ -83,7 +86,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       }
 
       "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
-        when(enrolmentsConnector.confirmEnrolment(any())) thenReturn Future.successful(HttpResponse(204, ""))
+        when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
         when(appConfig.addEnrolment) thenReturn true
         when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(EtmpEnrolmentError("007", "error")))
 
@@ -92,7 +95,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
       "must throw EtmpException when connector returns any other error" in {
 
-        when(enrolmentsConnector.confirmEnrolment(any())) thenReturn Future.successful(HttpResponse(204, ""))
+        when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
         when(appConfig.addEnrolment) thenReturn true
         when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
