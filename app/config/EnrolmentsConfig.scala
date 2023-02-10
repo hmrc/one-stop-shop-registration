@@ -24,5 +24,6 @@ class EnrolmentsConfig @Inject()(config: Configuration) {
 
   val baseUrl: Service    = config.get[Service]("microservice.services.enrolments")
   val environment: String = config.get[String]("microservice.services.enrolments.environment")
+  val callbackBaseUrl: String = config.get[String]("microservice.services.enrolments.callbackBaseUrl")
   val ossEnrolmentKey: String = config.get[String]("ossEnrolmentKey")
 }
