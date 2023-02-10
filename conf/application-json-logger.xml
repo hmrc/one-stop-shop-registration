@@ -23,6 +23,8 @@
 
     <logger name="application.services.RegistrationServiceEtmpImpl" level="${logger.services.RegistrationServiceEtmpImpl:-INFO}"/>
 
+    <logger name="application.controllers.EnrolmentsSubscriptionController" level="${logger.controllers.EnrolmentsSubscriptionController:-INFO}"/>
+
     <root level="${logger.application:-WARN}">
         <appender-ref ref="STDOUT"/>
     </root>
