@@ -37,7 +37,7 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
     httpClient.PUT[SubscriberRequest, HttpResponse](
       s"${enrolments.baseUrl}subscriptions/$subscriptionId/subscriber",
       SubscriberRequest(enrolments.ossEnrolmentKey,
-        controllers.routes.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId).url,
+        s"${enrolments.callbackBaseUrl}${controllers.routes.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId).url}",
         etmpId
       ))
   }
