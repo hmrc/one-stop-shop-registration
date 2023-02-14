@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 package models.des
 
 import models.DesAddress
-import models.des.PartyType.{OtherPartyType, VatGroup}
+import models.des.PartyType.VatGroup
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Json, OWrites, Reads, __}
+import play.api.libs.json.{__, Json, OWrites, Reads}
 
 import java.time.LocalDate
 
@@ -27,7 +27,8 @@ case class VatCustomerInfo(
                             address: DesAddress,
                             registrationDate: Option[LocalDate],
                             partOfVatGroup: Boolean,
-                            organisationName: Option[String]
+                            organisationName: Option[String],
+                            singleMarketIndicator: Option[Boolean]
                           )
 
 object VatCustomerInfo {
@@ -36,7 +37,8 @@ object VatCustomerInfo {
                               address: DesAddress,
                               registrationDate: Option[LocalDate],
                               partyType: Option[PartyType],
-                              organisationName: Option[String]
+                              organisationName: Option[String],
+                              singleMarketIndicator: Option[Boolean]
                             ): VatCustomerInfo =
     VatCustomerInfo(
       address = address,
@@ -45,7 +47,8 @@ object VatCustomerInfo {
         case Some(VatGroup) => true
         case _ => false
       },
-      organisationName = organisationName
+      organisationName = organisationName,
+      singleMarketIndicator = singleMarketIndicator
     )
 
   implicit val desReads: Reads[VatCustomerInfo] =
@@ -53,7 +56,8 @@ object VatCustomerInfo {
       (__ \ "approvedInformation" \ "PPOB" \ "address").read[DesAddress] and
         (__ \ "approvedInformation" \ "customerDetails" \ "effectiveRegistrationDate").readNullable[LocalDate] and
         (__ \ "approvedInformation" \ "customerDetails" \ "partyType").readNullable[PartyType] and
-        (__ \ "approvedInformation" \ "customerDetails" \ "organisationName").readNullable[String]
+        (__ \ "approvedInformation" \ "customerDetails" \ "organisationName").readNullable[String] and
+        (__ \ "approvedInformation" \ "customerDetails" \ "singleMarketIndicator").readNullable[Boolean]
       ) (VatCustomerInfo.fromDesPayload _)
 
   implicit val writes: OWrites[VatCustomerInfo] =
