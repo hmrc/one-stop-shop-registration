@@ -24,10 +24,12 @@ import models.etmp.EtmpRegistrationRequest
 import models.requests.RegistrationRequest
 import models.{Conflict, EtmpEnrolmentError, EtmpException, InsertResult, Registration}
 import play.api.http.Status.NO_CONTENT
+import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.Clock
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,8 +37,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegistrationServiceEtmpImpl @Inject()(
                                              registrationConnector: RegistrationConnector,
                                              enrolmentsConnector: EnrolmentsConnector,
+                                             registrationRepository: RegistrationRepository,
                                              appConfig: AppConfig,
-                                             exclusionService: ExclusionService
+                                             exclusionService: ExclusionService,
+                                             clock: Clock
                                            )(implicit ec: ExecutionContext) extends RegistrationService {
 
   def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult] = {
@@ -44,11 +48,15 @@ class RegistrationServiceEtmpImpl @Inject()(
       val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
       registrationConnector.createWithEnrolment(registrationRequest).flatMap {
         case Right(response) =>
-          enrolmentsConnector.confirmEnrolment(response.formBundleNumber).map { enrolmentResponse =>
+          enrolmentsConnector.confirmEnrolment(response.formBundleNumber).flatMap { enrolmentResponse =>
             enrolmentResponse.status match {
               case NO_CONTENT =>
                 logger.info("Insert succeeded")
-                InsertSucceeded
+                if(appConfig.duplicateRegistrationIntoRepository) {
+                  registrationRepository.insert(buildRegistration(request, clock))
+                } else {
+                  Future.successful(InsertSucceeded)
+                }
               case status =>
                 logger.error(s"Failed to add enrolment - $status with body ${enrolmentResponse.body}")
                 logger.error("Failed to add enrolment")
