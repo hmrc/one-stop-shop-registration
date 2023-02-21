@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ case class VatCustomerInfo(
                             address: DesAddress,
                             registrationDate: Option[LocalDate],
                             partOfVatGroup: Option[Boolean],
-                            organisationName: Option[String]
+                            organisationName: Option[String],
+                            singleMarketIndicator: Option[Boolean]
                           )
 
 object VatCustomerInfo {
@@ -39,7 +40,8 @@ case class EncryptedVatCustomerInfo(
                                      address: EncryptedDesAddress,
                                      registrationDate: Option[LocalDate],
                                      partOfVatGroup: Option[EncryptedValue],
-                                     organisationName: Option[EncryptedValue]
+                                     organisationName: Option[EncryptedValue],
+                                     singleMarketIndicator: Option[EncryptedValue]
                                    )
 
 object EncryptedVatCustomerInfo {

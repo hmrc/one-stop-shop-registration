@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,8 @@ class SavedUserAnswersEncryptor @Inject()(
             encryptDesAddress(info.address, vrn, key),
             info.registrationDate,
             info.partOfVatGroup.map(partOf => crypto.encrypt(partOf.toString, vrn.vrn, key)),
-            info.organisationName.map(name => crypto.encrypt(name, vrn.vrn, key))
+            info.organisationName.map(name => crypto.encrypt(name, vrn.vrn, key)),
+            info.singleMarketIndicator.map(smIndicator => crypto.encrypt(smIndicator.toString, vrn.vrn, key))
           )
       },
       lastUpdated = answers.lastUpdated
@@ -68,7 +69,8 @@ class SavedUserAnswersEncryptor @Inject()(
               decryptDesAddress(info.address, vrn, key),
               info.registrationDate,
               info.partOfVatGroup.map(field => crypto.decrypt(field, vrn.vrn, key).toBoolean),
-              info.organisationName.map(name => crypto.decrypt(name, vrn.vrn, key))
+              info.organisationName.map(name => crypto.decrypt(name, vrn.vrn, key)),
+              info.singleMarketIndicator.map(smIndicator => crypto.decrypt(smIndicator, vrn.vrn, key).toBoolean)
             )
         },
 

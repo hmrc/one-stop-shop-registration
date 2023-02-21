@@ -42,7 +42,8 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
             |    "customerDetails": {
             |      "effectiveRegistrationDate": "2000-01-01",
             |      "partyType": "Z2",
-            |      "organisationName": "Foo"
+            |      "organisationName": "Foo",
+            |      "singleMarketIndicator": false
             |    },
             |    "PPOB": {
             |      "address": {
@@ -70,7 +71,8 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
             registrationDate = Some(LocalDate.of(2000, 1, 1)),
             address          = DesAddress("line 1", Some("line 2"), None, None, None, Some("AA11 1AA"), "GB"),
             partOfVatGroup   = true,
-            organisationName = Some("Foo")
+            organisationName = Some("Foo"),
+            singleMarketIndicator = Some(false)
           )
 
           result mustEqual Right(expectedResult)

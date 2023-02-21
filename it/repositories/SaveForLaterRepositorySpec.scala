@@ -52,7 +52,8 @@ class SaveForLaterRepositorySpec
           DesAddress("test", Some("test"), Some("test"), Some("test"), Some("test"), Some("test"), countryCode = "UK"),
           Some(LocalDate.now),
           Some(true),
-          Some("name")
+          Some("name"),
+          Some(true)
         )), now)
     }
 
