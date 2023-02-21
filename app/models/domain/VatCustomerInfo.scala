@@ -41,7 +41,7 @@ case class EncryptedVatCustomerInfo(
                                      registrationDate: Option[LocalDate],
                                      partOfVatGroup: Option[EncryptedValue],
                                      organisationName: Option[EncryptedValue],
-                                     singleMarketIndicator: Option[Boolean]
+                                     singleMarketIndicator: Option[EncryptedValue]
                                    )
 
 object EncryptedVatCustomerInfo {

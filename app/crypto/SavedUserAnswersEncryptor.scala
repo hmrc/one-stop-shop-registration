@@ -51,7 +51,7 @@ class SavedUserAnswersEncryptor @Inject()(
             info.registrationDate,
             info.partOfVatGroup.map(partOf => crypto.encrypt(partOf.toString, vrn.vrn, key)),
             info.organisationName.map(name => crypto.encrypt(name, vrn.vrn, key)),
-            info.singleMarketIndicator
+            info.singleMarketIndicator.map(smIndicator => crypto.encrypt(smIndicator.toString, vrn.vrn, key))
           )
       },
       lastUpdated = answers.lastUpdated
@@ -70,7 +70,7 @@ class SavedUserAnswersEncryptor @Inject()(
               info.registrationDate,
               info.partOfVatGroup.map(field => crypto.decrypt(field, vrn.vrn, key).toBoolean),
               info.organisationName.map(name => crypto.decrypt(name, vrn.vrn, key)),
-              info.singleMarketIndicator
+              info.singleMarketIndicator.map(smIndicator => crypto.decrypt(smIndicator, vrn.vrn, key).toBoolean)
             )
         },
 
