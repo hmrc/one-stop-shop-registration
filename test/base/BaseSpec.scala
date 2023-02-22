@@ -49,16 +49,7 @@ trait BaseSpec
       commencementDate = LocalDate.now().format(dateFormatter),
       firstSaleDate = Some(LocalDate.now().format(dateFormatter)),
       euRegistrationDetails = Seq(EtmpEuRegistrationDetails(
-        countryOfRegistration = "FR",
-        vatNumber = None,
-        taxIdentificationNumber = Some("FR123"),
-        fixedEstablishment = None,
-        tradingName = None,
-        fixedEstablishmentAddressLine1 = None,
-        fixedEstablishmentAddressLine2 = None,
-        townOrCity = None,
-        regionOrState = None,
-        postcode = None
+        countryOfRegistration = "FR"
       ),
         EtmpEuRegistrationDetails(
           countryOfRegistration = "DE",

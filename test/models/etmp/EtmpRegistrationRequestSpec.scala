@@ -37,7 +37,9 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
               source = UserEntered
             ),
             euRegistrations = Seq(
-              RegistrationWithoutFixedEstablishment(Country("FR", "France"), EuTaxIdentifier(Vat, "FR123")),
+              RegistrationWithoutTaxId(
+                Country("FR", "France")
+              ),
               RegistrationWithFixedEstablishment(
                 Country("DE", "Germany"),
                 EuTaxIdentifier(Vat, "DE123"),
