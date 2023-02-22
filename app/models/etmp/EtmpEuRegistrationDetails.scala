@@ -16,7 +16,7 @@
 
 package models.etmp
 
-import models.{CountryWithValidationDetails, EuTaxRegistration, EuVatRegistration, RegistrationWithFixedEstablishment, RegistrationWithoutTaxId}
+import models.{CountryWithValidationDetails, EuTaxRegistration, EuVatRegistration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishmentWithTradeDetails, RegistrationWithoutTaxId}
 import play.api.libs.json.{Json, OFormat}
 
 case class EtmpEuRegistrationDetails(
@@ -27,6 +27,8 @@ case class EtmpEuRegistrationDetails(
                                       tradingName: Option[String] = None,
                                       fixedEstablishmentAddressLine1: Option[String] = None,
                                       fixedEstablishmentAddressLine2: Option[String] = None,
+                                      dispatchWarehouseAddressLine1: Option[String] = None,
+                                      dispatchWarehouseAddressLine2: Option[String] = None,
                                       townOrCity: Option[String] = None,
                                       regionOrState: Option[String] = None,
                                       postcode: Option[String] = None
@@ -53,6 +55,19 @@ object EtmpEuRegistrationDetails {
           townOrCity = Some(registrationWithFE.fixedEstablishment.address.townOrCity),
           regionOrState = registrationWithFE.fixedEstablishment.address.stateOrRegion,
           postcode = registrationWithFE.fixedEstablishment.address.postCode
+        )
+      case registrationWithoutFEWithTradeDetails: RegistrationWithoutFixedEstablishmentWithTradeDetails =>
+        val registrationNumber = CountryWithValidationDetails.convertTaxIdentifierForTransfer(registrationWithoutFEWithTradeDetails.taxIdentifier.value, registrationWithoutFEWithTradeDetails.country.code)
+        EtmpEuRegistrationDetails(
+          countryOfRegistration =  registrationWithoutFEWithTradeDetails.country.code,
+          taxIdentificationNumber = Some(registrationNumber),
+          fixedEstablishment = Some(false),
+          tradingName = Some(registrationWithoutFEWithTradeDetails.tradeDetails.tradingName),
+          dispatchWarehouseAddressLine1 = Some(registrationWithoutFEWithTradeDetails.tradeDetails.address.line1),
+          dispatchWarehouseAddressLine2 = registrationWithoutFEWithTradeDetails.tradeDetails.address.line2,
+          townOrCity = Some(registrationWithoutFEWithTradeDetails.tradeDetails.address.townOrCity),
+          regionOrState = registrationWithoutFEWithTradeDetails.tradeDetails.address.stateOrRegion,
+          postcode = registrationWithoutFEWithTradeDetails.tradeDetails.address.postCode
         )
       case registrationWithoutTaxId: RegistrationWithoutTaxId =>
         EtmpEuRegistrationDetails(

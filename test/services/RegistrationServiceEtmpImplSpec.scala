@@ -21,8 +21,8 @@ import base.BaseSpec
 import config.AppConfig
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.enrolments.EtmpEnrolmentResponse
 import models._
+import models.enrolments.EtmpEnrolmentResponse
 import models.exclusions.ExcludedTrader
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -35,7 +35,7 @@ import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
