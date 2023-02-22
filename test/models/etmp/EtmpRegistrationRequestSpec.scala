@@ -1,7 +1,7 @@
 package models.etmp
 
 import base.BaseSpec
-import models.EuTaxIdentifierType.Vat
+import models.EuTaxIdentifierType.{Other, Vat}
 import models.VatDetailSource.UserEntered
 import models.requests.RegistrationRequest
 import models._
@@ -43,7 +43,12 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
               RegistrationWithFixedEstablishment(
                 Country("DE", "Germany"),
                 EuTaxIdentifier(Vat, "DE123"),
-                TradeDetails("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
+                TradeDetails("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("DE", "Germany")))
+              ),
+              RegistrationWithoutFixedEstablishmentWithTradeDetails(
+                Country("BE", "Belgium"),
+                EuTaxIdentifier(Other, "12345"),
+                TradeDetails("Name", InternationalAddress("Line 1", Some("Line 2"), "Town", None, None, Country("BE", "Belgium")))
               )
             ),
             contactDetails = new ContactDetails(
@@ -66,9 +71,31 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
                   )
                 )
               ),
-              PreviousRegistrationLegacy(
-                country = Country("BE", "Belgium"),
-                vatNumber = "BE123"
+              PreviousRegistration(
+                country = Country("EE", "Estonia"),
+                previousSchemesDetails = Seq(
+                  PreviousSchemeDetails(
+                    previousScheme = PreviousScheme.OSSNU,
+                    previousSchemeNumbers = PreviousSchemeNumbers(
+                      previousSchemeNumber = "EE123",
+                      previousIntermediaryNumber = None
+                    )
+                  ),
+                  PreviousSchemeDetails(
+                    previousScheme = PreviousScheme.IOSSWI,
+                    previousSchemeNumbers = PreviousSchemeNumbers(
+                      previousSchemeNumber = "EE234",
+                      previousIntermediaryNumber = Some("IN234")
+                    )
+                  ),
+                  PreviousSchemeDetails(
+                    previousScheme = PreviousScheme.IOSSWOI,
+                    previousSchemeNumbers = PreviousSchemeNumbers(
+                      previousSchemeNumber = "EE312",
+                      previousIntermediaryNumber = None
+                    )
+                  )
+                )
               )
             ),
             bankDetails = BankDetails("Account name", Some(bic), iban),

@@ -58,10 +58,17 @@ trait BaseSpec
           fixedEstablishment = Some(true),
           tradingName = Some("Name"),
           fixedEstablishmentAddressLine1 = Some("Line 1"),
-          fixedEstablishmentAddressLine2 = None,
+          townOrCity = Some("Town")
+        ),
+        EtmpEuRegistrationDetails(
+          countryOfRegistration = "BE",
+          taxIdentificationNumber = Some("12345"),
+          fixedEstablishment = Some(false),
+          tradingName = Some("Name"),
+          dispatchWarehouseAddressLine1 = Some("Line 1"),
+          dispatchWarehouseAddressLine2 = Some("Line 2"),
           townOrCity = Some("Town"),
-          regionOrState = None,
-          postcode = None)
+        )
       ),
       previousEURegistrationDetails = Seq(EtmpPreviousEURegistrationDetails(
         issuedBy = "DE",
@@ -70,9 +77,21 @@ trait BaseSpec
         intermediaryNumber = None
       ),
         EtmpPreviousEURegistrationDetails(
-          issuedBy = "BE",
-          registrationNumber = "BE123",
+          issuedBy = "EE",
+          registrationNumber = "EE123",
           schemeType = SchemeType.OSSNonUnion,
+          intermediaryNumber = None
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "EE",
+          registrationNumber = "EE234",
+          schemeType = SchemeType.IOSSWithIntermediary,
+          intermediaryNumber = Some("IN234")
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "EE",
+          registrationNumber = "EE312",
+          schemeType = SchemeType.IOSSWithoutIntermediary,
           intermediaryNumber = None
         )
       ),
