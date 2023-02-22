@@ -16,6 +16,7 @@
 
 package services
 
+import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import config.AppConfig
 import connectors.{EnrolmentsConnector, RegistrationConnector}
@@ -27,6 +28,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.running
+import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
 import testutils.RegistrationData
 import testutils.RegistrationData.registration
@@ -45,13 +47,15 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   private val registrationRequest = RegistrationData.toRegistrationRequest(RegistrationData.registration)
   private val registrationConnector = mock[RegistrationConnector]
   private val enrolmentsConnector = mock[EnrolmentsConnector]
+  private val registrationRepository = mock[RegistrationRepository]
   private val appConfig = mock[AppConfig]
 
   private val exclusionService = mock[ExclusionService]
-  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, appConfig, exclusionService)
+  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, registrationRepository, appConfig, exclusionService, stubClock)
 
   override def beforeEach(): Unit = {
     reset(registrationConnector)
+    reset(registrationRepository)
     reset(exclusionService)
     reset(appConfig)
     super.beforeEach()
@@ -75,32 +79,93 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
     "enrolmentToggle.enabled" - {
 
-      "must create a registration from the request, save it and return the result of the save operation" in {
+      "duplicateRegistrationIntoRepository.disabled" - {
 
-        when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
-        when(appConfig.addEnrolment) thenReturn true
-        when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(
-          Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
+        "must create a registration from the request, save it and return the result of the save operation" in {
 
-        registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
+          when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
+          when(appConfig.addEnrolment) thenReturn true
+          when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+          when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(
+            Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
+
+          registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
+          verify(registrationRepository, times(0)).insert(any())
+        }
+
+        "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
+          when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
+          when(appConfig.addEnrolment) thenReturn true
+          when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+          when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(EtmpEnrolmentError("007", "error")))
+
+          registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
+          verify(registrationRepository, times(0)).insert(any())
+        }
+
+        "must throw EtmpException when connector returns any other error" in {
+
+          when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
+          when(appConfig.addEnrolment) thenReturn true
+          when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+          when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(ServiceUnavailable))
+
+          whenReady(registrationService.createRegistration(registrationRequest).failed) {
+            exp => exp mustBe EtmpException(s"There was an error creating Registration enrolment from ETMP: ${ServiceUnavailable.body}")
+          }
+          verify(registrationRepository, times(0)).insert(any())
+        }
       }
 
-      "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
-        when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
-        when(appConfig.addEnrolment) thenReturn true
-        when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(EtmpEnrolmentError("007", "error")))
+      "duplicateRegistrationIntoRepository.enabled" - {
 
-        registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
-      }
+        "must create a registration from the request, save it and return the result of the save operation" in {
 
-      "must throw EtmpException when connector returns any other error" in {
+          when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
+          when(appConfig.addEnrolment) thenReturn true
+          when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(
+            Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
+          when(registrationRepository.insert(any())) thenReturn successful(InsertSucceeded)
 
-        when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
-        when(appConfig.addEnrolment) thenReturn true
-        when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(ServiceUnavailable))
+          registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
+          verify(registrationRepository, times(1)).insert(any())
+        }
 
-        whenReady(registrationService.createRegistration(registrationRequest).failed) {
-          exp => exp mustBe EtmpException(s"There was an error creating Registration enrolment from ETMP: ${ServiceUnavailable.body}")
+        "must return an error when repository returns an error" in {
+
+          when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
+          when(appConfig.addEnrolment) thenReturn true
+          when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(
+            Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
+          when(registrationRepository.insert(any())) thenReturn successful(AlreadyExists)
+
+          registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
+          verify(registrationRepository, times(1)).insert(any())
+        }
+
+        "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
+          when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
+          when(appConfig.addEnrolment) thenReturn true
+          when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(EtmpEnrolmentError("007", "error")))
+
+          registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
+          verify(registrationRepository, times(0)).insert(any())
+        }
+
+        "must throw EtmpException when connector returns any other error" in {
+
+          when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
+          when(appConfig.addEnrolment) thenReturn true
+          when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          when(registrationConnector.createWithEnrolment(any())) thenReturn Future.successful(Left(ServiceUnavailable))
+
+          whenReady(registrationService.createRegistration(registrationRequest).failed) {
+            exp => exp mustBe EtmpException(s"There was an error creating Registration enrolment from ETMP: ${ServiceUnavailable.body}")
+          }
+          verify(registrationRepository, times(0)).insert(any())
         }
       }
     }
