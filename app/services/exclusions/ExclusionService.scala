@@ -19,7 +19,6 @@ package services.exclusions
 import config.AppConfig
 import logging.Logging
 import models.exclusions.ExcludedTrader
-import uk.gov.hmrc.crypto.{PlainText, Scrambled, Sha512Crypto}
 import uk.gov.hmrc.domain.Vrn
 import utils.HashingUtil
 

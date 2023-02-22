@@ -17,7 +17,7 @@
 package models.des
 
 import models.DesAddress
-import models.des.PartyType.{OtherPartyType, VatGroup}
+import models.des.PartyType.VatGroup
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, OWrites, Reads, __}
 
