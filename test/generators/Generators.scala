@@ -110,10 +110,23 @@ trait Generators {
 
   implicit lazy val arbitraryPreviousRegistration: Arbitrary[PreviousRegistration] =
     Arbitrary {
+      Gen.oneOf(arbitrary[PreviousRegistrationNew], arbitrary[PreviousRegistrationLegacy])
+    }
+
+  implicit lazy val arbitraryPreviousRegistrationNew: Arbitrary[PreviousRegistrationNew] =
+    Arbitrary {
       for {
         country   <- arbitrary[Country]
         previousSchemeDetails <- Gen.listOfN(2, arbitrary[PreviousSchemeDetails])
-      } yield PreviousRegistration(country, previousSchemeDetails)
+      } yield PreviousRegistrationNew(country, previousSchemeDetails)
+    }
+
+  implicit lazy val arbitraryPreviousRegistrationLegacy: Arbitrary[PreviousRegistrationLegacy] =
+    Arbitrary {
+      for {
+        country <- arbitrary[Country]
+        vatNumber <- arbitrary[String]
+      } yield PreviousRegistrationLegacy(country, vatNumber)
     }
 
   implicit lazy val arbitraryEuTaxRegistration: Arbitrary[EuTaxRegistration] =

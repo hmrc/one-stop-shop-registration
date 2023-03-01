@@ -10,8 +10,6 @@ import org.mockito.Mockito.when
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.bind
-import uk.gov.hmrc.crypto.PlainText
-import uk.gov.hmrc.domain.Vrn
 import utils.HashingUtil
 
 import scala.util.{Failure, Success, Try}

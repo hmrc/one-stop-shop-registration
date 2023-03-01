@@ -16,11 +16,9 @@
 
 package models.etmp
 
-import logging.Logging
 import models.requests.RegistrationRequest
-import models.{BankDetails, CountryWithValidationDetails, PreviousRegistration, PreviousScheme}
+import models.{BankDetails, CountryWithValidationDetails, PreviousRegistration, PreviousRegistrationLegacy, PreviousRegistrationNew, PreviousScheme}
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.domain.Vrn
 
 case class EtmpRegistrationRequest(
                                     administration: EtmpAdministration,
@@ -54,21 +52,34 @@ object EtmpRegistrationRequest {
   }
 
   private def mapPreviousRegistrations(previousRegistrations: Seq[PreviousRegistration]): Seq[EtmpPreviousEURegistrationDetails] = {
-    previousRegistrations.flatMap { previousRegistration =>
-      previousRegistration.previousSchemesDetails.map { previousSchemeDetails =>
 
-        val registrationNumber = previousSchemeDetails.previousScheme match {
-          case PreviousScheme.OSSU => CountryWithValidationDetails.convertTaxIdentifierForTransfer(previousSchemeDetails.previousSchemeNumbers.previousSchemeNumber, previousRegistration.country.code)
-          case _ => previousSchemeDetails.previousSchemeNumbers.previousSchemeNumber
+    previousRegistrations.flatMap {
+      case newPreviousRegistrations: PreviousRegistrationNew =>
+        newPreviousRegistrations.previousSchemesDetails.map { previousSchemeDetails =>
+
+          val registrationNumber = previousSchemeDetails.previousScheme match {
+            case PreviousScheme.OSSU => CountryWithValidationDetails.convertTaxIdentifierForTransfer(previousSchemeDetails.previousSchemeNumbers.previousSchemeNumber, newPreviousRegistrations.country.code)
+            case _ => previousSchemeDetails.previousSchemeNumbers.previousSchemeNumber
+          }
+
+          EtmpPreviousEURegistrationDetails(
+            issuedBy = newPreviousRegistrations.country.code,
+            registrationNumber = registrationNumber,
+            schemeType = convertSchemeType(previousSchemeDetails.previousScheme),
+            intermediaryNumber = previousSchemeDetails.previousSchemeNumbers.previousIntermediaryNumber
+          )
         }
 
-        EtmpPreviousEURegistrationDetails(
-          issuedBy = previousRegistration.country.code,
+      case legacyPreviousRegistrations: PreviousRegistrationLegacy =>
+
+        val registrationNumber = legacyPreviousRegistrations.vatNumber
+
+        Seq(EtmpPreviousEURegistrationDetails(
+          issuedBy = legacyPreviousRegistrations.country.code,
           registrationNumber = registrationNumber,
-          schemeType = convertSchemeType(previousSchemeDetails.previousScheme),
-          intermediaryNumber = previousSchemeDetails.previousSchemeNumbers.previousIntermediaryNumber
-        )
-      }
+          schemeType = SchemeType.OSSNonUnion,
+          None
+        ))
     }
   }
 

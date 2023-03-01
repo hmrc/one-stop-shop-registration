@@ -1,15 +1,10 @@
 package models.etmp
 
 import base.BaseSpec
-import models._
-import models.EuTaxIdentifierType.Vat
-import models.VatDetailSource.UserEntered
 import models.enrolments.EtmpEnrolmentResponse
-import models.requests.RegistrationRequest
-import play.api.libs.json.{Json, JsSuccess}
-import uk.gov.hmrc.domain.Vrn
+import play.api.libs.json.{JsSuccess, Json}
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.LocalDateTime
 
 class EtmpEnrolmentResponseSpec extends BaseSpec {
 

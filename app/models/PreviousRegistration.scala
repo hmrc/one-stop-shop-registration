@@ -17,20 +17,74 @@
 package models
 
 import crypto.EncryptedValue
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
-case class PreviousRegistration(country: Country, previousSchemesDetails: Seq[PreviousSchemeDetails])
+sealed trait PreviousRegistration
 
 object PreviousRegistration {
 
-  implicit val format: OFormat[PreviousRegistration] = Json.format[PreviousRegistration]
+  implicit val reads: Reads[PreviousRegistration] =
+    PreviousRegistrationNew.format.widen[PreviousRegistration] orElse
+      PreviousRegistrationLegacy.format.widen[PreviousRegistration]
+
+  implicit val writes: Writes[PreviousRegistration] = Writes {
+    case p: PreviousRegistrationNew => Json.toJson(p)(PreviousRegistrationNew.format)
+    case l: PreviousRegistrationLegacy => Json.toJson(l)(PreviousRegistrationLegacy.format)
+  }
 }
 
-case class EncryptedPreviousRegistration(country: EncryptedCountry, previousSchemeDetails: Seq[EncryptedPreviousSchemeDetails])
+sealed trait EncryptedPreviousRegistration
 
-object EncryptedPreviousRegistration {
+  object EncryptedPreviousRegistration {
 
-  implicit val format: OFormat[EncryptedPreviousRegistration] = Json.format[EncryptedPreviousRegistration]
+  implicit val reads: Reads[EncryptedPreviousRegistration] =
+    EncryptedPreviousRegistrationNew.format.widen[EncryptedPreviousRegistration] orElse
+      EncryptedPreviousRegistrationLegacy.format.widen[EncryptedPreviousRegistration]
+
+  implicit val writes: Writes[EncryptedPreviousRegistration] = Writes {
+    case ep: EncryptedPreviousRegistrationNew => Json.toJson(ep)(EncryptedPreviousRegistrationNew.format)
+    case el: EncryptedPreviousRegistrationLegacy => Json.toJson(el)(EncryptedPreviousRegistrationLegacy.format)
+  }
+}
+
+case class PreviousRegistrationNew(
+                                    country: Country,
+                                    previousSchemesDetails: Seq[PreviousSchemeDetails]
+                                  ) extends PreviousRegistration
+
+object PreviousRegistrationNew {
+
+  implicit val format: OFormat[PreviousRegistrationNew] = Json.format[PreviousRegistrationNew]
+}
+
+case class EncryptedPreviousRegistrationNew(
+                                             country: EncryptedCountry,
+                                             previousSchemeDetails: Seq[EncryptedPreviousSchemeDetails]
+                                           ) extends EncryptedPreviousRegistration
+
+object EncryptedPreviousRegistrationNew {
+
+  implicit val format: OFormat[EncryptedPreviousRegistrationNew] = Json.format[EncryptedPreviousRegistrationNew]
+}
+
+case class PreviousRegistrationLegacy(
+                                       country: Country,
+                                       vatNumber: String
+                                     ) extends PreviousRegistration
+
+object PreviousRegistrationLegacy {
+
+  implicit val format: OFormat[PreviousRegistrationLegacy] = Json.format[PreviousRegistrationLegacy]
+}
+
+case class EncryptedPreviousRegistrationLegacy(
+                                                country: EncryptedCountry,
+                                                vatNumber: EncryptedValue
+                                              ) extends EncryptedPreviousRegistration
+
+object EncryptedPreviousRegistrationLegacy {
+
+  implicit val format: OFormat[EncryptedPreviousRegistrationLegacy] = Json.format[EncryptedPreviousRegistrationLegacy]
 }
 
 case class PreviousSchemeDetails(previousScheme: PreviousScheme, previousSchemeNumbers: PreviousSchemeNumbers)

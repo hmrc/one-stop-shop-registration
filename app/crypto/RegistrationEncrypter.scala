@@ -268,17 +268,43 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     TradeDetails(d(tradingName), decryptInternationalAddress(address, vrn, key))
   }
 
-  def encryptPreviousRegistration(registration: PreviousRegistration, vrn: Vrn, key: String): EncryptedPreviousRegistration = {
+  def encryptPreviousRegistration(registration: PreviousRegistration, vrn: Vrn, str: String): EncryptedPreviousRegistration =
+    registration match {
+      case ep: PreviousRegistrationNew => encryptPreviousRegistrationNew(ep, vrn, str)
+      case lp: PreviousRegistrationLegacy => encryptPreviousRegistrationLegacy(lp, vrn, str)
+    }
+
+  def decryptPreviousRegistration(registration: EncryptedPreviousRegistration, vrn: Vrn, str: String): PreviousRegistration =
+    registration match {
+      case p: EncryptedPreviousRegistrationNew => decryptPreviousRegistrationNew(p, vrn, str)
+      case l: EncryptedPreviousRegistrationLegacy => decryptPreviousRegistrationLegacy(l, vrn, str)
+    }
+
+  private def encryptPreviousRegistrationNew(registration: PreviousRegistrationNew, vrn: Vrn, key: String): EncryptedPreviousRegistrationNew = {
     import registration._
 
-    EncryptedPreviousRegistration(encryptCountry(country, vrn, key), previousSchemesDetails.map(encryptPreviousSchemeDetails(_, vrn, key)))
+    EncryptedPreviousRegistrationNew(encryptCountry(country, vrn, key), previousSchemesDetails.map(encryptPreviousSchemeDetails(_, vrn, key)))
   }
 
-  def decryptPreviousRegistration(registration: EncryptedPreviousRegistration, vrn: Vrn, key: String): PreviousRegistration = {
+  private def decryptPreviousRegistrationNew(registration: EncryptedPreviousRegistrationNew, vrn: Vrn, key: String): PreviousRegistrationNew = {
     def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
     import registration._
 
-    PreviousRegistration(decryptCountry(country, vrn, key), previousSchemeDetails.map(decryptPreviousSchemeDetails(_, vrn, key)))
+    PreviousRegistrationNew(decryptCountry(country, vrn, key), previousSchemeDetails.map(decryptPreviousSchemeDetails(_, vrn, key)))
+  }
+
+  private def encryptPreviousRegistrationLegacy(registration: PreviousRegistrationLegacy, vrn: Vrn, key: String): EncryptedPreviousRegistrationLegacy = {
+    def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
+    import registration._
+
+    EncryptedPreviousRegistrationLegacy(encryptCountry(country, vrn, key), e(vatNumber))
+  }
+
+  private def decryptPreviousRegistrationLegacy(registration: EncryptedPreviousRegistrationLegacy, vrn: Vrn, key: String): PreviousRegistrationLegacy = {
+    def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
+    import registration._
+
+    PreviousRegistrationLegacy(decryptCountry(country, vrn, key), d(vatNumber))
   }
 
   def encryptPreviousSchemeDetails(previousSchemeDetails: PreviousSchemeDetails, vrn: Vrn, key: String): EncryptedPreviousSchemeDetails = {
