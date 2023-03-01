@@ -287,7 +287,6 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
   }
 
   private def decryptPreviousRegistrationNew(registration: EncryptedPreviousRegistrationNew, vrn: Vrn, key: String): PreviousRegistrationNew = {
-    def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
     import registration._
 
     PreviousRegistrationNew(decryptCountry(country, vrn, key), previousSchemeDetails.map(decryptPreviousSchemeDetails(_, vrn, key)))
