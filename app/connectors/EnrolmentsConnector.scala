@@ -19,9 +19,9 @@ package connectors
 import config.EnrolmentsConfig
 import logging.Logging
 import models.enrolments.SubscriberRequest
-import play.api.http.HeaderNames
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
+
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

@@ -21,7 +21,7 @@ import controllers.actions.AuthAction
 import logging.Logging
 import models.core.CoreRegistrationRequest
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
