@@ -77,7 +77,14 @@ trait BaseSpec
         registrationNumber = "DE123",
         schemeType = SchemeType.OSSUnion,
         intermediaryNumber = None
-      )),
+      ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "BE",
+          registrationNumber = "BE123",
+          schemeType = SchemeType.OSSNonUnion,
+          intermediaryNumber = None
+        )
+      ),
       onlineMarketPlace = false,
       websites = Seq(
         Website("website1"), Website("website2")

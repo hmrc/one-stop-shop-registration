@@ -52,7 +52,7 @@ object RegistrationData {
       websites = List("website1", "website2"),
       commencementDate = LocalDate.now,
       previousRegistrations = Seq(
-        PreviousRegistration(
+        PreviousRegistrationNew(
           country = Country("DE", "Germany"),
           previousSchemesDetails = Seq(
             PreviousSchemeDetails(
@@ -63,6 +63,10 @@ object RegistrationData {
               )
             )
           )
+        ),
+        PreviousRegistrationLegacy(
+          country = Country("BE", "Belgium"),
+          vatNumber = "BE123"
         )
       ),
       bankDetails = BankDetails("Account name", Some(bic), iban),
