@@ -80,92 +80,8 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
     )
   }
 
-  "create" - {
 
-    "should return Registration payload correctly" in {
-
-      val app = application
-
-      val registration = generateRegistration(vrn)
-
-      val registrationRequest = toRegistrationRequest(registration)
-
-      val requestJson = Json.stringify(Json.toJson(registrationRequest))
-
-      server.stubFor(
-        post(urlEqualTo(createRegistrationUrl))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .withRequestBody(equalTo(requestJson))
-          .willReturn(aResponse().withStatus(ACCEPTED))
-      )
-
-      running(app) {
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.create(registrationRequest).futureValue
-        result mustBe Right((): Unit)
-      }
-    }
-
-    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123")))
-      .foreach { error =>
-        s"should return correct error response when server responds with ${error._1}" in {
-
-          val app = application
-
-          val registration = generateRegistration(vrn)
-
-          val registrationRequest = toRegistrationRequest(registration)
-
-          val requestJson = Json.stringify(Json.toJson(registrationRequest))
-
-          server.stubFor(
-            post(urlEqualTo(createRegistrationUrl))
-              .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-              .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-              .withRequestBody(equalTo(requestJson))
-              .willReturn(aResponse().withStatus(error._1))
-          )
-
-          running(app) {
-            val connector = app.injector.instanceOf[RegistrationConnector]
-            val result = connector.create(registrationRequest).futureValue
-            result mustBe Left(error._2)
-          }
-        }
-      }
-
-    "should return Error Response when server responds with Http Exception" in {
-
-      val app = application
-
-      val registration = generateRegistration(vrn)
-
-      val registrationRequest = toRegistrationRequest(registration)
-
-      val requestJson = Json.stringify(Json.toJson(registrationRequest))
-
-      server.stubFor(
-        post(urlEqualTo(createRegistrationUrl))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .withRequestBody(equalTo(requestJson))
-          .willReturn(aResponse()
-            .withStatus(504)
-            .withFixedDelay(21000))
-      )
-
-      running(app) {
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        whenReady(connector.create(registrationRequest), Timeout(Span(30, Seconds))) { exp =>
-          exp.isLeft mustBe true
-          exp.left.get mustBe a[ErrorResponse]
-        }
-      }
-    }
-  }
-
-  ".createWithEnrolment" - {
+  ".create" - {
 
     Seq(CREATED).foreach {
       status =>
@@ -191,7 +107,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
             running(app) {
               val connector = app.injector.instanceOf[RegistrationConnector]
-              val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
+              val result = connector.create(etmpRegistrationRequest).futureValue
               result mustBe Right(EtmpEnrolmentResponse(now, vrn.vrn, formBundleNumber))
             }
           }
@@ -214,7 +130,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
             running(app) {
               val connector = app.injector.instanceOf[RegistrationConnector]
-              val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
+              val result = connector.create(etmpRegistrationRequest).futureValue
               result mustBe Left(InvalidJson)
             }
           }
@@ -241,7 +157,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
+        val result = connector.create(etmpRegistrationRequest).futureValue
         result mustBe Left(EtmpEnrolmentError("123", "error"))
       }
     }
@@ -263,7 +179,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
+        val result = connector.create(etmpRegistrationRequest).futureValue
         result mustBe Left(UnexpectedResponseStatus(UNPROCESSABLE_ENTITY, "Unexpected response from etmp registration, received status 422"))
       }
     }
@@ -287,7 +203,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
           running(app) {
             val connector = app.injector.instanceOf[RegistrationConnector]
-            val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
+            val result = connector.create(etmpRegistrationRequest).futureValue
             result mustBe Left(UnexpectedResponseStatus(error._1, s"Unexpected response from etmp registration, received status ${error._1}"))
           }
         }
@@ -311,7 +227,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        whenReady(connector.createWithEnrolment(etmpRegistrationRequest), Timeout(Span(30, Seconds))) { exp =>
+        whenReady(connector.create(etmpRegistrationRequest), Timeout(Span(30, Seconds))) { exp =>
           exp.isLeft mustBe true
           exp.left.get mustBe a[ErrorResponse]
         }

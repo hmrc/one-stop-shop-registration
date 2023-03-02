@@ -28,7 +28,7 @@ object RegistrationHttpParser extends BaseHttpParser {
 
   type CreateRegistrationResponse = Either[ErrorResponse, Unit]
 
-  type CreateRegistrationWithEnrolmentResponse = Either[ErrorResponse, EtmpEnrolmentResponse]
+  type CreateEtmpRegistrationResponse = Either[ErrorResponse, EtmpEnrolmentResponse]
 
   type GetRegistrationResponse = Either[ErrorResponse, Registration]
 
@@ -58,8 +58,8 @@ object RegistrationHttpParser extends BaseHttpParser {
       }
   }
 
-  implicit object CreateRegistrationWithEnrolment extends HttpReads[CreateRegistrationWithEnrolmentResponse] {
-    override def read(method: String, url: String, response: HttpResponse): CreateRegistrationWithEnrolmentResponse =
+  implicit object CreateRegistrationWithEnrolment extends HttpReads[CreateEtmpRegistrationResponse] {
+    override def read(method: String, url: String, response: HttpResponse): CreateEtmpRegistrationResponse =
       response.status match {
         case CREATED => response.json.validate[EtmpEnrolmentResponse] match {
           case JsSuccess(enrolmentResponse, _) => Right(enrolmentResponse)
@@ -77,7 +77,7 @@ object RegistrationHttpParser extends BaseHttpParser {
                 Left(UnexpectedResponseStatus(status, s"Unexpected response from ${serviceName}, received status $status"))
             }
           } else {
-            logger.error(s"Failed trying to parse JSON with status ${response.status} and body ${response.body}")
+            logger.error(s"Failed trying to parse empty JSON with status ${response.status} and body ${response.body}")
             logger.warn(s"Unexpected response from core registration, received status $status")
             Left(UnexpectedResponseStatus(status, s"Unexpected response from ${serviceName}, received status $status"))
           }

@@ -27,8 +27,6 @@ case class EtmpEuRegistrationDetails(
                                       tradingName: Option[String] = None,
                                       fixedEstablishmentAddressLine1: Option[String] = None,
                                       fixedEstablishmentAddressLine2: Option[String] = None,
-                                      dispatchWarehouseAddressLine1: Option[String] = None,
-                                      dispatchWarehouseAddressLine2: Option[String] = None,
                                       townOrCity: Option[String] = None,
                                       regionOrState: Option[String] = None,
                                       postcode: Option[String] = None
@@ -63,8 +61,8 @@ object EtmpEuRegistrationDetails {
           taxIdentificationNumber = Some(registrationNumber),
           fixedEstablishment = Some(false),
           tradingName = Some(registrationWithoutFEWithTradeDetails.tradeDetails.tradingName),
-          dispatchWarehouseAddressLine1 = Some(registrationWithoutFEWithTradeDetails.tradeDetails.address.line1),
-          dispatchWarehouseAddressLine2 = registrationWithoutFEWithTradeDetails.tradeDetails.address.line2,
+          fixedEstablishmentAddressLine1 = Some(registrationWithoutFEWithTradeDetails.tradeDetails.address.line1),
+          fixedEstablishmentAddressLine2 = registrationWithoutFEWithTradeDetails.tradeDetails.address.line2,
           townOrCity = Some(registrationWithoutFEWithTradeDetails.tradeDetails.address.townOrCity),
           regionOrState = registrationWithoutFEWithTradeDetails.tradeDetails.address.stateOrRegion,
           postcode = registrationWithoutFEWithTradeDetails.tradeDetails.address.postCode

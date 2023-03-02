@@ -21,9 +21,7 @@ import connectors.RegistrationHttpParser._
 import logging.Logging
 import models.UnexpectedResponseStatus
 import models.etmp.EtmpRegistrationRequest
-import models.requests.RegistrationRequest
 import play.api.http.HeaderNames.AUTHORIZATION
-import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException}
 
@@ -54,7 +52,7 @@ class RegistrationConnector @Inject()(
     }
   }
 
-  def create(registration: RegistrationRequest): Future[CreateRegistrationResponse] = {
+  def create(registration: EtmpRegistrationRequest): Future[CreateEtmpRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString
     val headersWithCorrelationId = headers(correlationId)
@@ -65,31 +63,7 @@ class RegistrationConnector @Inject()(
 
     logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
 
-    httpClient.POST[RegistrationRequest, CreateRegistrationResponse](
-      s"${ifConfig.baseUrl}vec/ossregistration/regdatatransfer/v1",
-      registration,
-      headers = headersWithCorrelationId
-    ).recover {
-      case e: HttpException =>
-        logger.error(s"Unexpected response from etmp registration, received status ${e.responseCode}", e)
-        Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
-    }
-  }
-
-  def createWithEnrolment(registration: EtmpRegistrationRequest): Future[CreateRegistrationWithEnrolmentResponse] = {
-
-    val correlationId = UUID.randomUUID().toString
-    val headersWithCorrelationId = headers(correlationId)
-
-    val headersWithoutAuth = headersWithCorrelationId.filterNot{
-      case (key, _) => key.matches(AUTHORIZATION)
-    }
-
-    logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
-
-    logger.info(s"Send request for $correlationId: ${Json.toJson(registration)}") // TODO remove post smoke test
-
-    httpClient.POST[EtmpRegistrationRequest, CreateRegistrationWithEnrolmentResponse](
+    httpClient.POST[EtmpRegistrationRequest, CreateEtmpRegistrationResponse](
       s"${ifConfig.baseUrl}vec/ossregistration/regdatatransfer/v1",
       registration,
       headers = headersWithCorrelationId
