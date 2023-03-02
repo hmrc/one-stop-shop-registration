@@ -22,7 +22,7 @@ import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
 import models.etmp.EtmpRegistrationRequest
 import models.requests.RegistrationRequest
-import models.{Conflict, EtmpEnrolmentError, EtmpException, InsertResult, Registration}
+import models.{EtmpEnrolmentError, EtmpException, InsertResult, Registration}
 import play.api.http.Status.NO_CONTENT
 import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
@@ -44,37 +44,29 @@ class RegistrationServiceEtmpImpl @Inject()(
                                            )(implicit ec: ExecutionContext) extends RegistrationService {
 
   def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult] = {
-    if (appConfig.addEnrolment) {
-      val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
-      registrationConnector.createWithEnrolment(registrationRequest).flatMap {
-        case Right(response) =>
-          enrolmentsConnector.confirmEnrolment(response.formBundleNumber).flatMap { enrolmentResponse =>
-            enrolmentResponse.status match {
-              case NO_CONTENT =>
-                logger.info("Insert succeeded")
-                if(appConfig.duplicateRegistrationIntoRepository) {
-                  registrationRepository.insert(buildRegistration(request, clock))
-                } else {
-                  Future.successful(InsertSucceeded)
-                }
-              case status =>
-                logger.error(s"Failed to add enrolment - $status with body ${enrolmentResponse.body}")
-                throw EtmpException(s"Failed to add enrolment - ${enrolmentResponse.body}")
-            }
+    val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
+    registrationConnector.create(registrationRequest).flatMap {
+      case Right(response) =>
+        enrolmentsConnector.confirmEnrolment(response.formBundleNumber).flatMap { enrolmentResponse =>
+          enrolmentResponse.status match {
+            case NO_CONTENT =>
+              logger.info("Insert succeeded")
+              if (appConfig.duplicateRegistrationIntoRepository) {
+                registrationRepository.insert(buildRegistration(request, clock))
+              } else {
+                Future.successful(InsertSucceeded)
+              }
+            case status =>
+              logger.error(s"Failed to add enrolment - $status with body ${enrolmentResponse.body}")
+              throw EtmpException(s"Failed to add enrolment - ${enrolmentResponse.body}")
           }
-        case Left(EtmpEnrolmentError(EtmpEnrolmentErrorResponse.alreadyActiveSubscriptionErrorCode, _)) =>
-          logger.warn("Enrolment already existed")
-          Future.successful(AlreadyExists)
-        case Left(error) =>
-          logger.error(s"There was an error creating Registration enrolment from ETMP: $error")
-          throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
-      }
-    } else {
-      registrationConnector.create(request).map {
-        case Right(_) => InsertSucceeded
-        case Left(Conflict) => AlreadyExists
-        case Left(error) => throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
-      }
+        }
+      case Left(EtmpEnrolmentError(EtmpEnrolmentErrorResponse.alreadyActiveSubscriptionErrorCode, _)) =>
+        logger.warn("Enrolment already existed")
+        Future.successful(AlreadyExists)
+      case Left(error) =>
+        logger.error(s"There was an error creating Registration enrolment from ETMP: $error")
+        throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
     }
   }
 

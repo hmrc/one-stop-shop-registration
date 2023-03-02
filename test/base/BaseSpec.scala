@@ -65,8 +65,8 @@ trait BaseSpec
           taxIdentificationNumber = Some("12345"),
           fixedEstablishment = Some(false),
           tradingName = Some("Name"),
-          dispatchWarehouseAddressLine1 = Some("Line 1"),
-          dispatchWarehouseAddressLine2 = Some("Line 2"),
+          fixedEstablishmentAddressLine1 = Some("Line 1"),
+          fixedEstablishmentAddressLine2 = Some("Line 2"),
           townOrCity = Some("Town"),
         )
       ),

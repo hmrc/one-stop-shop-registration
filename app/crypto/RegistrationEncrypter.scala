@@ -203,14 +203,14 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     )
   }
 
-  private def encryptRegistrationWithoutFixedEstablishment(
+  private def encryptRegistrationWithoutTaxId(
                                                             registration: RegistrationWithoutTaxId,
                                                             vrn: Vrn,
                                                             key: String
                                                           ) : EncryptedRegistrationWithoutTaxId =
     EncryptedRegistrationWithoutTaxId(encryptCountry(registration.country, vrn, key))
 
-  private def decryptRegistrationWithoutFixedEstablishment(
+  private def decryptRegistrationWithoutTaxId(
                                                             registration: EncryptedRegistrationWithoutTaxId,
                                                             vrn: Vrn,
                                                             key: String
@@ -222,7 +222,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       case v: EuVatRegistration                     => encryptEuVatRegistration(v, vrn, key)
       case wf: RegistrationWithoutFixedEstablishmentWithTradeDetails             => encryptRegistrationWithoutFixedEstablishmentWithTradeDetails(wf, vrn, key)
       case f: RegistrationWithFixedEstablishment    => encryptRegistrationWithFixedEstablishment(f, vrn, key)
-      case w: RegistrationWithoutTaxId => encryptRegistrationWithoutFixedEstablishment(w, vrn, key)
+      case w: RegistrationWithoutTaxId => encryptRegistrationWithoutTaxId(w, vrn, key)
     }
 
   def decryptEuTaxRegistration(registration: EncryptedEuTaxRegistration, vrn: Vrn, key: String): EuTaxRegistration =
@@ -230,7 +230,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       case v: EncryptedEuVatRegistration                    => decryptEuVatRegistration(v, vrn, key)
       case wf: EncryptedRegistrationWithoutFixedEstablishmentWithTradeDetails              => decryptRegistrationWithoutFixedEstablishmentWithTradeDetails(wf, vrn, key)
       case f: EncryptedRegistrationWithFixedEstablishment    => decryptRegistrationWithFixedEstablishment(f, vrn, key)
-      case w: EncryptedRegistrationWithoutTaxId => decryptRegistrationWithoutFixedEstablishment(w, vrn, key)
+      case w: EncryptedRegistrationWithoutTaxId => decryptRegistrationWithoutTaxId(w, vrn, key)
     }
 
   private def encryptTradeDetails(fixedEstablishment: TradeDetails, vrn: Vrn, key: String): EncryptedTradeDetails = {
@@ -254,7 +254,6 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
   }
 
   def decryptPreviousRegistration(registration: EncryptedPreviousRegistration, vrn: Vrn, key: String): PreviousRegistration = {
-    def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
     import registration._
 
     PreviousRegistration(decryptCountry(country, vrn, key), previousSchemeDetails.map(decryptPreviousSchemeDetails(_, vrn, key)))
