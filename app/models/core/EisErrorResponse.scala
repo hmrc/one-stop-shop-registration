@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package config
+package models.core
 
-import play.api.Configuration
+import play.api.libs.json.{Json, OFormat}
 
-import javax.inject.Inject
+import java.time.Instant
 
-class EnrolmentsConfig @Inject()(config: Configuration) {
+case class EisErrorResponse(
+                             timestamp: Instant,
+                             error: String,
+                             errorMessage: String
+                           )
 
-  val baseUrl: Service    = config.get[Service]("microservice.services.enrolments")
-  val environment: String = config.get[String]("microservice.services.enrolments.environment")
-  val callbackBaseUrl: String = config.get[String]("microservice.services.enrolments.callbackBaseUrl")
-  val ossEnrolmentKey: String = config.get[String]("ossEnrolmentKey")
+object EisErrorResponse {
+
+  implicit val format: OFormat[EisErrorResponse] = Json.format[EisErrorResponse]
+
 }

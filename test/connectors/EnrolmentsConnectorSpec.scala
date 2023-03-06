@@ -4,15 +4,17 @@ import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models._
 import play.api.Application
-import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, NO_CONTENT, UNAUTHORIZED}
+import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, NOT_FOUND, UNAUTHORIZED}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{Json, JsValue}
 import play.api.test.Helpers.running
-
+import uk.gov.hmrc.http.HeaderCarrier
 
 class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
   private val basePath = "tax-enrolments/"
+
+  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   val errorResponseBody = "Error"
   val response: JsValue = Json.toJson(TaxEnrolmentErrorResponse(NOT_FOUND.toString, errorResponseBody))
@@ -40,7 +42,6 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
       server.stubFor(
         put(urlEqualTo(url))
-          .withHeader("Authorization", equalTo("Bearer auth-token"))
           .willReturn(aResponse().withStatus(NO_CONTENT))
       )
 
@@ -62,7 +63,6 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
           server.stubFor(
             put(urlEqualTo(url))
-              .withHeader("Authorization", equalTo("Bearer auth-token"))
               .willReturn(aResponse().withStatus(status))
           )
 

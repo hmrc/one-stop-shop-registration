@@ -37,27 +37,19 @@ trait BaseSpec
   protected def applicationBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder().overrides(bind[AuthAction].to[FakeAuthAction])
 
-  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy MM dd")
+  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     .withLocale(Locale.UK)
     .withZone(ZoneId.of("GMT"))
 
   val etmpRegistrationRequest: EtmpRegistrationRequest = EtmpRegistrationRequest(
-    vrn = vrn,
+    administration = EtmpAdministration(),
+    customerIdentification = EtmpCustomerIdentification(vrn),
     tradingNames = Seq(EtmpTradingNames("Foo")),
     schemeDetails = EtmpSchemeDetails(
       commencementDate = LocalDate.now().format(dateFormatter),
       firstSaleDate = Some(LocalDate.now().format(dateFormatter)),
       euRegistrationDetails = Seq(EtmpEuRegistrationDetails(
-        countryOfRegistration = "FR",
-        vatNumber = None,
-        taxIdentificationNumber = Some("FR123"),
-        fixedEstablishment = None,
-        tradingName = None,
-        fixedEstablishmentAddressLine1 = None,
-        fixedEstablishmentAddressLine2 = None,
-        townOrCity = None,
-        regionOrState = None,
-        postcode = None
+        countryOfRegistration = "FR"
       ),
         EtmpEuRegistrationDetails(
           countryOfRegistration = "DE",
@@ -66,16 +58,50 @@ trait BaseSpec
           fixedEstablishment = Some(true),
           tradingName = Some("Name"),
           fixedEstablishmentAddressLine1 = Some("Line 1"),
-          fixedEstablishmentAddressLine2 = None,
+          townOrCity = Some("Town")
+        ),
+        EtmpEuRegistrationDetails(
+          countryOfRegistration = "BE",
+          taxIdentificationNumber = Some("12345"),
+          fixedEstablishment = Some(false),
+          tradingName = Some("Name"),
+          fixedEstablishmentAddressLine1 = Some("Line 1"),
+          fixedEstablishmentAddressLine2 = Some("Line 2"),
           townOrCity = Some("Town"),
-          regionOrState = None,
-          postcode = None)
+        )
       ),
-      previousEURegistrationDetails = Seq(EtmpPreviousEURegistrationDetails(
-        issuedBy = "DE",
-        registrationNumber = "DE123",
-        schemeType = SchemeType.OSSUnion
-      )),
+      previousEURegistrationDetails = Seq(
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "DE",
+          registrationNumber = "DE123",
+          schemeType = SchemeType.OSSUnion,
+          intermediaryNumber = None
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "BE",
+          registrationNumber = "BE123",
+          schemeType = SchemeType.OSSNonUnion,
+          intermediaryNumber = None
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "EE",
+          registrationNumber = "EE123",
+          schemeType = SchemeType.OSSNonUnion,
+          intermediaryNumber = None
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "EE",
+          registrationNumber = "EE234",
+          schemeType = SchemeType.IOSSWithIntermediary,
+          intermediaryNumber = Some("IN234")
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "EE",
+          registrationNumber = "EE312",
+          schemeType = SchemeType.IOSSWithoutIntermediary,
+          intermediaryNumber = None
+        )
+      ),
       onlineMarketPlace = false,
       websites = Seq(
         Website("website1"), Website("website2")

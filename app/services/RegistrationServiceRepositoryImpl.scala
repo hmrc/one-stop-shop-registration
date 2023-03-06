@@ -17,13 +17,12 @@
 package services
 
 import config.AppConfig
-import connectors.RegistrationConnector
-import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
 import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.Clock
 import javax.inject.{Inject, Singleton}
@@ -32,13 +31,12 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RegistrationServiceRepositoryImpl @Inject()(
                                      registrationRepository: RegistrationRepository,
-                                     registrationConnector: RegistrationConnector,
                                      clock: Clock,
                                      appConfig: AppConfig,
                                      exclusionService: ExclusionService
                                    )(implicit ec: ExecutionContext) extends RegistrationService {
 
-  def createRegistration(request: RegistrationRequest): Future[InsertResult] =
+  def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult] =
     registrationRepository.insert(buildRegistration(request, clock))
 
   def get(vrn: Vrn): Future[Option[Registration]] = {
@@ -54,9 +52,5 @@ class RegistrationServiceRepositoryImpl @Inject()(
         }
       }
     }
-  }
-
-  override def validate(vrn: Vrn): Future[ValidateRegistrationResponse] = {
-    registrationConnector.validateRegistration(vrn)
   }
 }

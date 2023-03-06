@@ -15,6 +15,16 @@
 
     <logger name="application.repositories.RegistrationBackUpRepository" level="${logger.repositories.RegistrationBackUpRepository:-INFO}"/>
 
+    <logger name="application.connectors.ValidateCoreRegistrationConnector" level="${logger.connectors.ValidateCoreRegistrationConnector:-INFO}"/>
+
+    <logger name="application.controllers.ValidateCoreRegistrationController" level="${logger.controllers.ValidateCoreRegistrationController:-INFO}"/>
+
+    <logger name="application.connectors.RegistrationConnector" level="${logger.connectors.RegistrationConnector:-INFO}"/>
+
+    <logger name="application.services.RegistrationServiceEtmpImpl" level="${logger.services.RegistrationServiceEtmpImpl:-INFO}"/>
+
+    <logger name="application.controllers.EnrolmentsSubscriptionController" level="${logger.controllers.EnrolmentsSubscriptionController:-INFO}"/>
+
     <root level="${logger.application:-WARN}">
         <appender-ref ref="STDOUT"/>
     </root>

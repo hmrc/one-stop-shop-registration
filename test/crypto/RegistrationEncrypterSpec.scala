@@ -131,7 +131,7 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
   "encrypt / decrypt EU Tax Registration" - {
 
     "must encrypt an EU VAT Registration and decrypt it" in {
-      forAll(arbitrary[RegistrationWithoutFixedEstablishment]) {
+      forAll(arbitrary[EuVatRegistration]) {
         registration =>
           val e = encrypter.encryptEuTaxRegistration(registration, vrn, secretKey)
           val d = encrypter.decryptEuTaxRegistration(e, vrn, secretKey)
@@ -150,7 +150,17 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
       }
     }
 
-    "must encrypt a registration without a fixed establishment and decrypt it" in {
+    "must encrypt a registration without fixed establishment with trade details and decrypt it" in {
+      forAll(arbitrary[RegistrationWithoutFixedEstablishmentWithTradeDetails]) {
+        registration =>
+          val e = encrypter.encryptEuTaxRegistration(registration, vrn, secretKey)
+          val d = encrypter.decryptEuTaxRegistration(e, vrn, secretKey)
+
+          d mustEqual registration
+      }
+    }
+
+    "must encrypt a registration without a taxId and decrypt it" in {
       forAll(arbitrary[RegistrationWithoutTaxId]) {
         registration =>
           val e = encrypter.encryptEuTaxRegistration(registration, vrn, secretKey)
@@ -167,8 +177,8 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
 
       forAll(arbitrary[PreviousRegistration]) {
         registration =>
-          val e = encrypter.encryptedPreviousRegistration(registration, vrn, secretKey)
-          val d = encrypter.decryptedPreviousRegistration(e, vrn, secretKey)
+          val e = encrypter.encryptPreviousRegistration(registration, vrn, secretKey)
+          val d = encrypter.decryptPreviousRegistration(e, vrn, secretKey)
 
           d mustEqual registration
       }

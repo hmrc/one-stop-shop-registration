@@ -18,7 +18,6 @@ package controllers
 
 import base.BaseSpec
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.{RegistrationValidationResult, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.when
 import play.api.http.Status.CREATED
@@ -39,7 +38,7 @@ class RegistrationControllerSpec extends BaseSpec {
     "must return 201 when given a valid payload and the registration is created successfully" in {
 
       val mockService = mock[RegistrationServiceRepositoryImpl]
-      when(mockService.createRegistration(any())) thenReturn Future.successful(InsertSucceeded)
+      when(mockService.createRegistration(any())(any())) thenReturn Future.successful(InsertSucceeded)
 
       val app =
         applicationBuilder
@@ -77,7 +76,7 @@ class RegistrationControllerSpec extends BaseSpec {
     "must return Conflict when trying to insert a duplicate" in {
 
       val mockService = mock[RegistrationServiceRepositoryImpl]
-      when(mockService.createRegistration(any())) thenReturn Future.successful(AlreadyExists)
+      when(mockService.createRegistration(any())(any())) thenReturn Future.successful(AlreadyExists)
 
       val app =
         applicationBuilder
@@ -176,60 +175,4 @@ class RegistrationControllerSpec extends BaseSpec {
     }
   }
 
-  "validate(vrn)" - {
-    "must return Ok and response" - {
-      "when service returns Right(RegistrationValidationResult(true))" in {
-        val mockService = mock[RegistrationService]
-        when(mockService.validate(any())) thenReturn Future.successful(Right(RegistrationValidationResult(true)))
-
-        val app =
-          applicationBuilder
-            .overrides(bind[RegistrationService].toInstance(mockService))
-            .build()
-
-        running(app) {
-          val request = FakeRequest(GET, routes.RegistrationController.validate(vrn.vrn).url)
-          val result = route(app, request).value
-
-          status(result) mustEqual OK
-          contentAsJson(result) mustEqual Json.toJson(RegistrationValidationResult(true))
-        }
-      }
-
-      "when service returns Right(RegistrationValidationResult(false))" in {
-        val mockService = mock[RegistrationService]
-        when(mockService.validate(any())) thenReturn Future.successful(Right(RegistrationValidationResult(false)))
-
-        val app =
-          applicationBuilder
-            .overrides(bind[RegistrationService].toInstance(mockService))
-            .build()
-
-        running(app) {
-          val request = FakeRequest(GET, routes.RegistrationController.validate(vrn.vrn).url)
-          val result = route(app, request).value
-
-          status(result) mustEqual OK
-          contentAsJson(result) mustEqual Json.toJson(RegistrationValidationResult(false))
-        }
-      }
-    }
-
-    "must return InternalServerError when service returns Left(ErrorResponse)" in {
-      val mockService = mock[RegistrationService]
-      when(mockService.validate(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "unexpected")))
-
-      val app =
-        applicationBuilder
-          .overrides(bind[RegistrationService].toInstance(mockService))
-          .build()
-
-      running(app) {
-        val request = FakeRequest(GET, routes.RegistrationController.validate(vrn.vrn).url)
-        val result = route(app, request).value
-
-        status(result) mustEqual INTERNAL_SERVER_ERROR
-      }
-    }
-  }
 }

@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package config
+package models.core
 
-import play.api.Configuration
+import play.api.libs.json.{Json, OFormat}
 
-import javax.inject.Inject
+case class CoreRegistrationRequest(source: String,
+                                   scheme: Option[String],
+                                   searchId: String,
+                                   searchIntermediary: Option[String],
+                                   searchIdIssuedBy: String)
 
-class EnrolmentsConfig @Inject()(config: Configuration) {
-
-  val baseUrl: Service    = config.get[Service]("microservice.services.enrolments")
-  val environment: String = config.get[String]("microservice.services.enrolments.environment")
-  val callbackBaseUrl: String = config.get[String]("microservice.services.enrolments.callbackBaseUrl")
-  val ossEnrolmentKey: String = config.get[String]("ossEnrolmentKey")
+object CoreRegistrationRequest {
+  implicit val format: OFormat[CoreRegistrationRequest] = Json.format[CoreRegistrationRequest]
 }

@@ -33,7 +33,11 @@ class EnrolmentsSubscriptionController @Inject()(
     Action.async(parse.json) {
       implicit request =>
         val enrolmentStatus = (request.body \ "state").as[EnrolmentStatus]
-        logger.info(s"Enrolment complete for $subscriptionId, enrolment state = $enrolmentStatus")
+        if(enrolmentStatus == EnrolmentStatus.Success) {
+          logger.info(s"Enrolment complete for $subscriptionId, enrolment state = $enrolmentStatus")
+        } else {
+          logger.error(s"Enrolment failure for $subscriptionId, enrolment state = $enrolmentStatus ${request.body}")
+        }
         Future.successful(NoContent)
     }
 

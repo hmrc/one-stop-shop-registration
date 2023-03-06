@@ -25,7 +25,7 @@ import javax.inject.{Inject, Singleton}
 class AppConfig @Inject()(config: Configuration) {
 
   val encryptionKey: String = config.get[String]("mongodb.encryption.key")
-  val addEnrolment: Boolean = config.get[Boolean]("features.addEnrolment")
+  val duplicateRegistrationIntoRepository: Boolean = config.get[Boolean]("features.duplicateRegistrationIntoRepository")
   val cacheTtl: Int = config.get[Int]("mongodb.timeToLiveInDays")
 
   val exclusionsEnabled: Boolean = config.get[Boolean]("features.exclusions.enabled")

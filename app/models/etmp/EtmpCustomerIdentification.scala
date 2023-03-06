@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package config
+package models.etmp
 
-import play.api.Configuration
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.domain.Vrn
 
-import javax.inject.Inject
+case class EtmpCustomerIdentification(vrn: Vrn)
 
-class EnrolmentsConfig @Inject()(config: Configuration) {
-
-  val baseUrl: Service    = config.get[Service]("microservice.services.enrolments")
-  val environment: String = config.get[String]("microservice.services.enrolments.environment")
-  val callbackBaseUrl: String = config.get[String]("microservice.services.enrolments.callbackBaseUrl")
-  val ossEnrolmentKey: String = config.get[String]("ossEnrolmentKey")
+object EtmpCustomerIdentification {
+  implicit val format: OFormat[EtmpCustomerIdentification] = Json.format[EtmpCustomerIdentification]
 }

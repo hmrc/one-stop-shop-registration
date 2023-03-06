@@ -4,9 +4,9 @@ import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
-import models.requests.RegistrationRequest
 import models._
-import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
+import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse, EtmpErrorDetail}
+import models.requests.RegistrationRequest
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
@@ -19,7 +19,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate}
+import java.time.{Instant, LocalDate, LocalDateTime}
 
 class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Generators {
 
@@ -35,7 +35,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
   def getRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/getRegistration/${vrn.value}"
 
-  def createRegistrationUrl = "/one-stop-shop-registration-stub/createRegistration"
+  def createRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/regdatatransfer/v1"
 
   def getValidateRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/validateRegistration/${vrn.value}"
 
@@ -80,99 +80,15 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
     )
   }
 
-  "create" - {
 
-    "should return Registration payload correctly" in {
-
-      val app = application
-
-      val registration = generateRegistration(vrn)
-
-      val registrationRequest = toRegistrationRequest(registration)
-
-      val requestJson = Json.stringify(Json.toJson(registrationRequest))
-
-      server.stubFor(
-        post(urlEqualTo(createRegistrationUrl))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .withRequestBody(equalTo(requestJson))
-          .willReturn(aResponse().withStatus(ACCEPTED))
-      )
-
-      running(app) {
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.create(registrationRequest).futureValue
-        result mustEqual Right((): Unit)
-      }
-    }
-
-    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123")))
-      .foreach { error =>
-        s"should return correct error response when server responds with ${error._1}" in {
-
-          val app = application
-
-          val registration = generateRegistration(vrn)
-
-          val registrationRequest = toRegistrationRequest(registration)
-
-          val requestJson = Json.stringify(Json.toJson(registrationRequest))
-
-          server.stubFor(
-            post(urlEqualTo(createRegistrationUrl))
-              .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-              .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-              .withRequestBody(equalTo(requestJson))
-              .willReturn(aResponse().withStatus(error._1))
-          )
-
-          running(app) {
-            val connector = app.injector.instanceOf[RegistrationConnector]
-            val result = connector.create(registrationRequest).futureValue
-            result mustBe Left(error._2)
-          }
-        }
-      }
-
-    "should return Error Response when server responds with Http Exception" in {
-
-      val app = application
-
-      val registration = generateRegistration(vrn)
-
-      val registrationRequest = toRegistrationRequest(registration)
-
-      val requestJson = Json.stringify(Json.toJson(registrationRequest))
-
-      server.stubFor(
-        post(urlEqualTo(createRegistrationUrl))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .withRequestBody(equalTo(requestJson))
-          .willReturn(aResponse()
-            .withStatus(504)
-            .withFixedDelay(21000))
-      )
-
-      running(app) {
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        whenReady(connector.create(registrationRequest), Timeout(Span(30, Seconds))) { exp =>
-          exp.isLeft mustBe true
-          exp.left.get mustBe a[ErrorResponse]
-        }
-      }
-    }
-  }
-
-  ".createWithEnrolment" - {
+  ".create" - {
 
     Seq(CREATED).foreach {
       status =>
         s"when status is $status" - {
           "should return Registration payload correctly" in {
 
-            val now = LocalDate.now()
+            val now = LocalDateTime.now()
 
             val formBundleNumber = "123456789"
 
@@ -191,8 +107,8 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
             running(app) {
               val connector = app.injector.instanceOf[RegistrationConnector]
-              val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
-              result mustEqual Right(EtmpEnrolmentResponse(now, vrn.vrn, formBundleNumber))
+              val result = connector.create(etmpRegistrationRequest).futureValue
+              result mustBe Right(EtmpEnrolmentResponse(now, vrn.vrn, formBundleNumber))
             }
           }
 
@@ -214,8 +130,8 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
             running(app) {
               val connector = app.injector.instanceOf[RegistrationConnector]
-              val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
-              result mustEqual Left(InvalidJson)
+              val result = connector.create(etmpRegistrationRequest).futureValue
+              result mustBe Left(InvalidJson)
             }
           }
         }
@@ -228,7 +144,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
 
-      val errorResponse = EtmpEnrolmentErrorResponse(LocalDate.now(stubClock), "123", "error")
+      val errorResponse = EtmpEnrolmentErrorResponse(EtmpErrorDetail(LocalDate.now(stubClock), "correlation-id1", "123", "error", "source"))
 
       server.stubFor(
         post(urlEqualTo(createRegistrationUrl))
@@ -241,8 +157,8 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
-        result mustEqual Left(EtmpEnrolmentError("123", "error"))
+        val result = connector.create(etmpRegistrationRequest).futureValue
+        result mustBe Left(EtmpEnrolmentError("123", "error"))
       }
     }
 
@@ -263,8 +179,8 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
-        result mustEqual Left(InvalidJson)
+        val result = connector.create(etmpRegistrationRequest).futureValue
+        result mustBe Left(UnexpectedResponseStatus(UNPROCESSABLE_ENTITY, "Unexpected response from etmp registration, received status 422"))
       }
     }
 
@@ -287,8 +203,8 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
           running(app) {
             val connector = app.injector.instanceOf[RegistrationConnector]
-            val result = connector.createWithEnrolment(etmpRegistrationRequest).futureValue
-            result mustBe Left(error._2)
+            val result = connector.create(etmpRegistrationRequest).futureValue
+            result mustBe Left(UnexpectedResponseStatus(error._1, s"Unexpected response from etmp registration, received status ${error._1}"))
           }
         }
       }
@@ -311,7 +227,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        whenReady(connector.createWithEnrolment(etmpRegistrationRequest), Timeout(Span(30, Seconds))) { exp =>
+        whenReady(connector.create(etmpRegistrationRequest), Timeout(Span(30, Seconds))) { exp =>
           exp.isLeft mustBe true
           exp.left.get mustBe a[ErrorResponse]
         }
@@ -391,48 +307,4 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
     }
   }
 
-  "validateRegistration" - {
-
-    "must return a Right(validateRegistration) when the server returns OK with a recognised payload" in {
-
-      val app = application
-
-      val validateRegistration = RegistrationValidationResult(true)
-
-      val responseJson =  Json.prettyPrint(Json.toJson(validateRegistration))
-      server.stubFor(
-        get(urlEqualTo(getValidateRegistrationUrl(vrn)))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .willReturn(ok(responseJson))
-      )
-
-      running(app) {
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.validateRegistration(vrn).futureValue
-
-        result mustBe Right(validateRegistration)
-      }
-    }
-
-    "must return Left(NotFound) when the server returns NOT_FOUND" in {
-
-      val app = application
-
-      server.stubFor(
-        get(urlEqualTo(getValidateRegistrationUrl(vrn)))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .willReturn(notFound())
-      )
-
-      running(app) {
-
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.validateRegistration(vrn).futureValue
-
-        result mustBe Left(NotFound)
-      }
-    }
-  }
 }

@@ -17,29 +17,29 @@
 package models.etmp
 
 import models.requests.RegistrationRequest
-import models.BankDetails
+import models.{BankDetails, CountryWithValidationDetails, PreviousRegistration, PreviousRegistrationLegacy, PreviousRegistrationNew, PreviousScheme}
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.domain.Vrn
 
 case class EtmpRegistrationRequest(
-                             vrn: Vrn,
-                             tradingNames: Seq[EtmpTradingNames],
-                             schemeDetails: EtmpSchemeDetails,
-                             bankDetails: BankDetails
-                           ) {
-}
+                                    administration: EtmpAdministration,
+                                    customerIdentification: EtmpCustomerIdentification,
+                                    tradingNames: Seq[EtmpTradingNames],
+                                    schemeDetails: EtmpSchemeDetails,
+                                    bankDetails: BankDetails
+                                  )
 
 object EtmpRegistrationRequest {
 
   def fromRegistrationRequest(registration: RegistrationRequest): EtmpRegistrationRequest = {
     EtmpRegistrationRequest(
-      vrn = registration.vrn,
+      administration = EtmpAdministration(),
+      customerIdentification = EtmpCustomerIdentification(registration.vrn),
       tradingNames = registration.tradingNames.map(EtmpTradingNames(_)),
       schemeDetails = EtmpSchemeDetails(
         commencementDate = registration.commencementDate.format(EtmpSchemeDetails.dateFormatter),
         firstSaleDate = registration.dateOfFirstSale.map(_.format(EtmpSchemeDetails.dateFormatter)),
         euRegistrationDetails = registration.euRegistrations.map(registration => EtmpEuRegistrationDetails.create(registration)),
-        previousEURegistrationDetails = registration.previousRegistrations.map(previous => EtmpPreviousEURegistrationDetails(previous.country.code, previous.vatNumber, SchemeType.OSSUnion)),
+        previousEURegistrationDetails = mapPreviousRegistrations(registration.previousRegistrations),
         onlineMarketPlace = registration.isOnlineMarketplace,
         websites = registration.websites.map(Website(_)),
         contactName = registration.contactDetails.fullName,
@@ -49,6 +49,48 @@ object EtmpRegistrationRequest {
         nonCompliantPayments = registration.nonCompliantPayments),
       bankDetails = registration.bankDetails
     )
+  }
+
+  private def mapPreviousRegistrations(previousRegistrations: Seq[PreviousRegistration]): Seq[EtmpPreviousEURegistrationDetails] = {
+
+    previousRegistrations.flatMap {
+      case newPreviousRegistrations: PreviousRegistrationNew =>
+        newPreviousRegistrations.previousSchemesDetails.map { previousSchemeDetails =>
+
+          val registrationNumber = previousSchemeDetails.previousScheme match {
+            case PreviousScheme.OSSU => CountryWithValidationDetails.convertTaxIdentifierForTransfer(previousSchemeDetails.previousSchemeNumbers.previousSchemeNumber, newPreviousRegistrations.country.code)
+            case _ => previousSchemeDetails.previousSchemeNumbers.previousSchemeNumber
+          }
+
+          EtmpPreviousEURegistrationDetails(
+            issuedBy = newPreviousRegistrations.country.code,
+            registrationNumber = registrationNumber,
+            schemeType = convertSchemeType(previousSchemeDetails.previousScheme),
+            intermediaryNumber = previousSchemeDetails.previousSchemeNumbers.previousIntermediaryNumber
+          )
+        }
+
+      case legacyPreviousRegistrations: PreviousRegistrationLegacy =>
+
+        val registrationNumber = legacyPreviousRegistrations.vatNumber
+
+        Seq(EtmpPreviousEURegistrationDetails(
+          issuedBy = legacyPreviousRegistrations.country.code,
+          registrationNumber = registrationNumber,
+          schemeType = SchemeType.OSSNonUnion,
+          None
+        ))
+    }
+  }
+
+  private def convertSchemeType(previousScheme: PreviousScheme): SchemeType = {
+    previousScheme match {
+      case PreviousScheme.OSSU => SchemeType.OSSUnion
+      case PreviousScheme.OSSNU => SchemeType.OSSNonUnion
+      case PreviousScheme.IOSSWOI => SchemeType.IOSSWithoutIntermediary
+      case PreviousScheme.IOSSWI => SchemeType.IOSSWithIntermediary
+      case _ => throw new Exception("Unknown scheme, unable to convert")
+    }
   }
 
   implicit val format: OFormat[EtmpRegistrationRequest] = Json.format[EtmpRegistrationRequest]

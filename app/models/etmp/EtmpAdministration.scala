@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package models
+package models.etmp
 
 import play.api.libs.json.{Json, OFormat}
 
-case class RegistrationValidationResult(
-                            validRegistration: Boolean
-                          )
+case class EtmpAdministration(messageType: String = "OSSSubscriptionCreate", regimeID: String = "OSS")
 
-object RegistrationValidationResult {
-
-  implicit val format: OFormat[RegistrationValidationResult] = Json.format[RegistrationValidationResult]
-
+object EtmpAdministration {
+  implicit val format: OFormat[EtmpAdministration] = Json.format[EtmpAdministration]
 }
-
-

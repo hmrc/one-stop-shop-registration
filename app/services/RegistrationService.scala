@@ -16,11 +16,11 @@
 
 package services
 
-import connectors.RegistrationHttpParser.ValidateRegistrationResponse
 import logging.Logging
 import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, Instant}
 import scala.concurrent.Future
@@ -48,11 +48,10 @@ trait RegistrationService extends Logging {
       nonCompliantPayments = request.nonCompliantPayments
     )
 
-  def createRegistration(request: RegistrationRequest): Future[InsertResult]
+  def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult]
 
   def get(vrn: Vrn): Future[Option[Registration]]
 
-  def validate(vrn: Vrn): Future[ValidateRegistrationResponse]
 }
 
 

@@ -18,7 +18,7 @@ package controllers.test
 
 import models.EuTaxIdentifierType.Vat
 import models.VatDetailSource.UserEntered
-import models.{BankDetails, ContactDetails, Country, DesAddress, EuTaxIdentifier, FixedEstablishment, Iban, InternationalAddress, PreviousRegistration, PrincipalPlaceOfBusinessInNi, Registration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishment, VatDetails}
+import models._
 import org.mongodb.scala.model.Filters
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.RegistrationRepository
@@ -84,11 +84,13 @@ class TestOnlyController @Inject()(
         source = UserEntered
       ),
       euRegistrations = Seq(
-        RegistrationWithoutFixedEstablishment(Country("FR", "France"), EuTaxIdentifier(Vat, "FR123")),
+        RegistrationWithoutTaxId(
+          Country("FR", "France")
+        ),
         RegistrationWithFixedEstablishment(
           Country("DE", "Germany"),
           EuTaxIdentifier(Vat, "DE123"),
-          FixedEstablishment("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
+          TradeDetails("Name", InternationalAddress("Line 1", None, "Town", None, None, Country("FR", "France")))
         )
       ),
       contactDetails =     new ContactDetails(
@@ -99,7 +101,14 @@ class TestOnlyController @Inject()(
       websites = List("website1", "website2"),
       commencementDate = LocalDate.now,
       previousRegistrations = Seq(
-        PreviousRegistration(Country("DE", "Germany"), "DE123")
+        PreviousRegistrationNew(
+          country = Country("DE", "Germany"),
+          previousSchemesDetails = Seq(PreviousSchemeDetails(PreviousScheme.OSSU, PreviousSchemeNumbers("DE123", None)))
+        ),
+        PreviousRegistrationLegacy(
+          country = Country("BE", "Belgium"),
+          vatNumber = "BE123"
+        )
       ),
       bankDetails = BankDetails("Account name", None, iban),
       isOnlineMarketplace = false,

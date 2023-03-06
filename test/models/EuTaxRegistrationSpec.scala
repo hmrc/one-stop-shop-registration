@@ -12,21 +12,9 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
 
   "EU Tax Registration" - {
 
-    "must serialise and deserialise from / to an EU VAT Registration" in {
-
-      forAll(arbitrary[Country],  arbitrary[EuTaxIdentifier]) {
-        case (country, vatNumber) =>
-
-          val euVatRegistration = RegistrationWithoutFixedEstablishment(country, vatNumber)
-
-          val json = Json.toJson(euVatRegistration)
-          json.validate[EuTaxRegistration] mustEqual JsSuccess(euVatRegistration)
-      }
-    }
-
     "must serialise and deserialise from / to a Registration with Fixed Establishment" in {
 
-      forAll(arbitrary[Country], arbitrary[FixedEstablishment], arbitrary[EuTaxIdentifier]) {
+      forAll(arbitrary[Country], arbitrary[TradeDetails], arbitrary[EuTaxIdentifier]) {
         case (country, fixedEstablishment, taxRef) =>
 
           val euRegistration = RegistrationWithFixedEstablishment(country, taxRef, fixedEstablishment)
@@ -50,18 +38,6 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
 
   "Encrypted EU Tax Registration" - {
 
-    "must serialise and deserialise from / to an EU VAT Registration" in {
-
-      forAll(arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedCountry]) {
-        case (identifierType, taxRef, country) =>
-
-          val euVatRegistration = EncryptedRegistrationWithoutFixedEstablishment(country, EncryptedEuTaxIdentifier(identifierType, taxRef))
-
-          val json = Json.toJson(euVatRegistration)
-          json.validate[EncryptedEuTaxRegistration] mustEqual JsSuccess(euVatRegistration)
-      }
-    }
-
     "must serialise and deserialise from / to a Registration with Fixed Establishment" in {
 
       val gen = for {
@@ -74,7 +50,7 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
         addressCountry <- arbitrary[Country]
       } yield (
         country,
-        EncryptedFixedEstablishment(name, EncryptedInternationalAddress(line1, None, town, None, None, addressCountry)),
+        EncryptedTradeDetails(name, EncryptedInternationalAddress(line1, None, town, None, None, addressCountry)),
         EncryptedEuTaxIdentifier(identifierType, taxRef)
       )
 
