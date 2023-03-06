@@ -70,12 +70,19 @@ trait BaseSpec
           townOrCity = Some("Town"),
         )
       ),
-      previousEURegistrationDetails = Seq(EtmpPreviousEURegistrationDetails(
-        issuedBy = "DE",
-        registrationNumber = "DE123",
-        schemeType = SchemeType.OSSUnion,
-        intermediaryNumber = None
-      ),
+      previousEURegistrationDetails = Seq(
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "DE",
+          registrationNumber = "DE123",
+          schemeType = SchemeType.OSSUnion,
+          intermediaryNumber = None
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "BE",
+          registrationNumber = "BE123",
+          schemeType = SchemeType.OSSNonUnion,
+          intermediaryNumber = None
+        ),
         EtmpPreviousEURegistrationDetails(
           issuedBy = "EE",
           registrationNumber = "EE123",

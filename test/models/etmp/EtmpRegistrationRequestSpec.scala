@@ -71,7 +71,11 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
                   )
                 )
               ),
-              PreviousRegistration(
+              PreviousRegistrationLegacy(
+                country = Country("BE", "Belgium"),
+                vatNumber = "BE123"
+              ),
+              PreviousRegistrationNew(
                 country = Country("EE", "Estonia"),
                 previousSchemesDetails = Seq(
                   PreviousSchemeDetails(
