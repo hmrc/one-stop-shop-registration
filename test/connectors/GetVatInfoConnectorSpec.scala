@@ -21,10 +21,10 @@ class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
   private def application: Application =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.des.host" -> "127.0.0.1",
-        "microservice.services.des.port" -> server.port,
-        "microservice.services.des.authorizationToken" -> "auth-token",
-        "microservice.services.des.environment" -> "test-environment"
+        "microservice.services.get-vat-info.host" -> "127.0.0.1",
+        "microservice.services.get-vat-info.port" -> server.port,
+        "microservice.services.get-vat-info.authorizationToken" -> "auth-token",
+        "microservice.services.get-vat-info.environment" -> "test-environment"
       )
       .build()
 
