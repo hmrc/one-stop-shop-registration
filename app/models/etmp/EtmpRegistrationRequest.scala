@@ -16,11 +16,9 @@
 
 package models.etmp
 
-import logging.Logging
 import models.requests.RegistrationRequest
 import models.{BankDetails, CountryWithValidationDetails, PreviousRegistration, PreviousScheme}
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.domain.Vrn
 
 case class EtmpRegistrationRequest(
                                     administration: EtmpAdministration,

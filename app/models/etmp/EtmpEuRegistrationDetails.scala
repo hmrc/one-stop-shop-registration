@@ -16,19 +16,21 @@
 
 package models.etmp
 
-import models.{CountryWithValidationDetails, EuTaxRegistration, EuVatRegistration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishment, RegistrationWithoutTaxId}
+import models.{CountryWithValidationDetails, EuTaxRegistration, EuVatRegistration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishmentWithTradeDetails, RegistrationWithoutTaxId}
 import play.api.libs.json.{Json, OFormat}
 
-case class EtmpEuRegistrationDetails(countryOfRegistration: String,
-                                     vatNumber: Option[String] = None,
-                                     taxIdentificationNumber: Option[String] = None,
-                                     fixedEstablishment: Option[Boolean] = None,
-                                     tradingName: Option[String] = None,
-                                     fixedEstablishmentAddressLine1: Option[String] = None,
-                                     fixedEstablishmentAddressLine2: Option[String] = None,
-                                     townOrCity: Option[String] = None,
-                                     regionOrState: Option[String] = None,
-                                     postcode: Option[String] = None) {
+case class EtmpEuRegistrationDetails(
+                                      countryOfRegistration: String,
+                                      vatNumber: Option[String] = None,
+                                      taxIdentificationNumber: Option[String] = None,
+                                      fixedEstablishment: Option[Boolean] = None,
+                                      tradingName: Option[String] = None,
+                                      fixedEstablishmentAddressLine1: Option[String] = None,
+                                      fixedEstablishmentAddressLine2: Option[String] = None,
+                                      townOrCity: Option[String] = None,
+                                      regionOrState: Option[String] = None,
+                                      postcode: Option[String] = None
+                                    ) {
 
 }
 
@@ -52,11 +54,18 @@ object EtmpEuRegistrationDetails {
           regionOrState = registrationWithFE.fixedEstablishment.address.stateOrRegion,
           postcode = registrationWithFE.fixedEstablishment.address.postCode
         )
-      case registrationWithoutFE: RegistrationWithoutFixedEstablishment =>
-        val registrationNumber = CountryWithValidationDetails.convertTaxIdentifierForTransfer(registrationWithoutFE.taxIdentifier.value, registrationWithoutFE.country.code)
+      case registrationWithoutFEWithTradeDetails: RegistrationWithoutFixedEstablishmentWithTradeDetails =>
+        val registrationNumber = CountryWithValidationDetails.convertTaxIdentifierForTransfer(registrationWithoutFEWithTradeDetails.taxIdentifier.value, registrationWithoutFEWithTradeDetails.country.code)
         EtmpEuRegistrationDetails(
-          countryOfRegistration = registrationWithoutFE.country.code,
-          taxIdentificationNumber = Some(registrationNumber)
+          countryOfRegistration =  registrationWithoutFEWithTradeDetails.country.code,
+          taxIdentificationNumber = Some(registrationNumber),
+          fixedEstablishment = Some(false),
+          tradingName = Some(registrationWithoutFEWithTradeDetails.tradeDetails.tradingName),
+          fixedEstablishmentAddressLine1 = Some(registrationWithoutFEWithTradeDetails.tradeDetails.address.line1),
+          fixedEstablishmentAddressLine2 = registrationWithoutFEWithTradeDetails.tradeDetails.address.line2,
+          townOrCity = Some(registrationWithoutFEWithTradeDetails.tradeDetails.address.townOrCity),
+          regionOrState = registrationWithoutFEWithTradeDetails.tradeDetails.address.stateOrRegion,
+          postcode = registrationWithoutFEWithTradeDetails.tradeDetails.address.postCode
         )
       case registrationWithoutTaxId: RegistrationWithoutTaxId =>
         EtmpEuRegistrationDetails(

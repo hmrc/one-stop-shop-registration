@@ -118,20 +118,18 @@ trait Generators {
 
   implicit lazy val arbitraryEuTaxRegistration: Arbitrary[EuTaxRegistration] =
     Arbitrary {
-      Gen.oneOf(arbitrary[RegistrationWithoutFixedEstablishment], arbitrary[RegistrationWithFixedEstablishment])
+      Gen.oneOf(arbitrary[RegistrationWithFixedEstablishment].sample)
     }
 
-  implicit lazy val arbitraryEuVatRegistration: Arbitrary[RegistrationWithoutFixedEstablishment] =
+  implicit lazy val arbitraryEuVatRegistration: Arbitrary[EuVatRegistration] =
     Arbitrary {
       for {
         country   <- arbitrary[Country]
-        taxIdentifier      <- arbitrary[EuTaxIdentifier]
-      } yield RegistrationWithoutFixedEstablishment(country,
-        taxIdentifier
-      )
+        vatNumber <- arbitrary[String]
+      } yield EuVatRegistration(country, vatNumber)
     }
 
-  implicit lazy val arbitraryEuVatRegistrationSendingGoods: Arbitrary[RegistrationWithoutFixedEstablishmentWithTradeDetails] =
+  implicit lazy val arbitraryRegistrationWithoutFixedEstablishmentWithTradeDetails: Arbitrary[RegistrationWithoutFixedEstablishmentWithTradeDetails] =
     Arbitrary {
       for {
         country   <- arbitrary[Country]
@@ -155,7 +153,7 @@ trait Generators {
       } yield RegistrationWithFixedEstablishment(country, taxIdentifier, fixedEstablishment)
     }
 
-  implicit lazy val arbitraryRegistrationWithoutFixedEstablistment: Arbitrary[RegistrationWithoutTaxId] =
+  implicit lazy val arbitraryRegistrationWithoutTaxId: Arbitrary[RegistrationWithoutTaxId] =
     Arbitrary {
       arbitrary[Country].map(c => RegistrationWithoutTaxId(c))
     }
