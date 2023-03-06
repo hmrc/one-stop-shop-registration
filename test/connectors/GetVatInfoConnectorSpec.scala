@@ -14,17 +14,17 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDate
 
-class DesConnectorSpec extends BaseSpec with WireMockHelper {
+class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
 
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private def application: Application =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.des.host" -> "127.0.0.1",
-        "microservice.services.des.port" -> server.port,
-        "microservice.services.des.authorizationToken" -> "auth-token",
-        "microservice.services.des.environment" -> "test-environment"
+        "microservice.services.get-vat-info.host" -> "127.0.0.1",
+        "microservice.services.get-vat-info.port" -> server.port,
+        "microservice.services.get-vat-info.authorizationToken" -> "auth-token",
+        "microservice.services.get-vat-info.environment" -> "test-environment"
       )
       .build()
 
@@ -64,7 +64,7 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
         )
 
         running(app) {
-          val connector = app.injector.instanceOf[DesConnector]
+          val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
           val expectedResult = VatCustomerInfo(
@@ -90,7 +90,7 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
 
         running(app) {
 
-          val connector = app.injector.instanceOf[DesConnector]
+          val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
           result mustEqual Left(NotFound)
@@ -108,7 +108,7 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
 
         running(app) {
 
-          val connector = app.injector.instanceOf[DesConnector]
+          val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
           result mustEqual Left(InvalidVrn)
@@ -126,7 +126,7 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
 
         running(app) {
 
-          val connector = app.injector.instanceOf[DesConnector]
+          val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
           result mustEqual Left(ServiceUnavailable)
@@ -144,7 +144,7 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
 
         running(app) {
 
-          val connector = app.injector.instanceOf[DesConnector]
+          val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
           result mustEqual Left(ServerError)
@@ -164,7 +164,7 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
 
         running(app) {
 
-          val connector = app.injector.instanceOf[DesConnector]
+          val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
           result mustEqual Left(InvalidJson)
@@ -184,7 +184,7 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
 
         running(app) {
 
-          val connector = app.injector.instanceOf[DesConnector]
+          val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
           result mustEqual Left(UnexpectedResponseStatus(status, s"Unexpected response from DES, received status $status"))
@@ -204,7 +204,7 @@ class DesConnectorSpec extends BaseSpec with WireMockHelper {
 
         running(app) {
 
-          val connector = app.injector.instanceOf[DesConnector]
+          val connector = app.injector.instanceOf[GetVatInfoConnector]
           whenReady(connector.getVatCustomerDetails(vrn), Timeout(Span(30, Seconds))) { exp =>
             exp mustBe Left(GatewayTimeout)
           }

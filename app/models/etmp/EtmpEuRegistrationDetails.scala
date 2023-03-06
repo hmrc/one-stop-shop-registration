@@ -16,7 +16,7 @@
 
 package models.etmp
 
-import models.{CountryWithValidationDetails, EuTaxRegistration, EuVatRegistration, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishmentWithTradeDetails, RegistrationWithoutTaxId}
+import models._
 import play.api.libs.json.{Json, OFormat}
 
 case class EtmpEuRegistrationDetails(

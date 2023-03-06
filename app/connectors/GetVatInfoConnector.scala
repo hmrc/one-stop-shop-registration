@@ -18,7 +18,7 @@ package connectors
 
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier, HttpClient, HttpErrorFunctions}
-import config.DesConfig
+import config.GetVatInfoConfig
 import connectors.VatCustomerInfoHttpParser._
 import logging.Logging
 import models.GatewayTimeout
@@ -28,19 +28,19 @@ import scala.concurrent.{ExecutionContext, Future}
 import play.api.http.HeaderNames
 
 
-class DesConnector @Inject()(des: DesConfig, httpClient: HttpClient)
-                            (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
+class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClient: HttpClient)
+                                   (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
-  val headers = Seq(
-    HeaderNames.AUTHORIZATION -> s"Bearer ${des.authorizationToken}",
-    "Environment" -> des.environment
+  private val headers = Seq(
+    HeaderNames.AUTHORIZATION -> s"Bearer ${getVatInfoConfig.authorizationToken}",
+    "Environment" -> getVatInfoConfig.environment
   )
 
   def getVatCustomerDetails(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[VatCustomerInfoResponse] = {
-    val url = s"${des.baseUrl}vat/customer/vrn/${vrn.value}/information"
+    val url = s"${getVatInfoConfig.baseUrl}vat/customer/vrn/${vrn.value}/information"
     httpClient.GET[VatCustomerInfoResponse](url = url, headers = headers).recover{
       case e: GatewayTimeoutException =>
-        logger.warn(s"Request timeout from DES: $e")
+        logger.warn(s"Request timeout from Get vat info: $e")
         Left(GatewayTimeout)
     }
   }
