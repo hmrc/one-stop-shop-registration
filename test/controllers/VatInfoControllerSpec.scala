@@ -8,7 +8,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import base.BaseSpec
-import connectors.DesConnector
+import connectors.GetVatInfoConnector
 import models.{DesAddress, InvalidJson, InvalidVrn, NotFound, ServerError, ServiceUnavailable}
 import models.des._
 
@@ -29,10 +29,10 @@ class VatInfoControllerSpec extends BaseSpec {
         singleMarketIndicator = Some(false)
       )
 
-      val mockConnector = mock[DesConnector]
+      val mockConnector = mock[GetVatInfoConnector]
       when(mockConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatInfo))
 
-      val app = applicationBuilder.overrides(bind[DesConnector].toInstance(mockConnector)).build()
+      val app = applicationBuilder.overrides(bind[GetVatInfoConnector].toInstance(mockConnector)).build()
 
       running(app) {
 
@@ -46,10 +46,10 @@ class VatInfoControllerSpec extends BaseSpec {
 
     "must return NotFound when the connector returns Not Found" in {
 
-      val mockConnector = mock[DesConnector]
+      val mockConnector = mock[GetVatInfoConnector]
       when(mockConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Left(NotFound))
 
-      val app = applicationBuilder.overrides(bind[DesConnector].toInstance(mockConnector)).build()
+      val app = applicationBuilder.overrides(bind[GetVatInfoConnector].toInstance(mockConnector)).build()
 
       running(app) {
 
@@ -63,10 +63,10 @@ class VatInfoControllerSpec extends BaseSpec {
     "must return INTERNAL_SERVER_ERROR when the connector returns a failure other than Not Found" in {
 
       val response = Gen.oneOf(InvalidJson, ServerError, ServiceUnavailable, InvalidVrn).sample.value
-      val mockConnector = mock[DesConnector]
+      val mockConnector = mock[GetVatInfoConnector]
       when(mockConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Left(response))
 
-      val app = applicationBuilder.overrides(bind[DesConnector].toInstance(mockConnector)).build()
+      val app = applicationBuilder.overrides(bind[GetVatInfoConnector].toInstance(mockConnector)).build()
 
       running(app) {
 

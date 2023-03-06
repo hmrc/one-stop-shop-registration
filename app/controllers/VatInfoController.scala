@@ -18,7 +18,7 @@ package controllers
 
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import connectors.DesConnector
+import connectors.GetVatInfoConnector
 import controllers.actions.AuthAction
 import logging.Logging
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -30,7 +30,7 @@ import scala.concurrent.ExecutionContext
 
 class VatInfoController @Inject()(
                                    cc: ControllerComponents,
-                                   desConnector: DesConnector,
+                                   desConnector: GetVatInfoConnector,
                                    auth: AuthAction
                                  )
                                  (implicit ec: ExecutionContext)
