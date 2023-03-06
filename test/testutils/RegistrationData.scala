@@ -68,7 +68,11 @@ object RegistrationData {
             )
           )
         ),
-        PreviousRegistration(
+        PreviousRegistrationLegacy(
+          country = Country("BE", "Belgium"),
+          vatNumber = "BE123"
+        ),
+        PreviousRegistrationNew(
           country = Country("EE", "Estonia"),
           previousSchemesDetails = Seq(
             PreviousSchemeDetails(
@@ -93,10 +97,6 @@ object RegistrationData {
               )
             )
           )
-        ),
-        PreviousRegistrationLegacy(
-          country = Country("BE", "Belgium"),
-          vatNumber = "BE123"
         )
       ),
       bankDetails = BankDetails("Account name", Some(bic), iban),
