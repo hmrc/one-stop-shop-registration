@@ -30,7 +30,7 @@ import scala.concurrent.ExecutionContext
 
 class VatInfoController @Inject()(
                                    cc: ControllerComponents,
-                                   desConnector: GetVatInfoConnector,
+                                   getVatInfoConnector: GetVatInfoConnector,
                                    auth: AuthAction
                                  )
                                  (implicit ec: ExecutionContext)
@@ -38,7 +38,7 @@ class VatInfoController @Inject()(
 
   def get(): Action[AnyContent] = auth.async {
     implicit request =>
-      desConnector.getVatCustomerDetails(request.vrn) map {
+      getVatInfoConnector.getVatCustomerDetails(request.vrn) map {
         case Right(response) => Ok(Json.toJson(response))
         case Left(DesNotFound)  => NotFound
         case Left(_)         => InternalServerError
