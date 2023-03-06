@@ -90,7 +90,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           when(registrationRepository.insert(any())) thenReturn successful(InsertSucceeded)
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
-          verify(registrationRepository, times(1)).insert(any())
+          verify(registrationRepository, times(0)).insert(any())
         }
 
         "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
@@ -100,7 +100,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           when(registrationRepository.insert(any())) thenReturn successful(AlreadyExists)
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
-          verify(registrationRepository, times(1)).insert(any())
+          verify(registrationRepository, times(0)).insert(any())
         }
 
         "must throw EtmpException when connector returns any other error" in {
