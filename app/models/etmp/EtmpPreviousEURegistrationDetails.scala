@@ -22,10 +22,10 @@ import play.api.libs.json.{Json, OFormat}
 sealed trait SchemeType
 
 object SchemeType extends Enumerable.Implicits {
-  case object OSSUnion extends WithName("OSSUnion") with SchemeType
-  case object OSSNonUnion extends WithName("OSSNonUnion") with SchemeType
-  case object IOSSWithoutIntermediary extends WithName("IOSSWithoutIntermediary") with SchemeType
-  case object IOSSWithIntermediary extends WithName("IOSSWithIntermediary") with SchemeType
+  case object OSSUnion extends WithName("OSS Union") with SchemeType
+  case object OSSNonUnion extends WithName("OSS Non-Union") with SchemeType
+  case object IOSSWithoutIntermediary extends WithName("IOSS without intermediary") with SchemeType
+  case object IOSSWithIntermediary extends WithName("IOSS with intermediary") with SchemeType
 
   val values: Seq[SchemeType] = Seq(
     OSSUnion, OSSNonUnion, IOSSWithoutIntermediary, IOSSWithIntermediary
