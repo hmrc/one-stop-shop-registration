@@ -71,18 +71,33 @@ class RegistrationServiceEtmpImpl @Inject()(
   }
 
   def get(vrn: Vrn): Future[Option[Registration]] = {
-    registrationConnector.get(vrn).flatMap {
-      case Right(registration) =>
-        if (appConfig.exclusionsEnabled) {
-          exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
-            Some(registration.copy(excludedTrader = maybeExcludedTrader))
+    if(appConfig.duplicateRegistrationIntoRepository) {
+      for {
+        maybeRegistration <- registrationRepository.get(vrn)
+        maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
+      } yield {
+        maybeRegistration.map { registration =>
+          if (appConfig.exclusionsEnabled) {
+            registration.copy(excludedTrader = maybeExcludedTrader)
+          } else {
+            registration
           }
-        } else {
-          Future.successful(Some(registration))
         }
-      case Left(error) =>
-        logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
-        Future.successful(None)
+      }
+    } else {
+      registrationConnector.get(vrn).flatMap {
+        case Right(registration) =>
+          if (appConfig.exclusionsEnabled) {
+            exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
+              Some(registration.copy(excludedTrader = maybeExcludedTrader))
+            }
+          } else {
+            Future.successful(Some(registration))
+          }
+        case Left(error) =>
+          logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
+          Future.successful(None)
+      }
     }
   }
 
