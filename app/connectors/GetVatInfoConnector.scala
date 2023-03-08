@@ -40,7 +40,7 @@ class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClie
     val url = s"${getVatInfoConfig.baseUrl}vat/customer/vrn/${vrn.value}/information"
     httpClient.GET[VatCustomerInfoResponse](url = url, headers = headers).recover{
       case e: GatewayTimeoutException =>
-        logger.warn(s"Request timeout from Get vat info: $e")
+        logger.error(s"Request timeout from Get vat info: $e", e)
         Left(GatewayTimeout)
     }
   }
