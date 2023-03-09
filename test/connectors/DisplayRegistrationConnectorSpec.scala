@@ -2,11 +2,14 @@ package connectors
 
 import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.NotFound
 import models.etmp._
+import models._
+import org.scalacheck.Gen
+import org.scalatest.concurrent.PatienceConfiguration.Timeout
+import org.scalatest.time.{Seconds, Span}
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.Helpers.running
+import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDate
@@ -29,46 +32,53 @@ class DisplayRegistrationConnectorSpec extends BaseSpec with WireMockHelper {
 
   ".displayRegistration" - {
 
-    "must return Right(EtmpSchemeDetails) when server returns OK with a recognised payload" in {
+    "must return Right(DisplayRegistration) when server returns OK with a recognised payload" in {
 
       val app = application
 
       val responseJson =
         """{
-          | "commencementDate" : "2000-01-01",
-          | "firstSaleDate" : "2000-01-01",
-          | "euRegistrationDetails" : [ {
-          |     "countryOfRegistration" : "FR",
-          |     "taxIdentificationNumber" : "FR123456789",
+          | "tradingNames" : [{
+          |   "tradingName":"French Trading Company"
+          | }],
+          | "schemeDetails" : {
+          |   "commencementDate" : "2023-01-01",
+          |   "firstSaleDate" : "2023-01-25",
+          |   "euRegistrationDetails" : [{
+          |     "issuedBy" : "FR",
+          |     "vatNumber" : "FR123456789",
+          |     "taxIdentificationNumber" : "123456789",
           |     "fixedEstablishment" : true,
-          |     "tradingName" : "The French Company",
+          |     "fixedEstablishmentTradingName" : "French Trading Company",
           |     "fixedEstablishmentAddressLine1" : "Line1",
           |     "fixedEstablishmentAddressLine2" : "Line2",
           |     "townOrCity" : "Town",
           |     "regionOrState" : "Region",
           |     "postcode" : "Postcode"
-          |   },
-          |   {
-          |     "countryOfRegistration" : "BE"
           |   }],
-          | "previousEURegistrationDetails" : [{
-          |   "issuedBy" : "DE",
-          |   "registrationNumber" : "DE123456789",
-          |   "schemeType" : "IOSSWithIntermediary",
-          |   "intermediaryNumber" : "IM1234567"
-          | }],
-          | "onlineMarketPlace" : false,
-          | "websites" : [ {
-          |   "websiteAddress" : "website1"
+          |   "previousEURegistrationDetails" : [{
+          |     "issuedBy" : "ES",
+          |     "registrationNumber" : "ES123456789",
+          |     "schemeType" : "IOSS with intermediary",
+          |     "intermediaryNumber" : "IN7241234567"
+          |   }],
+          |   "onlineMarketPlace" : true,
+          |   "websites" : [{
+          |     "websiteAddress" : "www.testWebsite.com"
+          |   }],
+          |   "contactDetails" : {
+          |     "contactNameOrBusinessAddress" : "Mr Test",
+          |     "businessTelephoneNumber" : "1234567890",
+          |     "businessEmailAddress" : "test@testEmail.com"
           |   },
-          |   {
-          |   "websiteAddress" : "website2"
-          |  }],
-          | "contactName" : "Joe Bloggs",
-          | "businessTelephoneNumber" : "01112223344",
-          | "businessEmailId" : "email@email.com",
-          | "nonCompliantReturns" : 1,
-          | "nonCompliantPayments" : 2
+          |   "nonCompliantReturns" : 1,
+          |   "nonCompliantPayments" : 2
+          | },
+          | "bankDetails" : {
+          |   "accountName" : "Bank Account Name",
+          |   "bic" : "ABCDGB2A",
+          |   "iban" : "GB33BUKB20201555555555"
+          | }
           |}""".stripMargin
 
       server.stubFor(
@@ -84,43 +94,54 @@ class DisplayRegistrationConnectorSpec extends BaseSpec with WireMockHelper {
 
         val result = connector.displayRegistration(vrn).futureValue
 
-        val expectedResult = EtmpSchemeDetails(
-          commencementDate = LocalDate.of(2000, 1, 1).format(dateFormatter),
-          firstSaleDate = Some(LocalDate.of(2000, 1, 1).format(dateFormatter)),
-          euRegistrationDetails = Seq(
-            EtmpEuRegistrationDetails(
-              countryOfRegistration = "FR",
-              taxIdentificationNumber = Some("FR123456789"),
-              fixedEstablishment = Some(true),
-              tradingName = Some("The French Company"),
-              fixedEstablishmentAddressLine1 = Some("Line1"),
-              fixedEstablishmentAddressLine2 = Some("Line2"),
-              townOrCity = Some("Town"),
-              regionOrState = Some("Region"),
-              postcode = Some("Postcode")
+        val expectedResult = DisplayRegistration(
+          tradingNames = Seq(
+            EtmpTradingNames(
+              tradingName = "French Trading Company"
+            )
+          ),
+          schemeDetails = EtmpSchemeDetails(
+            commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
+            firstSaleDate = Some(LocalDate.of(2023, 1, 25).format(dateFormatter)),
+            euRegistrationDetails = Seq(
+              EtmpEuRegistrationDetails(
+                countryOfRegistration = "FR",
+                vatNumber = Some("FR123456789"),
+                taxIdentificationNumber = Some("123456789"),
+                fixedEstablishment = Some(true),
+                tradingName = Some("French Trading Company"),
+                fixedEstablishmentAddressLine1 = Some("Line1"),
+                fixedEstablishmentAddressLine2 = Some("Line2"),
+                townOrCity = Some("Town"),
+                regionOrState = Some("Region"),
+                postcode = Some("Postcode")
+              )
             ),
-            EtmpEuRegistrationDetails(
-              countryOfRegistration = "BE"
-            )
+            previousEURegistrationDetails = Seq(
+              EtmpPreviousEURegistrationDetails(
+                issuedBy = "ES",
+                registrationNumber = "ES123456789",
+                schemeType = SchemeType.IOSSWithIntermediary,
+                intermediaryNumber = Some("IN7241234567")
+              )
+            ),
+            onlineMarketPlace = true,
+            websites = Seq(
+              Website(
+                websiteAddress = "www.testWebsite.com"
+              )
+            ),
+            contactName = "Mr Test",
+            businessTelephoneNumber = "1234567890",
+            businessEmailId = "test@testEmail.com",
+            nonCompliantReturns = Some(1),
+            nonCompliantPayments = Some(2)
           ),
-          previousEURegistrationDetails = Seq(
-            EtmpPreviousEURegistrationDetails(
-              issuedBy = "DE",
-              registrationNumber = "DE123456789",
-              schemeType = SchemeType.IOSSWithIntermediary,
-              intermediaryNumber = Some("IM1234567")
-            )
-          ),
-          onlineMarketPlace = false,
-          websites = Seq(
-            Website("website1"),
-            Website("website2")
-          ),
-          contactName = "Joe Bloggs",
-          businessTelephoneNumber = "01112223344",
-          businessEmailId = "email@email.com",
-          nonCompliantReturns = Some(1),
-          nonCompliantPayments = Some(2)
+          bankDetails = BankDetails(
+            accountName = "Bank Account Name",
+            Some(bic),
+            iban
+          )
         )
 
         result mustBe Right(expectedResult)
@@ -145,6 +166,110 @@ class DisplayRegistrationConnectorSpec extends BaseSpec with WireMockHelper {
         val result = connector.displayRegistration(vrn).futureValue
 
         result mustBe Left(NotFound)
+      }
+    }
+
+    "must return Left(ServiceUnavailable) when the server returns SERVICE_UNAVAILABLE" in {
+
+      val app = application
+
+      server.stubFor(
+        get(urlEqualTo(url))
+          .willReturn(serviceUnavailable())
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[DisplayRegistrationConnector]
+        val result = connector.displayRegistration(vrn).futureValue
+
+        result mustBe Left(ServiceUnavailable)
+      }
+    }
+
+    "must return Left(ServerError) when the server returns INTERNAL_SERVER_ERROR" in {
+
+      val app = application
+
+      server.stubFor(
+        get(urlEqualTo(url))
+          .willReturn(serverError())
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[DisplayRegistrationConnector]
+        val result = connector.displayRegistration(vrn).futureValue
+
+        result mustBe Left(ServerError)
+      }
+    }
+
+    "must return Left(InvalidJson) when the server returns OK with a payload that cannot be parsed" in {
+
+      val app = application
+
+      val responseJson = """{ "foo": "bar" }"""
+
+      server.stubFor(
+        get(urlEqualTo(url))
+          .willReturn(ok(responseJson))
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[DisplayRegistrationConnector]
+        val result = connector.displayRegistration(vrn).futureValue
+
+        result mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return Left(UnexpectedResponse) when the server returns an unexpected response code" in {
+
+      val app = application
+
+      val status = Gen.oneOf(401, 402, 403, 501, 502).sample.value
+
+      val errorResponseJson =
+        s"""{
+           |  "error": "$status",
+           |  "errorMessage": "Error"
+           |}""".stripMargin
+
+      server.stubFor(
+        get(urlEqualTo(url))
+          .willReturn(aResponse()
+            .withStatus(status)
+            .withBody(errorResponseJson))
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[DisplayRegistrationConnector]
+        val result = connector.displayRegistration(vrn).futureValue
+
+        result mustBe Left(UnexpectedResponseStatus(status, s"Unexpected response from DES, received status $status with body $errorResponseJson"))
+      }
+    }
+
+    "must return Left(GatewayTimeout) when the server returns a GatewayTimeoutException" in {
+
+      val app = application
+
+      server.stubFor(
+        get(urlEqualTo(url))
+          .willReturn(aResponse()
+            .withStatus(504)
+            .withFixedDelay(21000))
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[DisplayRegistrationConnector]
+        whenReady(connector.displayRegistration(vrn), Timeout(Span(30, Seconds))) { exp =>
+          exp mustBe Left(GatewayTimeout)
+        }
       }
     }
 
