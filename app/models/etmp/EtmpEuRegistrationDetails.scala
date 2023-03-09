@@ -17,7 +17,8 @@
 package models.etmp
 
 import models._
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{Json, OWrites, Reads, __}
 
 case class EtmpEuRegistrationDetails(
                                       countryOfRegistration: String,
@@ -92,6 +93,46 @@ object EtmpEuRegistrationDetails {
     }
   }
 
-  implicit val format: OFormat[EtmpEuRegistrationDetails] = Json.format[EtmpEuRegistrationDetails]
+  private def fromDisplayRegistrationPayload(
+                                              countryOfRegistration: String,
+                                              vatNumber: Option[String],
+                                              taxIdentificationNumber: Option[String],
+                                              fixedEstablishment: Option[Boolean],
+                                              tradingName: Option[String],
+                                              fixedEstablishmentAddressLine1: Option[String],
+                                              fixedEstablishmentAddressLine2: Option[String],
+                                              townOrCity: Option[String],
+                                              regionOrState: Option[String],
+                                              postcode: Option[String]
+                                            ): EtmpEuRegistrationDetails =
+    EtmpEuRegistrationDetails(
+      countryOfRegistration = countryOfRegistration,
+      vatNumber = vatNumber,
+      taxIdentificationNumber = taxIdentificationNumber,
+      fixedEstablishment = fixedEstablishment,
+      tradingName = tradingName,
+      fixedEstablishmentAddressLine1 = fixedEstablishmentAddressLine1,
+      fixedEstablishmentAddressLine2 = fixedEstablishmentAddressLine2,
+      townOrCity = townOrCity,
+      regionOrState = regionOrState,
+      postcode = postcode
+    )
+
+  implicit val reads: Reads[EtmpEuRegistrationDetails] =
+    (
+      (__ \ "issuedBy").read[String] and
+        (__ \ "vatNumber").readNullable[String] and
+        (__ \ "taxIdentificationNumber").readNullable[String] and
+        (__ \ "fixedEstablishment").readNullable[Boolean] and
+        (__ \ "fixedEstablishmentTradingName").readNullable[String] and
+        (__ \ "fixedEstablishmentAddressLine1").readNullable[String] and
+        (__ \ "fixedEstablishmentAddressLine2").readNullable[String] and
+        (__ \ "townOrCity").readNullable[String] and
+        (__ \ "regionOrState").readNullable[String] and
+        (__ \ "postcode").readNullable[String]
+      ) (EtmpEuRegistrationDetails.fromDisplayRegistrationPayload _)
+
+  implicit val writes: OWrites[EtmpEuRegistrationDetails] =
+    Json.writes[EtmpEuRegistrationDetails]
 }
 
