@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package connectors
+package models.etmp
 
-import logging.Logging
-import models.ErrorResponse
-import models.etmp.DisplayRegistration
-import uk.gov.hmrc.http.{HttpReads, HttpResponse}
+import models.BankDetails
+import play.api.libs.json.{Json, OFormat}
 
-object DisplayRegistrationHttpParser extends BaseHttpParser with Logging {
 
-  override val serviceName: String = "DES"
+case class DisplayRegistration(
+                              tradingNames: Seq[EtmpTradingNames],
+                              schemeDetails: EtmpSchemeDetails,
+                              bankDetails: BankDetails
+                              )
 
-  type DisplayRegistrationResponse = Either[ErrorResponse, DisplayRegistration]
 
-  implicit object DisplayRegistrationReads extends HttpReads[DisplayRegistrationResponse] {
+object DisplayRegistration {
 
-    override def read(method: String, url: String, response: HttpResponse): DisplayRegistrationResponse =
-      parseResponse[DisplayRegistration](response)
-  }
+  implicit val format: OFormat[DisplayRegistration] = Json.format[DisplayRegistration]
+
 }
-
