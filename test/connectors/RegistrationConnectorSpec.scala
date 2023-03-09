@@ -263,7 +263,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       }
     }
 
-    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123")))
+    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123 with body ")))
       .foreach { error =>
         s"should return correct error response when server responds with ${error._1}" in {
 
@@ -273,7 +273,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
             get(urlEqualTo(getRegistrationUrl(vrn)))
               .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
               .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-              .willReturn(aResponse().withStatus(error._1))
+              .willReturn(aResponse().withStatus(error._1).withBody("{}"))
           )
 
           running(app) {
