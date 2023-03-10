@@ -23,12 +23,13 @@ import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models._
 import models.enrolments.EtmpEnrolmentResponse
+import models.etmp.EtmpRegistrationStatus
 import models.exclusions.ExcludedTrader
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.running
-import repositories.RegistrationRepository
+import repositories.{RegistrationRepository, RegistrationStatusRepository}
 import services.exclusions.ExclusionService
 import testutils.RegistrationData
 import testutils.RegistrationData.registration
@@ -48,14 +49,18 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   private val registrationConnector = mock[RegistrationConnector]
   private val enrolmentsConnector = mock[EnrolmentsConnector]
   private val registrationRepository = mock[RegistrationRepository]
+  private val registrationStatusRepository = mock[RegistrationStatusRepository]
+  private val retryService= mock[RetryService]
   private val appConfig = mock[AppConfig]
 
   private val exclusionService = mock[ExclusionService]
-  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, registrationRepository, appConfig, exclusionService, stubClock)
+  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector,
+    registrationRepository, registrationStatusRepository, retryService, appConfig, exclusionService, stubClock)
 
   override def beforeEach(): Unit = {
     reset(registrationConnector)
     reset(registrationRepository)
+    reset(registrationStatusRepository)
     reset(exclusionService)
     reset(appConfig)
     super.beforeEach()
@@ -88,6 +93,8 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           when(registrationConnector.create(any())) thenReturn Future.successful(
             Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
           when(registrationRepository.insert(any())) thenReturn successful(InsertSucceeded)
+          when(registrationStatusRepository.delete(any())) thenReturn Future.successful(true)
+          when(registrationStatusRepository.insert(any())) thenReturn successful(InsertSucceeded)
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
           verify(registrationRepository, times(0)).insert(any())
@@ -125,6 +132,9 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           when(registrationConnector.create(any())) thenReturn Future.successful(
             Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
           when(registrationRepository.insert(any())) thenReturn successful(InsertSucceeded)
+          when(registrationStatusRepository.delete(any())) thenReturn Future.successful(true)
+          when(registrationStatusRepository.insert(any())) thenReturn successful(InsertSucceeded)
+          when(retryService.getEtmpRegistrationStatus(any(),any(),any())) thenReturn successful(EtmpRegistrationStatus.Success)
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
           verify(registrationRepository, times(1)).insert(any())
@@ -137,6 +147,8 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           when(registrationConnector.create(any())) thenReturn Future.successful(
             Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
           when(registrationRepository.insert(any())) thenReturn successful(AlreadyExists)
+          when(registrationStatusRepository.delete(any())) thenReturn Future.successful(true)
+          when(registrationStatusRepository.insert(any())) thenReturn successful(InsertSucceeded)
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
           verify(registrationRepository, times(1)).insert(any())
@@ -162,6 +174,25 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           }
           verify(registrationRepository, times(0)).insert(any())
         }
+
+        "must throw EtmpException when the retryService returns an error" in {
+
+          when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
+          when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          when(registrationConnector.create(any())) thenReturn Future.successful(
+            Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
+
+          when(registrationStatusRepository.delete(any())) thenReturn Future.successful(true)
+          when(registrationStatusRepository.insert(any())) thenReturn successful(InsertSucceeded)
+
+          when(retryService.getEtmpRegistrationStatus(any(), any(), any())) thenReturn successful(EtmpRegistrationStatus.Error)
+
+          whenReady(registrationService.createRegistration(registrationRequest).failed) {
+            exp => exp mustBe EtmpException(s"Failed to add enrolment")
+          }
+          verify(registrationRepository, times(0)).insert(any())
+        }
+
       }
     }
   }

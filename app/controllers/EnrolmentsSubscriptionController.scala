@@ -18,15 +18,19 @@ package controllers
 
 import logging.Logging
 import models.enrolments.EnrolmentStatus
+import models.RegistrationStatus
+import models.etmp.EtmpRegistrationStatus
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, ControllerComponents}
+import repositories.RegistrationStatusRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
 import scala.concurrent.Future
 
 class EnrolmentsSubscriptionController @Inject()(
-                                                  cc: ControllerComponents
+                                                  cc: ControllerComponents,
+                                                  registrationStatusRepository: RegistrationStatusRepository
                                                 ) extends BackendController(cc) with Logging {
 
   def authoriseEnrolment(subscriptionId: String): Action[JsValue] =
@@ -35,10 +39,13 @@ class EnrolmentsSubscriptionController @Inject()(
         val enrolmentStatus = (request.body \ "state").as[EnrolmentStatus]
         if(enrolmentStatus == EnrolmentStatus.Success) {
           logger.info(s"Enrolment complete for $subscriptionId, enrolment state = $enrolmentStatus")
+          registrationStatusRepository.set(RegistrationStatus(subscriptionId,
+            status = EtmpRegistrationStatus.Success))
         } else {
           logger.error(s"Enrolment failure for $subscriptionId, enrolment state = $enrolmentStatus ${request.body}")
+          registrationStatusRepository.set(RegistrationStatus(subscriptionId,
+            status = EtmpRegistrationStatus.Error))
         }
         Future.successful(NoContent)
     }
-
 }

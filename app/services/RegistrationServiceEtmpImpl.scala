@@ -20,11 +20,11 @@ import config.AppConfig
 import connectors.{EnrolmentsConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
-import models.etmp.EtmpRegistrationRequest
+import models.etmp.{EtmpRegistrationRequest, EtmpRegistrationStatus}
 import models.requests.RegistrationRequest
-import models.{EtmpEnrolmentError, EtmpException, InsertResult, Registration}
+import models.{EtmpEnrolmentError, EtmpException, InsertResult, Registration, RegistrationStatus}
 import play.api.http.Status.NO_CONTENT
-import repositories.RegistrationRepository
+import repositories.{RegistrationRepository, RegistrationStatusRepository}
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
@@ -38,6 +38,8 @@ class RegistrationServiceEtmpImpl @Inject()(
                                              registrationConnector: RegistrationConnector,
                                              enrolmentsConnector: EnrolmentsConnector,
                                              registrationRepository: RegistrationRepository,
+                                             registrationStatusRepository: RegistrationStatusRepository,
+                                             retryService: RetryService,
                                              appConfig: AppConfig,
                                              exclusionService: ExclusionService,
                                              clock: Clock
@@ -47,12 +49,24 @@ class RegistrationServiceEtmpImpl @Inject()(
     val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
     registrationConnector.create(registrationRequest).flatMap {
       case Right(response) =>
-        enrolmentsConnector.confirmEnrolment(response.formBundleNumber).flatMap { enrolmentResponse =>
+        (for {
+          _ <- registrationStatusRepository.delete(response.formBundleNumber)
+          _ <- registrationStatusRepository.insert(RegistrationStatus(subscriptionId = response.formBundleNumber,
+            status = EtmpRegistrationStatus.Pending))
+          enrolmentResponse <- enrolmentsConnector.confirmEnrolment(response.formBundleNumber)
+        } yield {
           enrolmentResponse.status match {
             case NO_CONTENT =>
-              logger.info("Insert succeeded")
               if (appConfig.duplicateRegistrationIntoRepository) {
-                registrationRepository.insert(buildRegistration(request, clock))
+                retryService.getEtmpRegistrationStatus(appConfig.maxRetryCount, appConfig.delay, response.formBundleNumber).flatMap {
+                  case EtmpRegistrationStatus.Success =>
+                    logger.info("Insert succeeded")
+                    registrationRepository.insert(buildRegistration(request, clock))
+                  case _ =>
+                    logger.error(s"Failed to add enrolment with body ${enrolmentResponse.body}")
+                    registrationStatusRepository.set(RegistrationStatus(subscriptionId = response.formBundleNumber, status = EtmpRegistrationStatus.Error))
+                    throw EtmpException("Failed to add enrolment")
+                }
               } else {
                 Future.successful(InsertSucceeded)
               }
@@ -60,7 +74,8 @@ class RegistrationServiceEtmpImpl @Inject()(
               logger.error(s"Failed to add enrolment - $status with body ${enrolmentResponse.body}")
               throw EtmpException(s"Failed to add enrolment - ${enrolmentResponse.body}")
           }
-        }
+        }).flatten
+
       case Left(EtmpEnrolmentError(EtmpEnrolmentErrorResponse.alreadyActiveSubscriptionErrorCode, _)) =>
         logger.warn("Enrolment already existed")
         Future.successful(AlreadyExists)
