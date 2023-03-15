@@ -33,7 +33,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       )
       .build()
 
-  def getRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/getRegistration/${vrn.value}"
+  def getDisplayRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/display-registration/${vrn.value}"
 
   def createRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/regdatatransfer/v1"
 
@@ -246,7 +246,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       val responseJson = Json.prettyPrint(Json.toJson(registration))
 
       server.stubFor(
-        get(urlEqualTo(getRegistrationUrl(vrn)))
+        get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
           .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
           .willReturn(ok(responseJson))
@@ -261,17 +261,19 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       }
     }
 
-    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123 with body ")))
+    val body = ""
+
+    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123 with body $body")))
       .foreach { error =>
         s"should return correct error response when server responds with ${error._1}" in {
 
           val app = application
 
           server.stubFor(
-            get(urlEqualTo(getRegistrationUrl(vrn)))
+            get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
               .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
               .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-              .willReturn(aResponse().withStatus(error._1).withBody("{}"))
+              .willReturn(aResponse().withStatus(error._1).withBody(body))
           )
 
           running(app) {
@@ -287,7 +289,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       val app = application
 
       server.stubFor(
-        get(urlEqualTo(getRegistrationUrl(vrn)))
+        get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
           .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
           .willReturn(aResponse()
@@ -304,5 +306,6 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       }
     }
   }
+
 
 }

@@ -115,8 +115,8 @@ class TestOnlyController @Inject()(
       isOnlineMarketplace = false,
       niPresence = Some(PrincipalPlaceOfBusinessInNi),
       dateOfFirstSale = Some(LocalDate.now),
-      submissionReceived = Instant.now(clock),
-      lastUpdated = Instant.now(clock),
+      submissionReceived = Some(Instant.now(clock)),
+      lastUpdated = Some(Instant.now(clock)),
       nonCompliantReturns =  Some(1),
       nonCompliantPayments = Some(2)
     )

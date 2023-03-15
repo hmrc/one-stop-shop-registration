@@ -41,7 +41,7 @@ class RegistrationServiceRepositoryImpl @Inject()(
                         (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult] =
     registrationRepository.insert(buildRegistration(registrationRequest, clock))
 
-  def get(vrn: Vrn): Future[Option[Registration]] = {
+  def get(vrn: Vrn)(implicit hc: HeaderCarrier): Future[Option[Registration]] = {
     for {
       maybeRegistration <- registrationRepository.get(vrn)
       maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
