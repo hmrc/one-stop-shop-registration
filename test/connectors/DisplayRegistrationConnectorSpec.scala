@@ -90,9 +90,9 @@ class DisplayRegistrationConnectorSpec extends BaseSpec with WireMockHelper {
 
       running(app) {
 
-        val connector = application.injector.instanceOf[DisplayRegistrationConnector]
+        val connector = application.injector.instanceOf[RegistrationConnector]
 
-        val result = connector.displayRegistration(vrn).futureValue
+        val result = connector.get(vrn).futureValue
 
         val expectedResult = DisplayRegistration(
           tradingNames = Seq(
@@ -161,9 +161,9 @@ class DisplayRegistrationConnectorSpec extends BaseSpec with WireMockHelper {
 
       running(app) {
 
-        val connector = application.injector.instanceOf[DisplayRegistrationConnector]
+        val connector = application.injector.instanceOf[RegistrationConnector]
 
-        val result = connector.displayRegistration(vrn).futureValue
+        val result = connector.get(vrn).futureValue
 
         result mustBe Left(NotFound)
       }
@@ -180,8 +180,8 @@ class DisplayRegistrationConnectorSpec extends BaseSpec with WireMockHelper {
 
       running(app) {
 
-        val connector = app.injector.instanceOf[DisplayRegistrationConnector]
-        val result = connector.displayRegistration(vrn).futureValue
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.get(vrn).futureValue
 
         result mustBe Left(ServiceUnavailable)
       }
@@ -198,8 +198,8 @@ class DisplayRegistrationConnectorSpec extends BaseSpec with WireMockHelper {
 
       running(app) {
 
-        val connector = app.injector.instanceOf[DisplayRegistrationConnector]
-        val result = connector.displayRegistration(vrn).futureValue
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.get(vrn).futureValue
 
         result mustBe Left(ServerError)
       }
@@ -218,8 +218,8 @@ class DisplayRegistrationConnectorSpec extends BaseSpec with WireMockHelper {
 
       running(app) {
 
-        val connector = app.injector.instanceOf[DisplayRegistrationConnector]
-        val result = connector.displayRegistration(vrn).futureValue
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.get(vrn).futureValue
 
         result mustBe Left(InvalidJson)
       }
@@ -246,8 +246,8 @@ class DisplayRegistrationConnectorSpec extends BaseSpec with WireMockHelper {
 
       running(app) {
 
-        val connector = app.injector.instanceOf[DisplayRegistrationConnector]
-        val result = connector.displayRegistration(vrn).futureValue
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.get(vrn).futureValue
 
         result mustBe Left(UnexpectedResponseStatus(status, s"Unexpected response from DES, received status $status with body $errorResponseJson"))
       }
@@ -266,8 +266,8 @@ class DisplayRegistrationConnectorSpec extends BaseSpec with WireMockHelper {
 
       running(app) {
 
-        val connector = app.injector.instanceOf[DisplayRegistrationConnector]
-        whenReady(connector.displayRegistration(vrn), Timeout(Span(30, Seconds))) { exp =>
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        whenReady(connector.get(vrn), Timeout(Span(30, Seconds))) { exp =>
           exp mustBe Left(GatewayTimeout)
         }
       }
