@@ -23,6 +23,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.RegistrationService
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -32,7 +33,7 @@ class RegistrationController @Inject()(
                                         cc: ControllerComponents,
                                         registrationService: RegistrationService,
                                         auth: AuthAction
-                                      )(implicit ec: ExecutionContext) extends BackendController(cc) {
+                                      )(implicit ec: ExecutionContext, hc: HeaderCarrier) extends BackendController(cc) {
 
   def create(): Action[RegistrationRequest] = auth(parse.json[RegistrationRequest]).async {
     implicit request =>

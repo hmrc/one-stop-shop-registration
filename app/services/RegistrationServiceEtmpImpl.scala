@@ -17,12 +17,12 @@
 package services
 
 import config.AppConfig
-import connectors.{EnrolmentsConnector, RegistrationConnector}
+import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
 import models.etmp.EtmpRegistrationRequest
 import models.requests.RegistrationRequest
-import models.{EtmpEnrolmentError, EtmpException, InsertResult, Registration}
+import models._
 import play.api.http.Status.NO_CONTENT
 import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
@@ -37,6 +37,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegistrationServiceEtmpImpl @Inject()(
                                              registrationConnector: RegistrationConnector,
                                              enrolmentsConnector: EnrolmentsConnector,
+                                             getVatInfoConnector: GetVatInfoConnector,
                                              registrationRepository: RegistrationRepository,
                                              appConfig: AppConfig,
                                              exclusionService: ExclusionService,
@@ -70,8 +71,8 @@ class RegistrationServiceEtmpImpl @Inject()(
     }
   }
 
-  def get(vrn: Vrn): Future[Option[Registration]] = {
-    if(appConfig.duplicateRegistrationIntoRepository) {
+  def get(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[Option[Registration]] = {
+    if (appConfig.duplicateRegistrationIntoRepository) {
       for {
         maybeRegistration <- registrationRepository.get(vrn)
         maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
@@ -86,17 +87,31 @@ class RegistrationServiceEtmpImpl @Inject()(
       }
     } else {
       registrationConnector.get(vrn).flatMap {
-        case Right(registration) =>
-          if (appConfig.exclusionsEnabled) {
-            exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
-              Some(registration.copy(excludedTrader = maybeExcludedTrader))
-            }
-          } else {
-            Future.successful(Some(registration))
+        case Right(etmpRegistration) =>
+          getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
+            case Right(vatDetails) =>
+
+              val registration = Registration.fromEtmpRegistration(
+                vrn, vatDetails, etmpRegistration.tradingNames, etmpRegistration.schemeDetails, etmpRegistration.bankDetails)
+
+              if (appConfig.exclusionsEnabled) {
+                exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
+                  Some(registration.copy(excludedTrader = maybeExcludedTrader))
+                }
+              } else {
+                Future.successful(Some(registration))
+              }
+            case Left(error) =>
+              logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
+              Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
           }
+
+        case Left(NotFound) =>
+          logger.info(s"There was no Registration from ETMP found")
+          Future.successful(None)
         case Left(error) =>
           logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
-          Future.successful(None)
+          Future.failed(new Exception(s"There was an error getting Registration from ETMP: ${error.body}"))
       }
     }
   }
