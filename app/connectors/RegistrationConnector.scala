@@ -16,7 +16,7 @@
 
 package connectors
 
-import config.IfConfig
+import config.{DisplayRegistrationConfig, IfConfig}
 import connectors.RegistrationHttpParser._
 import logging.Logging
 import models.UnexpectedResponseStatus
@@ -33,30 +33,29 @@ import metrics.{MetricsEnum, ServiceMetrics}
 class RegistrationConnector @Inject()(
                                         httpClient: HttpClient,
                                         ifConfig: IfConfig,
+                                        displayRegistrationConfig: DisplayRegistrationConfig,
                                         metrics: ServiceMetrics
                                       )(implicit ec: ExecutionContext) extends Logging {
 
   private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
   private def headers(correlationId: String): Seq[(String, String)] = ifConfig.ifHeaders(correlationId)
 
-  def get(vrn: Vrn): Future[GetRegistrationResponse] = {
+
+  def get(vrn: Vrn): Future[DisplayRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString
     val headersWithCorrelationId = headers(correlationId)
     val timerContext = metrics.startTimer(MetricsEnum.GetRegistration)
-    httpClient.GET[GetRegistrationResponse](
-      s"${ifConfig.baseUrl}getRegistration/${vrn.value}",
-      headers = headersWithCorrelationId
-    ).map { result =>
+    val url = s"${displayRegistrationConfig.baseUrl}RESTAdapter/OSS/Subscription/${vrn.value}"
+    httpClient.GET[DisplayRegistrationResponse](url = url, headers = headersWithCorrelationId).map { result =>
       timerContext.stop()
       result
     }.recover {
       case e: HttpException =>
         timerContext.stop()
-        logger.error(s"Unexpected response from etmp registration, received status ${e.responseCode}", e)
+        logger.error(s"Unexpected response from etmp registration ${e.getMessage}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
-
   }
 
   def create(registration: EtmpRegistrationRequest): Future[CreateEtmpRegistrationResponse] = {
