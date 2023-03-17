@@ -20,7 +20,7 @@ import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import com.codahale.metrics.Timer
 import config.AppConfig
-import connectors.{EnrolmentsConnector, RegistrationConnector}
+import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import metrics.ServiceMetrics
 import models._
@@ -37,7 +37,7 @@ import play.api.test.Helpers.running
 import repositories.{RegistrationRepository, RegistrationStatusRepository}
 import services.exclusions.ExclusionService
 import testutils.RegistrationData
-import testutils.RegistrationData.registration
+import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
@@ -52,6 +52,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   private val registrationRequest = RegistrationData.toRegistrationRequest(RegistrationData.registration)
   private val registrationConnector = mock[RegistrationConnector]
   private val enrolmentsConnector = mock[EnrolmentsConnector]
+  private val getVatInfoConnector = mock[GetVatInfoConnector]
   private val registrationRepository = mock[RegistrationRepository]
   private val registrationStatusRepository = mock[RegistrationStatusRepository]
   private val retryService = mock[RetryService]
@@ -62,8 +63,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val auditService = mock[AuditService]
 
-  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector,
-    registrationRepository, registrationStatusRepository, retryService, appConfig, exclusionService, auditService, stubClock)
+  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, getVatInfoConnector, registrationRepository, registrationStatusRepository, retryService, appConfig, exclusionService, auditService, stubClock)
 
   implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
 
@@ -213,10 +213,12 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   ".get" - {
 
-    "must return a Some(registration) when the connector returns right" in {
-      when(registrationConnector.get(any())) thenReturn Future.successful(Right(registration))
-      registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration)
+    "must return Some(displayRegistration) when the connector returns right" in {
+      when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
+      when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+      registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
+      verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))
     }
 
     "when exclusion is enabled and trader is excluded" - {
@@ -224,10 +226,11 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, "HMRC", 4, period)
 
       "must return a Some(registration) when the connector returns right" in {
-        when(registrationConnector.get(any())) thenReturn Future.successful(Right(registration))
+        when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
+        when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(appConfig.exclusionsEnabled) thenReturn true
         when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
-        registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration.copy(excludedTrader = Some(excludedTrader)))
+        registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationConnector, times(1)).get(Vrn("123456789"))
       }
     }

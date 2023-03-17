@@ -31,8 +31,6 @@ object RegistrationHttpParser extends BaseHttpParser {
 
   type CreateEtmpRegistrationResponse = Either[ErrorResponse, EtmpEnrolmentResponse]
 
-  type GetRegistrationResponse = Either[ErrorResponse, Registration]
-
   type DisplayRegistrationResponse = Either[ErrorResponse, DisplayRegistration]
 
 
@@ -86,11 +84,6 @@ object RegistrationHttpParser extends BaseHttpParser {
             Left(UnexpectedResponseStatus(status, s"Unexpected response from ${serviceName}, received status $status"))
           }
       }
-  }
-
-  implicit object GetRegistrationResponseReads extends HttpReads[GetRegistrationResponse]  {
-    override def read(method: String, url: String, response: HttpResponse): GetRegistrationResponse =
-      parseResponse[Registration](response)
   }
 
   implicit object DisplayRegistrationReads extends HttpReads[DisplayRegistrationResponse] {
