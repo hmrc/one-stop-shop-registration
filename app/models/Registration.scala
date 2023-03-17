@@ -102,14 +102,14 @@ object Registration extends Logging {
         case Some(true) => // Fixed Establishment
           RegistrationWithFixedEstablishment(
             country = country,
-            taxIdentifier = EuTaxIdentifier(determineTaxIdentifier(euRegistration), getTaxId(euRegistration.taxIdentificationNumber)),
+            taxIdentifier = determineTaxIdentifier(euRegistration),
             fixedEstablishment = getTradeDetails(euRegistration)
           )
 
         case Some(false) => // Sends Goods
           RegistrationWithoutFixedEstablishmentWithTradeDetails(
             country = country,
-            taxIdentifier = EuTaxIdentifier(determineTaxIdentifier(euRegistration), getTaxId(euRegistration.taxIdentificationNumber)),
+            taxIdentifier = determineTaxIdentifier(euRegistration),
             tradeDetails = getTradeDetails(euRegistration)
           )
         case _ => // Other MS
@@ -167,18 +167,21 @@ object Registration extends Logging {
     }
   }
 
-  private def determineTaxIdentifier(etmpEuRegistrationDetails: EtmpEuRegistrationDetails): EuTaxIdentifierType = {
+  private def determineTaxIdentifier(etmpEuRegistrationDetails: EtmpEuRegistrationDetails): EuTaxIdentifier = {
     if (etmpEuRegistrationDetails.vatNumber.nonEmpty) {
-      EuTaxIdentifierType.Vat
+      EuTaxIdentifier(EuTaxIdentifierType.Vat, getTaxId(etmpEuRegistrationDetails.vatNumber, None))
+
     } else {
-      EuTaxIdentifierType.Other
+      EuTaxIdentifier(EuTaxIdentifierType.Other, getTaxId(None, etmpEuRegistrationDetails.taxIdentificationNumber))
     }
   }
 
-  private def getTaxId(taxIdentificationNumber: Option[String]): String = {
-    taxIdentificationNumber match {
-      case Some(taxId) =>
-        taxId
+  private def getTaxId(vatNumber: Option[String], taxIdentificationNumber: Option[String]): String = {
+    (vatNumber, taxIdentificationNumber) match {
+      case (Some(vatNumber), None) =>
+        vatNumber
+      case (None, Some(taxIdentificationNumber)) =>
+        taxIdentificationNumber
       case _ =>
         logger.warn("No Tax Identification Number was retrieved")
         throw new IllegalStateException("Fixed establishment and send goods states must have a Tax Identification Number")
@@ -195,7 +198,7 @@ object Registration extends Logging {
     TradeDetails(
       tradingName = etmpEuRegistrationDetails.tradingName.getOrElse(""),
       address = InternationalAddress(
-        line1 = etmpEuRegistrationDetails.fixedEstablishmentAddressLine2.getOrElse(""),
+        line1 = etmpEuRegistrationDetails.fixedEstablishmentAddressLine1.getOrElse(""),
         line2 = etmpEuRegistrationDetails.fixedEstablishmentAddressLine2,
         townOrCity = etmpEuRegistrationDetails.townOrCity.getOrElse(""),
         stateOrRegion = etmpEuRegistrationDetails.regionOrState,
