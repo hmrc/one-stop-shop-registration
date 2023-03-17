@@ -23,7 +23,8 @@ import javax.inject.Inject
 
 class DisplayRegistrationConfig @Inject()(config: Configuration) {
 
-  val baseUrl: Service = config.get[Service]("microservice.services.display-registration")
+  val baseUrl: Service = config.get[Service]("microservice.services.if")
+//  TODO val baseUrl: Service = config.get[Service]("microservice.services.display-registration")
 
   private val authorizationToken: String = config.get[String]("microservice.services.display-registration.authorizationToken")
   private val environment: String = config.get[String]("microservice.services.display-registration.environment")

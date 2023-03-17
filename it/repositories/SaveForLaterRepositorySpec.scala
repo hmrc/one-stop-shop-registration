@@ -18,7 +18,7 @@ import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepo
 
 import java.time.{Clock, Instant, LocalDate, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
-import utils.StringUtils
+import _root_.utils.StringUtils
 
 import java.time.temporal.ChronoUnit
 

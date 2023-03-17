@@ -23,7 +23,6 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 import services.RegistrationService
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -32,7 +31,7 @@ import scala.concurrent.ExecutionContext
 class RegistrationController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         registrationService: RegistrationService
-                                      )(implicit ec: ExecutionContext, hc: HeaderCarrier) extends BackendController(cc) {
+                                      )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def create(): Action[RegistrationRequest] = cc.authAndRequireVat()(parse.json[RegistrationRequest]).async {
     implicit request =>
@@ -52,7 +51,8 @@ class RegistrationController @Inject()(
       }
   }
 
-  def getByVrn(vrn: String): Action[AnyContent] = Action.async {
+  def getByVrn(vrn: String): Action[AnyContent] = auth.async {
+    implicit request =>
       registrationService.get(Vrn(vrn)) map {
         case Some(registration) => Ok(Json.toJson(registration))
         case None               => NotFound

@@ -107,7 +107,8 @@ class RegistrationServiceEtmpImpl @Inject()(
             case Right(vatDetails) =>
 
               val registration = Registration.fromEtmpRegistration(
-                vrn, vatDetails, etmpRegistration.tradingNames, etmpRegistration.schemeDetails, etmpRegistration.bankDetails)
+                vrn, vatDetails, etmpRegistration.tradingNames, etmpRegistration.schemeDetails, etmpRegistration.bankDetails
+            )
 
               if (appConfig.exclusionsEnabled) {
                 exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
