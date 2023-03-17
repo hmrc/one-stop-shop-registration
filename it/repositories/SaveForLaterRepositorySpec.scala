@@ -18,7 +18,7 @@ import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepo
 
 import java.time.{Instant, LocalDate}
 import scala.concurrent.ExecutionContext.Implicits.global
-import utils.StringUtils
+import _root_.utils.StringUtils
 
 class SaveForLaterRepositorySpec
   extends AnyFreeSpec

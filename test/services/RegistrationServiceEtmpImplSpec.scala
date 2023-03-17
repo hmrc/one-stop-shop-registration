@@ -19,7 +19,7 @@ package services
 import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import config.AppConfig
-import connectors.{EnrolmentsConnector, RegistrationConnector}
+import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models._
 import models.enrolments.EtmpEnrolmentResponse
@@ -31,7 +31,7 @@ import play.api.test.Helpers.running
 import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
 import testutils.RegistrationData
-import testutils.RegistrationData.registration
+import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
@@ -47,11 +47,12 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   private val registrationRequest = RegistrationData.toRegistrationRequest(RegistrationData.registration)
   private val registrationConnector = mock[RegistrationConnector]
   private val enrolmentsConnector = mock[EnrolmentsConnector]
+  private val getVatInfoConnector = mock[GetVatInfoConnector]
   private val registrationRepository = mock[RegistrationRepository]
   private val appConfig = mock[AppConfig]
 
   private val exclusionService = mock[ExclusionService]
-  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, registrationRepository, appConfig, exclusionService, stubClock)
+  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, getVatInfoConnector, registrationRepository, appConfig, exclusionService, stubClock)
 
   override def beforeEach(): Unit = {
     reset(registrationConnector)
@@ -168,10 +169,12 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   ".get" - {
 
-    "must return a Some(registration) when the connector returns right" in {
-      when(registrationConnector.get(any())) thenReturn Future.successful(Right(registration))
-      registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration)
+    "must return Some(displayRegistration) when the connector returns right" in {
+      when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
+      when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+      registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
+      verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))
     }
 
     "when exclusion is enabled and trader is excluded" - {
@@ -179,10 +182,11 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, "HMRC", 4, period)
 
       "must return a Some(registration) when the connector returns right" in {
-        when(registrationConnector.get(any())) thenReturn Future.successful(Right(registration))
+        when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
+        when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(appConfig.exclusionsEnabled) thenReturn(true)
         when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
-        registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration.copy(excludedTrader = Some(excludedTrader)))
+        registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationConnector, times(1)).get(Vrn("123456789"))
       }
     }

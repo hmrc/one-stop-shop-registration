@@ -6,8 +6,6 @@ import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
 import models._
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse, EtmpErrorDetail}
-import models.requests.RegistrationRequest
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
 import play.api.Application
@@ -17,11 +15,12 @@ import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
+import testutils.RegistrationData.{displayRegistration, optionalDisplayRegistration}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate, LocalDateTime}
+import java.time.{LocalDate, LocalDateTime}
 
-class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Generators {
+class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Generators {
 
   private def application: Application =
     new GuiceApplicationBuilder()
@@ -33,53 +32,17 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       )
       .build()
 
-  def getDisplayRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/display-registration/${vrn.value}"
+  def getDisplayRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/RESTAdapter/OSS/Subscription/${vrn.value}"
 
   def createRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/regdatatransfer/v1"
 
-  def getValidateRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/validateRegistration/${vrn.value}"
-
-
-  def generateRegistration(vrn: Vrn) = Registration(
-    vrn                   = vrn,
-    registeredCompanyName = arbitrary[String].sample.value,
-    tradingNames          = Seq.empty,
-    vatDetails            = arbitrary[VatDetails].sample.value,
-    euRegistrations       = Seq.empty,
-    contactDetails        = arbitrary[ContactDetails].sample.value,
-    websites              = Seq.empty,
-    commencementDate      = LocalDate.now,
-    previousRegistrations = Seq.empty,
-    bankDetails           = arbitrary[BankDetails].sample.value,
-    isOnlineMarketplace   = arbitrary[Boolean].sample.value,
-    niPresence            = None,
-    dateOfFirstSale       = None,
-    submissionReceived    = Instant.now(stubClock),
-    lastUpdated           = Instant.now(stubClock),
-    nonCompliantReturns   = Some(1),
-    nonCompliantPayments  = Some(2)
-  )
-
-  def toRegistrationRequest(registration: Registration) = {
-    RegistrationRequest(
-      registration.vrn,
-      registration.registeredCompanyName,
-      registration.tradingNames,
-      registration.vatDetails,
-      registration.euRegistrations,
-      registration.contactDetails,
-      registration.websites,
-      registration.commencementDate,
-      registration.previousRegistrations,
-      registration.bankDetails,
-      registration.isOnlineMarketplace,
-      registration.niPresence,
-      registration.dateOfFirstSale,
-      registration.nonCompliantReturns,
-      registration.nonCompliantPayments
-    )
-  }
-
+  // TODO - Generators not using modfiied models??
+  //  def generateDisplayRegistration: DisplayRegistration =
+  //    DisplayRegistration(
+  //      tradingNames = Seq(arbitraryEtmpTradingNames.arbitrary.sample.value),
+  //      schemeDetails = arbitraryEtmpSchemeDetails.arbitrary.sample.value,
+  //      bankDetails = arbitraryBankDetails.arbitrary.sample.value
+  //    )
 
   ".create" - {
 
@@ -239,29 +202,179 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
   "get" - {
 
-    "Should parse Registration payload correctly" in {
+    "Should parse Registration payload with all optional fields present correctly" in {
 
       val app = application
 
-      val registration = generateRegistration(vrn)
+      val etmpRegistration = displayRegistration
 
-      val responseJson = Json.prettyPrint(Json.toJson(registration))
+      val responseJson =
+        """{
+          | "tradingNames" : [{
+          |   "tradingName":"single"
+          | },
+          | {
+          | "tradingName":"double"
+          | }],
+          | "schemeDetails" : {
+          |   "commencementDate" : "2023-01-01",
+          |   "firstSaleDate" : "2023-01-25",
+          |   "euRegistrationDetails" : [{
+          |     "issuedBy" : "ES",
+          |     "vatNumber" : "ES123"
+          |   },
+          |   {
+          |     "issuedBy" : "FR"
+          |   },
+          |   {
+          |     "issuedBy" : "DE",
+          |     "vatNumber" : "DE123",
+          |     "fixedEstablishment" : true,
+          |     "fixedEstablishmentTradingName" : "Name",
+          |     "fixedEstablishmentAddressLine1" : "Line 1",
+          |     "fixedEstablishmentAddressLine2" : "Line 2",
+          |     "townOrCity" : "Town"
+          |   },
+          |   {
+          |     "issuedBy" : "BE",
+          |     "taxIdentificationNumber" : "12345",
+          |     "fixedEstablishment" : false,
+          |     "fixedEstablishmentTradingName" : "Name",
+          |     "fixedEstablishmentAddressLine1" : "Line 1",
+          |     "fixedEstablishmentAddressLine2" : "Line 2",
+          |     "townOrCity" : "Town",
+          |     "regionOrState" : "Region",
+          |     "postcode" : "Postcode"
+          |   }],
+          |   "previousEURegistrationDetails" : [{
+          |     "issuedBy" : "DE",
+          |     "registrationNumber" : "DE123",
+          |     "schemeType" : "OSS Union"
+          |   },
+          |   {
+          |     "issuedBy" : "BE",
+          |     "registrationNumber" : "BE123",
+          |     "schemeType" : "OSS Non-Union"
+          |   },
+          |   {
+          |     "issuedBy" : "EE",
+          |     "registrationNumber" : "EE123",
+          |     "schemeType" : "OSS Non-Union"
+          |   },
+          |   {
+          |     "issuedBy" : "EE",
+          |     "registrationNumber" : "EE234",
+          |     "schemeType" : "IOSS with intermediary",
+          |     "intermediaryNumber" : "IN234"
+          |   },
+          |   {
+          |     "issuedBy" : "EE",
+          |     "registrationNumber" : "EE312",
+          |     "schemeType" : "IOSS without intermediary"
+          |   }],
+          |   "onlineMarketPlace" : false,
+          |   "websites" : [{
+          |     "websiteAddress" : "website1"
+          |   },
+          |   {
+          |     "websiteAddress" : "website2"
+          |   }],
+          |   "contactDetails" : {
+          |     "contactNameOrBusinessAddress" : "Joe Bloggs",
+          |     "businessTelephoneNumber" : "01112223344",
+          |     "businessEmailAddress" : "email@email.com"
+          |   },
+          |   "nonCompliantReturns" : 1,
+          |   "nonCompliantPayments" : 2
+          | },
+          | "bankDetails" : {
+          |   "accountName" : "Account name",
+          |   "bic" : "ABCDGB2A",
+          |   "iban" : "GB33BUKB20201555555555"
+          | }
+          |}""".stripMargin
 
       server.stubFor(
         get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
           .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .willReturn(ok(responseJson))
+          .willReturn(aResponse().withStatus(OK)
+            .withBody(responseJson))
       )
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
         val result = connector.get(vrn).futureValue
-        val expectedResult = registration
+        val expectedResult = etmpRegistration
         result mustBe Right(expectedResult)
 
       }
     }
+
+    "Should parse Registration payload without all optional fields present correctly" in {
+
+      val app = application
+
+      val etmpRegistration = optionalDisplayRegistration
+
+      val responseJson =
+        """{
+          | "tradingNames" : [],
+          | "schemeDetails" : {
+          |   "commencementDate" : "2023-01-01",
+          |   "euRegistrationDetails" : [],
+          |   "previousEURegistrationDetails" : [],
+          |   "onlineMarketPlace" : true,
+          |   "websites" : [],
+          |   "contactDetails" : {
+          |     "contactNameOrBusinessAddress" : "Mr Test",
+          |     "businessTelephoneNumber" : "1234567890",
+          |     "businessEmailAddress" : "test@testEmail.com"
+          |   }
+          | },
+          | "bankDetails" : {
+          |   "accountName" : "Bank Account Name",
+          |   "iban" : "GB33BUKB20201555555555"
+          | }
+          |}""".stripMargin
+
+      server.stubFor(
+        get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .willReturn(aResponse().withStatus(OK)
+            .withBody(responseJson))
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.get(vrn).futureValue
+        val expectedResult = etmpRegistration
+        result mustBe Right(expectedResult)
+
+      }
+    }
+
+    "must return Left(InvalidJson) when the server returns OK with a payload that cannot be parsed" in {
+
+      val app = application
+
+      val responseJson = """{ "foo": "bar" }"""
+
+      server.stubFor(
+        get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
+          .willReturn(ok(responseJson))
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.get(vrn).futureValue
+
+        result mustBe Left(InvalidJson)
+      }
+    }
+
 
     val body = ""
 
@@ -308,6 +421,5 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       }
     }
   }
-
 
 }

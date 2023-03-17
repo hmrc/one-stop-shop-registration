@@ -1,6 +1,7 @@
 package models.etmp
 
 import base.BaseSpec
+import models.{Country, EuTaxIdentifier, EuTaxIdentifierType, EuVatRegistration, InternationalAddress, RegistrationWithFixedEstablishment, RegistrationWithoutFixedEstablishmentWithTradeDetails, RegistrationWithoutTaxId, TradeDetails}
 import play.api.libs.json.{JsSuccess, Json}
 
 class EtmpEuRegistrationDetailsSpec extends BaseSpec {
@@ -40,7 +41,6 @@ class EtmpEuRegistrationDetailsSpec extends BaseSpec {
         json.validate[EtmpEuRegistrationDetails](EtmpEuRegistrationDetails.reads) mustEqual JsSuccess(expectedResult)
       }
 
-
       "when all optional fields are absent" in {
 
         val json = Json.obj(
@@ -64,10 +64,111 @@ class EtmpEuRegistrationDetailsSpec extends BaseSpec {
       }
     }
 
-    //TODO - create method???
     ".create" - {
 
-      "must ???"
+      "should create EtmpEuRegistrationDetails from an EuVatRegistration when invoked" in {
+
+        val euVatRegistration = EuVatRegistration(
+          country = Country("CZ", "Croatia"),
+          vatNumber = "123456789"
+        )
+
+        val etmpEuRegistrationDetails = EtmpEuRegistrationDetails(
+          countryOfRegistration = "CZ",
+          vatNumber = Some("123456789")
+        )
+
+        EtmpEuRegistrationDetails.create(euVatRegistration) mustBe etmpEuRegistrationDetails
+      }
+
+      "should create EtmpEuRegistrationDetails from a RegistrationWithoutTaxId when invoked" in {
+
+        val euVatRegistration = RegistrationWithoutTaxId(
+          country = Country("BE", "Belgium")
+        )
+
+        val etmpEuRegistrationDetails = EtmpEuRegistrationDetails(
+          countryOfRegistration = "BE"
+        )
+
+        EtmpEuRegistrationDetails.create(euVatRegistration) mustBe etmpEuRegistrationDetails
+      }
+
+      "should create EtmpEuRegistrationDetails from a RegistrationWithFixedEstablishment when invoked" in {
+
+        val country = Country("ES", "Spain")
+
+        val euVatRegistration = RegistrationWithFixedEstablishment(
+          country = country,
+          taxIdentifier = EuTaxIdentifier(
+            identifierType = EuTaxIdentifierType.Vat,
+            value = "123456789"
+          ),
+          fixedEstablishment = TradeDetails(
+            tradingName = "Spanish Trading Name",
+            address = InternationalAddress(
+              line1 = "Line 1",
+              line2 = Some("Line 2"),
+              townOrCity = "Town",
+              stateOrRegion = Some("Region"),
+              postCode = Some("Postcode"),
+              country = country
+            )
+          )
+        )
+
+        val etmpEuRegistrationDetails = EtmpEuRegistrationDetails(
+          countryOfRegistration = "ES",
+          taxIdentificationNumber = Some("123456789"),
+          fixedEstablishment = Some(true),
+          tradingName = Some("Spanish Trading Name"),
+          fixedEstablishmentAddressLine1 = Some("Line 1"),
+          fixedEstablishmentAddressLine2 = Some("Line 2"),
+          townOrCity = Some("Town"),
+          regionOrState = Some("Region"),
+          postcode = Some("Postcode")
+        )
+
+        EtmpEuRegistrationDetails.create(euVatRegistration) mustBe etmpEuRegistrationDetails
+      }
+
+      "should create EtmpEuRegistrationDetails from a RegistrationWithoutFixedEstablishmentWithTradeDetails when invoked" in {
+
+        val country = Country("FR", "France")
+
+        val euVatRegistration = RegistrationWithoutFixedEstablishmentWithTradeDetails(
+          country = country,
+          taxIdentifier = EuTaxIdentifier(
+            identifierType = EuTaxIdentifierType.Other,
+            value = "123456789"
+          ),
+          tradeDetails = TradeDetails(
+            tradingName = "French Trading Name",
+            address = InternationalAddress(
+              line1 = "Line 1",
+              line2 = Some("Line 2"),
+              townOrCity = "Town",
+              stateOrRegion = Some("Region"),
+              postCode = Some("Postcode"),
+              country = country
+            )
+          )
+        )
+
+        val etmpEuRegistrationDetails = EtmpEuRegistrationDetails(
+          countryOfRegistration = "FR",
+          taxIdentificationNumber = Some("123456789"),
+          fixedEstablishment = Some(false),
+          tradingName = Some("French Trading Name"),
+          fixedEstablishmentAddressLine1 = Some("Line 1"),
+          fixedEstablishmentAddressLine2 = Some("Line 2"),
+          townOrCity = Some("Town"),
+          regionOrState = Some("Region"),
+          postcode = Some("Postcode")
+        )
+
+        EtmpEuRegistrationDetails.create(euVatRegistration) mustBe etmpEuRegistrationDetails
+      }
     }
   }
 }
