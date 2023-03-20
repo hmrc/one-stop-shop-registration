@@ -19,14 +19,15 @@ package connectors
 import config.EnrolmentsConfig
 import logging.Logging
 import metrics.{MetricsEnum, ServiceMetrics}
-import models.enrolments.SubscriberRequest
+import models.binders.Format.enrolmentDateFormatter
+import models.enrolments.{ES8Request, SubscriberRequest}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
 
+import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-
 
 class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: HttpClient, metrics: ServiceMetrics)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
@@ -45,5 +46,19 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
       timerContext.stop()
       result
     }
+  }
+
+  def es8(groupId: String, vrn: String, userId: String, registrationDate: LocalDate)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+
+    val friendlyName = "OSS Subscription"
+    val `type` = "principal"
+    val enrolmentKey = s"HMRC-OSS-ORG~$vrn"
+
+    val ossRegistrationDate = "OSSRegistrationDate"
+
+    httpClient.POST[ES8Request, HttpResponse](
+      s"${enrolments.baseUrl}groups/$groupId/enrolments/$enrolmentKey",
+      ES8Request(userId, friendlyName, `type`, Map(ossRegistrationDate -> registrationDate.format(enrolmentDateFormatter)))
+    )
   }
 }

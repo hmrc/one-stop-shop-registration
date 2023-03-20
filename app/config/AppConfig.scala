@@ -16,6 +16,7 @@
 
 package config
 
+import models.enrolments.HistoricTraderForEnrolment
 import models.exclusions.HashedExcludedTrader
 import play.api.Configuration
 
@@ -37,4 +38,7 @@ class AppConfig @Inject()(config: Configuration) {
   val externalEntryTtlDays: Int = config.get[Int]("features.externalEntry.ttlInDays")
   val externalEntryJourneyStartReturnUrl: String = config.get[String]("features.externalEntry.urls.journeyStart")
   val externalEntryNoMoreWelshReturnUrl: String = config.get[String]("features.externalEntry.urls.noMoreWelshJourneyStart")
+
+  val historicTradersForEnrolmentEnabled: Boolean = config.get[Seq[HistoricTraderForEnrolment]]("features.enroll-historic-registration.enabled")
+  val historicTradersForEnrolment: Seq[HistoricTraderForEnrolment] = config.get[Seq[HistoricTraderForEnrolment]]("features.enroll-historic-registration.historic-traders")
 }
