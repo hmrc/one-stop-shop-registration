@@ -18,7 +18,7 @@ package connectors
 
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
 import models.etmp.DisplayRegistration
-import models.{Conflict, ErrorResponse, EtmpEnrolmentError, InvalidJson, InvalidVrn, NotFound, Registration, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
+import models._
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}

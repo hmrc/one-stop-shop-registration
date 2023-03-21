@@ -41,7 +41,7 @@ class ValidateCoreRegistrationConnector @Inject()(
 
   private val baseUrl = coreValidationConfig.coreValidationUrl
 
-  private def headers(correlationId: String): Seq[(String, String)] = coreValidationConfig.eisHeaders(correlationId)
+  private def headers(correlationId: String): Seq[(String, String)] = coreValidationConfig.eisCoreHeaders(correlationId)
 
   def validateCoreRegistration(
                                 coreRegistrationRequest: CoreRegistrationRequest
