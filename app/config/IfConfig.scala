@@ -18,31 +18,22 @@ package config
 
 import play.api.Configuration
 import play.api.http.HeaderNames._
-import play.api.http.MimeTypes
 
-import java.time.format.DateTimeFormatter
-import java.time.{Clock, LocalDateTime, ZoneId}
-import java.util.Locale
+import java.time.Clock
 import javax.inject.Inject
 
-class IfConfig @Inject()(config: Configuration, clock: Clock) {
+class IfConfig @Inject()(
+                          config: Configuration,
+                          genericConfig: EisGenericConfig,
+                          clock: Clock
+                        ) {
 
   val baseUrl: Service = config.get[Service]("microservice.services.if")
-  val authorizationToken: String = config.get[String]("microservice.services.if.authorizationToken")
-  val environment: String = config.get[String]("microservice.services.if.environment")
+  private val authorizationToken: String = config.get[String]("microservice.services.if.authorizationToken")
+  private val environment: String = config.get[String]("microservice.services.if.environment")
 
-  private val dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z")
-    .withLocale(Locale.UK)
-    .withZone(ZoneId.of("GMT"))
-
-  private val XCorrelationId = "X-Correlation-Id"
-
-  def ifHeaders(correlationId: String): Seq[(String, String)] = Seq(
-    CONTENT_TYPE -> MimeTypes.JSON,
-    ACCEPT -> MimeTypes.JSON,
-    AUTHORIZATION -> s"Bearer $authorizationToken",
-    DATE -> dateTimeFormatter.format(LocalDateTime.now(clock)),
-    XCorrelationId -> correlationId,
-    X_FORWARDED_HOST -> "MDTP"
+  def eisEtmpCreateHeaders(correlationId: String): Seq[(String, String)] = genericConfig.eisEtmpGenericHeaders(correlationId) ++ Seq(
+    AUTHORIZATION -> s"Bearer $authorizationToken"
   )
+
 }

@@ -21,6 +21,7 @@ import play.api.libs.json.{Json, OWrites, Reads, __}
 
 import java.time.format.DateTimeFormatter
 
+//TODO Extra fields that will need to be pulled in from display - trait?
 case class EtmpSchemeDetails(commencementDate: String,
                              firstSaleDate: Option[String],
                              euRegistrationDetails: Seq[EtmpEuRegistrationDetails],

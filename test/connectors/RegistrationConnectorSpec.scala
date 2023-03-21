@@ -6,6 +6,7 @@ import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
 import models._
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse, EtmpErrorDetail}
+import models.etmp.DisplayRegistration
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
 import play.api.Application
@@ -28,7 +29,11 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
         "microservice.services.if.host" -> "127.0.0.1",
         "microservice.services.if.port" -> server.port,
         "microservice.services.if.authorizationToken" -> "auth-token",
-        "microservice.services.if.environment" -> "test-environment"
+        "microservice.services.if.environment" -> "test-environment",
+        "microservice.services.display-registration.host" -> "127.0.0.1",
+        "microservice.services.display-registration.port" -> server.port,
+        "microservice.services.display-registration.authorizationToken" -> "auth-token",
+        "microservice.services.display-registration.environment" -> "test-environment"
       )
       .build()
 

@@ -38,13 +38,13 @@ class RegistrationConnector @Inject()(
                                       )(implicit ec: ExecutionContext) extends Logging {
 
   private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
-  private def headers(correlationId: String): Seq[(String, String)] = ifConfig.ifHeaders(correlationId)
-
+  private def getHeaders(correlationId: String): Seq[(String, String)] = displayRegistrationConfig.eisEtmpGetHeaders(correlationId)
+  private def createHeaders(correlationId: String): Seq[(String, String)] = ifConfig.eisEtmpCreateHeaders(correlationId)
 
   def get(vrn: Vrn): Future[DisplayRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString
-    val headersWithCorrelationId = headers(correlationId)
+    val headersWithCorrelationId = getHeaders(correlationId)
     val timerContext = metrics.startTimer(MetricsEnum.GetRegistration)
     val url = s"${displayRegistrationConfig.baseUrl}RESTAdapter/OSS/Subscription/${vrn.value}"
     httpClient.GET[DisplayRegistrationResponse](url = url, headers = headersWithCorrelationId).map { result =>
@@ -61,7 +61,7 @@ class RegistrationConnector @Inject()(
   def create(registration: EtmpRegistrationRequest): Future[CreateEtmpRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString
-    val headersWithCorrelationId = headers(correlationId)
+    val headersWithCorrelationId = createHeaders(correlationId)
     val timerContext = metrics.startTimer(MetricsEnum.CreateEtmpRegistration)
     val headersWithoutAuth = headersWithCorrelationId.filterNot{
       case (key, _) => key.matches(AUTHORIZATION)
