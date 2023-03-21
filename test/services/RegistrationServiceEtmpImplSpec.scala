@@ -69,6 +69,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   override def beforeEach(): Unit = {
     reset(registrationConnector)
+    reset(getVatInfoConnector)
     reset(registrationRepository)
     reset(registrationStatusRepository)
     reset(exclusionService)
@@ -213,7 +214,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   ".get" - {
 
-    "must return Some(displayRegistration) when the connector returns right" in {
+    "must return Some(registration) when both connectors return right" in {
       when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
       when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
       registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
@@ -225,21 +226,42 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
       val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, "HMRC", 4, period)
 
-      "must return a Some(registration) when the connector returns right" in {
+      "must return Some(registration) when both connectors return right" in {
         when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
         when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(appConfig.exclusionsEnabled) thenReturn true
         when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
         registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationConnector, times(1)).get(Vrn("123456789"))
+        verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))
       }
     }
 
-    "must return a None when the connector returns Left(error)" in {
+    "must return an exception when no customer VAT details are found" in {
+      when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
+      when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Left(NotFound))
+      whenReady(registrationService.get(Vrn("123456789")).failed) {
+        exp => exp mustBe a[Exception]
+      }
+      verify(registrationConnector, times(1)).get(Vrn("123456789"))
+      verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))
+
+    }
+
+    "must return a None when the connector returns Left(NotFound)" in {
       when(registrationConnector.get(any())) thenReturn Future.successful(Left(NotFound))
       registrationService.get(Vrn("123456789")).futureValue mustBe None
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
     }
+
+    "must return an ETMP Exception when the Registration Connector returns Left(error)" in {
+      when(registrationConnector.get(any())) thenReturn Future.successful(Left(ServiceUnavailable))
+      whenReady(registrationService.get(Vrn("123456789")).failed) {
+        exp => exp mustBe EtmpException(s"There was an error getting Registration from ETMP: ${ServiceUnavailable.body}")
+      }
+      verify(registrationConnector, times(1)).get(Vrn("123456789"))
+    }
+
   }
 
 }

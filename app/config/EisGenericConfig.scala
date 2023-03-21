@@ -16,28 +16,24 @@
 
 package config
 
-import models.binders.Format
-import play.api.Configuration
-import play.api.http.HeaderNames._
+import models.binders.Format.eisDateTimeFormatter
 import play.api.http.MimeTypes
+import play.api.http.HeaderNames._
 
 import java.time.{Clock, LocalDateTime}
 import javax.inject.Inject
 
-class CoreValidationConfig @Inject()(config: Configuration, clock: Clock) {
-
-  val coreValidationUrl: Service = config.get[Service]("microservice.services.core-validation")
+class EisGenericConfig @Inject()(clock: Clock) {
 
   private val XCorrelationId = "X-Correlation-Id"
-  private val authorizationToken: String = config.get[String]("microservice.services.core-validation.authorizationToken")
 
-  def eisCoreHeaders(correlationId: String): Seq[(String, String)] = Seq(
-    XCorrelationId -> correlationId,
-    X_FORWARDED_HOST -> "MDTP",
+  def eisEtmpGenericHeaders(correlationId: String): Seq[(String, String)] = Seq(
     CONTENT_TYPE -> MimeTypes.JSON,
     ACCEPT -> MimeTypes.JSON,
-    DATE -> Format.eisDateTimeFormatter.format(LocalDateTime.now(clock)),
-    AUTHORIZATION -> s"Bearer $authorizationToken"
+    DATE -> eisDateTimeFormatter.format(LocalDateTime.now(clock)),
+    XCorrelationId -> correlationId,
+    X_FORWARDED_HOST -> "MDTP"
   )
 
 }
+
