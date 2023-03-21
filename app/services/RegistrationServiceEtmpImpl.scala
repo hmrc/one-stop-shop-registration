@@ -93,26 +93,25 @@ class RegistrationServiceEtmpImpl @Inject()(
 
               val registration = Registration.fromEtmpRegistration(
                 vrn, vatDetails, etmpRegistration.tradingNames, etmpRegistration.schemeDetails, etmpRegistration.bankDetails
-            )
+              )
 
-              if (appConfig.exclusionsEnabled) {
-                exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
-                  Some(registration.copy(excludedTrader = maybeExcludedTrader))
-                }
-              } else {
-                Future.successful(Some(registration))
+            if (appConfig.exclusionsEnabled) {
+              exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
+                Some(registration.copy(excludedTrader = maybeExcludedTrader))
               }
-            case Left(error) =>
-              logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
-              Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
-          }
-
-        case Left(NotFound) =>
-          logger.info(s"There was no Registration from ETMP found")
-          Future.successful(None)
-        case Left(error) =>
-          logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
-          Future.failed(new Exception(s"There was an error getting Registration from ETMP: ${error.body}"))
+            } else {
+              Future.successful(Some(registration))
+            }
+          case Left(error) =>
+            logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
+            Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
+        }
+      case Left(NotFound) =>
+        logger.info(s"There was no Registration from ETMP found")
+        Future.successful(None)
+      case Left(error) =>
+        logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
+        throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
       }
     }
   }
