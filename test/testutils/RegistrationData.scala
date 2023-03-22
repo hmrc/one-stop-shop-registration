@@ -328,7 +328,7 @@ object RegistrationData {
 
   val invalidRegistration = """{"invalidName":"invalid"}"""
 
-  def toRegistrationRequest(registration: Registration) = {
+  def toRegistrationRequest(registration: Registration): RegistrationRequest = {
     RegistrationRequest(
       registration.vrn,
       registration.registeredCompanyName,

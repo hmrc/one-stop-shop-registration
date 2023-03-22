@@ -6,7 +6,6 @@ import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
 import models._
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse, EtmpErrorDetail}
-import models.etmp.DisplayRegistration
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
 import play.api.Application
@@ -16,7 +15,8 @@ import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
-import testutils.RegistrationData.{displayRegistration, optionalDisplayRegistration}
+import utils.DisplayRegistrationData.{arbitraryDisplayRegistration, writesEtmpSchemeDetails}
+import testutils.RegistrationData.optionalDisplayRegistration
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{LocalDate, LocalDateTime}
@@ -40,14 +40,6 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
   def getDisplayRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/RESTAdapter/OSS/Subscription/${vrn.value}"
 
   def createRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/regdatatransfer/v1"
-
-  // TODO - Generators not using modfiied models??
-  //  def generateDisplayRegistration: DisplayRegistration =
-  //    DisplayRegistration(
-  //      tradingNames = Seq(arbitraryEtmpTradingNames.arbitrary.sample.value),
-  //      schemeDetails = arbitraryEtmpSchemeDetails.arbitrary.sample.value,
-  //      bankDetails = arbitraryBankDetails.arbitrary.sample.value
-  //    )
 
   ".create" - {
 
@@ -211,92 +203,13 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
 
       val app = application
 
-      val etmpRegistration = displayRegistration
+      val etmpRegistration = arbitraryDisplayRegistration
 
       val responseJson =
-        """{
-          | "tradingNames" : [{
-          |   "tradingName":"single"
-          | },
-          | {
-          | "tradingName":"double"
-          | }],
-          | "schemeDetails" : {
-          |   "commencementDate" : "2023-01-01",
-          |   "firstSaleDate" : "2023-01-25",
-          |   "euRegistrationDetails" : [{
-          |     "issuedBy" : "ES",
-          |     "vatNumber" : "ES123"
-          |   },
-          |   {
-          |     "issuedBy" : "FR"
-          |   },
-          |   {
-          |     "issuedBy" : "DE",
-          |     "vatNumber" : "DE123",
-          |     "fixedEstablishment" : true,
-          |     "fixedEstablishmentTradingName" : "Name",
-          |     "fixedEstablishmentAddressLine1" : "Line 1",
-          |     "fixedEstablishmentAddressLine2" : "Line 2",
-          |     "townOrCity" : "Town"
-          |   },
-          |   {
-          |     "issuedBy" : "BE",
-          |     "taxIdentificationNumber" : "12345",
-          |     "fixedEstablishment" : false,
-          |     "fixedEstablishmentTradingName" : "Name",
-          |     "fixedEstablishmentAddressLine1" : "Line 1",
-          |     "fixedEstablishmentAddressLine2" : "Line 2",
-          |     "townOrCity" : "Town",
-          |     "regionOrState" : "Region",
-          |     "postcode" : "Postcode"
-          |   }],
-          |   "previousEURegistrationDetails" : [{
-          |     "issuedBy" : "DE",
-          |     "registrationNumber" : "DE123",
-          |     "schemeType" : "OSS Union"
-          |   },
-          |   {
-          |     "issuedBy" : "BE",
-          |     "registrationNumber" : "BE123",
-          |     "schemeType" : "OSS Non-Union"
-          |   },
-          |   {
-          |     "issuedBy" : "EE",
-          |     "registrationNumber" : "EE123",
-          |     "schemeType" : "OSS Non-Union"
-          |   },
-          |   {
-          |     "issuedBy" : "EE",
-          |     "registrationNumber" : "EE234",
-          |     "schemeType" : "IOSS with intermediary",
-          |     "intermediaryNumber" : "IN234"
-          |   },
-          |   {
-          |     "issuedBy" : "EE",
-          |     "registrationNumber" : "EE312",
-          |     "schemeType" : "IOSS without intermediary"
-          |   }],
-          |   "onlineMarketPlace" : false,
-          |   "websites" : [{
-          |     "websiteAddress" : "website1"
-          |   },
-          |   {
-          |     "websiteAddress" : "website2"
-          |   }],
-          |   "contactDetails" : {
-          |     "contactNameOrBusinessAddress" : "Joe Bloggs",
-          |     "businessTelephoneNumber" : "01112223344",
-          |     "businessEmailAddress" : "email@email.com"
-          |   },
-          |   "nonCompliantReturns" : 1,
-          |   "nonCompliantPayments" : 2
-          | },
-          | "bankDetails" : {
-          |   "accountName" : "Account name",
-          |   "bic" : "ABCDGB2A",
-          |   "iban" : "GB33BUKB20201555555555"
-          | }
+        s"""{
+          | "tradingNames" : ${Json.toJson(etmpRegistration.tradingNames)},
+          | "schemeDetails" :${Json.toJson(etmpRegistration.schemeDetails)(writesEtmpSchemeDetails)},
+          | "bankDetails" : ${Json.toJson(etmpRegistration.bankDetails)}
           |}""".stripMargin
 
       server.stubFor(
