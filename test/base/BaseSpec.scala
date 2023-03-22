@@ -1,6 +1,7 @@
 package base
 
 import controllers.actions.{AuthAction, FakeAuthAction}
+import generators.Generators
 import models.{BankDetails, Bic, Iban, Period}
 import models.Quarter.Q3
 import models.des.VatCustomerInfo
@@ -26,7 +27,8 @@ trait BaseSpec
     with OptionValues
     with ScalaFutures
     with IntegrationPatience
-    with MockitoSugar {
+    with MockitoSugar
+    with Generators {
 
   protected val vrn: Vrn = Vrn("123456789")
 
