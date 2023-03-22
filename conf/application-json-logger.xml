@@ -17,6 +17,8 @@
 
     <logger name="application.connectors.ValidateCoreRegistrationConnector" level="${logger.connectors.ValidateCoreRegistrationConnector:-INFO}"/>
 
+    <logger name="application.connectors.ValidateCoreRegistrationHttpParser" level="${logger.connectors.ValidateCoreRegistrationHttpParser:-INFO}"/>
+
     <logger name="application.controllers.ValidateCoreRegistrationController" level="${logger.controllers.ValidateCoreRegistrationController:-INFO}"/>
 
     <logger name="application.connectors.RegistrationConnector" level="${logger.connectors.RegistrationConnector:-INFO}"/>

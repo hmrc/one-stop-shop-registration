@@ -51,7 +51,7 @@ class ValidateCoreRegistrationConnector @Inject()(
       case (key, _) => key.matches(AUTHORIZATION)
     }
 
-    logger.info(s"Sending request to EIS with headers $headersWithoutAuth and request ${Json.toJson(coreRegistrationRequest)}")
+    logger.info(s"Sending request to EIS with headers $headersWithoutAuth and request ${Json.toJson(coreRegistrationRequest)}") // TODO remove
 
     val url = s"$baseUrl"
     httpClient.POST[CoreRegistrationRequest, ValidateCoreRegistrationResponse](

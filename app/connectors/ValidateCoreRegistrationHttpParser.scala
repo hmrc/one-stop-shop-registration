@@ -34,7 +34,9 @@ object ValidateCoreRegistrationHttpParser extends Logging {
     override def read(method: String, url: String, response: HttpResponse): ValidateCoreRegistrationResponse = {
       response.status match {
         case OK => response.json.validate[CoreRegistrationValidationResult] match {
-          case JsSuccess(validateCoreRegistration, _) => Right(validateCoreRegistration)
+          case JsSuccess(validateCoreRegistration, _) =>
+            logger.info(s"Received OK with ${response.body}") // TODO remove
+            Right(validateCoreRegistration)
           case JsError(errors) =>
             logger.error(s"Failed trying to parse JSON $errors. JSON was ${response.json}", errors)
             Left(InvalidJson)
