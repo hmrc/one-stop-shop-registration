@@ -31,8 +31,8 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.running
 import repositories.{RegistrationRepository, RegistrationStatusRepository}
 import services.exclusions.ExclusionService
-import testutils.RegistrationData
 import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration}
+import testutils.RegistrationData
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import metrics.ServiceMetrics
