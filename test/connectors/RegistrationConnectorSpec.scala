@@ -6,6 +6,7 @@ import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
 import models._
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse, EtmpErrorDetail}
+import models.etmp.AmendRegistrationResponse
 import models.requests.RegistrationRequest
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -21,7 +22,7 @@ import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Instant, LocalDate, LocalDateTime}
 
-class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Generators {
+class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Generators {
 
   private def application: Application =
     new GuiceApplicationBuilder()
@@ -29,7 +30,9 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
         "microservice.services.if.host" -> "127.0.0.1",
         "microservice.services.if.port" -> server.port,
         "microservice.services.if.authorizationToken" -> "auth-token",
-        "microservice.services.if.environment" -> "test-environment"
+        "microservice.services.if.environment" -> "test-environment",
+        "microservice.services.amend-registration.host" -> "127.0.0.1",
+        "microservice.services.amend-registration.port" -> server.port
       )
       .build()
 
@@ -38,6 +41,8 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
   def createRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/regdatatransfer/v1"
 
   def getValidateRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/validateRegistration/${vrn.value}"
+
+  def getAmendRegistrationUrl = "/one-stop-shop-registration-stub/RESTAdapter/OSS/Subscription/"
 
 
   def generateRegistration(vrn: Vrn) = Registration(
@@ -79,6 +84,14 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       registration.nonCompliantPayments
     )
   }
+
+  private val amendRegistrationResponse: AmendRegistrationResponse =
+    AmendRegistrationResponse(
+      processingDateTime = LocalDateTime.now(),
+      formBundleNumber = "12345",
+      vrn = "123456789",
+      businessPartner = "businessPartner"
+    )
 
 
   ".create" - {
@@ -304,6 +317,85 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
           exp.left.get mustBe a[ErrorResponse]
         }
       }
+    }
+  }
+
+  ".amendRegistration" - {
+
+    "must return Ok with an Amend Registration response when a valid payload is sent" in {
+
+      val app = application
+
+      val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
+
+      server.stubFor(
+        put(urlEqualTo(getAmendRegistrationUrl))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .withRequestBody(equalTo(requestJson))
+          .willReturn(aResponse()
+            .withStatus(OK)
+            .withBody(Json.stringify(Json.toJson(amendRegistrationResponse))))
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.amendRegistration(etmpRegistrationRequest).futureValue
+
+        result mustBe Right(amendRegistrationResponse)
+      }
+
+    }
+
+    "must return not found when server responds with NOT_FOUND" in {
+
+      val app = application
+
+      val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
+
+      server.stubFor(
+        put(urlEqualTo(getAmendRegistrationUrl))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .withRequestBody(equalTo(requestJson))
+          .willReturn(aResponse()
+            .withStatus(NOT_FOUND))
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.amendRegistration(etmpRegistrationRequest).futureValue
+
+        result mustBe Left(NotFound)
+      }
+
+    }
+
+    "must return unprocessable entity when server responds with UNPROCESSABLE_ENTITY" in {
+
+      val app = application
+
+      val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
+
+      server.stubFor(
+        put(urlEqualTo(getAmendRegistrationUrl))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .withRequestBody(equalTo(requestJson))
+          .willReturn(aResponse()
+            .withStatus(UNPROCESSABLE_ENTITY))
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.amendRegistration(etmpRegistrationRequest).futureValue
+
+        result mustBe Left(NotFound)
+      }
+
     }
   }
 

@@ -17,6 +17,7 @@
 package connectors
 
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
+import models.etmp.AmendRegistrationResponse
 import models.{Conflict, ErrorResponse, EtmpEnrolmentError, InvalidJson, InvalidVrn, NotFound, Registration, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
@@ -31,6 +32,8 @@ object RegistrationHttpParser extends BaseHttpParser {
   type CreateEtmpRegistrationResponse = Either[ErrorResponse, EtmpEnrolmentResponse]
 
   type GetRegistrationResponse = Either[ErrorResponse, Registration]
+
+  type CreateAmendRegistrationResponse = Either[ErrorResponse, AmendRegistrationResponse]
 
   implicit object CreateRegistrationResponseReads extends HttpReads[CreateRegistrationResponse]  {
     override def read(method: String, url: String, response: HttpResponse): CreateRegistrationResponse =
@@ -87,6 +90,21 @@ object RegistrationHttpParser extends BaseHttpParser {
   implicit object GetRegistrationResponseReads extends HttpReads[GetRegistrationResponse]  {
     override def read(method: String, url: String, response: HttpResponse): GetRegistrationResponse =
       parseResponse[Registration](response)
+  }
+
+  implicit object CreateAmendRegistrationResponseReads extends HttpReads[CreateAmendRegistrationResponse] {
+    override def read(method: String, url: String, response: HttpResponse): CreateAmendRegistrationResponse =
+      response.status match {
+        case OK => response.json.validate[AmendRegistrationResponse] match {
+          case JsSuccess(amendRegistrationResponse, _) => Right(amendRegistrationResponse)
+          case JsError(errors) =>
+            logger.error(s"Failed trying to parse JSON with status ${response.status} and body ${response.body}", errors)
+            Left(InvalidJson)
+        }
+        case NOT_FOUND =>
+          logger.warn(s"url not reachable")
+          Left(NotFound)
+      }
   }
 
 }
