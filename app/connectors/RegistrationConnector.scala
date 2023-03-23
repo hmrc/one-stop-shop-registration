@@ -16,7 +16,7 @@
 
 package connectors
 
-import config.{DisplayRegistrationConfig, IfConfig}
+import config.{AmendRegistrationConfig, DisplayRegistrationConfig, IfConfig}
 import connectors.RegistrationHttpParser._
 import logging.Logging
 import models.UnexpectedResponseStatus
@@ -32,6 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegistrationConnector @Inject()(
                                         httpClient: HttpClient,
                                         ifConfig: IfConfig,
+                                        amendRegistrationConfig: AmendRegistrationConfig,
                                         displayRegistrationConfig: DisplayRegistrationConfig
                                       )(implicit ec: ExecutionContext) extends Logging {
 
@@ -72,6 +73,18 @@ class RegistrationConnector @Inject()(
         logger.error(s"Unexpected response from etmp registration ${e.getMessage}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
+  }
+
+  def amendRegistration(registration: EtmpRegistrationRequest): Future[CreateAmendRegistrationResponse] = {
+
+    val correlationId: String = UUID.randomUUID().toString
+    val headersWithCorrelationId = createHeaders(correlationId)
+
+    httpClient.PUT[EtmpRegistrationRequest, CreateAmendRegistrationResponse](
+      s"${amendRegistrationConfig.baseUrl}RESTAdapter/OSS/Subscription/",
+      registration,
+      headers = headersWithCorrelationId
+    )
   }
 
 }
