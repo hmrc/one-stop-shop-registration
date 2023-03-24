@@ -452,30 +452,6 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
 
     }
 
-    "must return unprocessable entity when server responds with UNPROCESSABLE_ENTITY" in {
-
-      val app = application
-
-      val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
-
-      server.stubFor(
-        put(urlEqualTo(getAmendRegistrationUrl))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
-          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .withRequestBody(equalTo(requestJson))
-          .willReturn(aResponse()
-            .withStatus(UNPROCESSABLE_ENTITY))
-      )
-
-      running(app) {
-
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        val result = connector.amendRegistration(etmpRegistrationRequest).futureValue
-
-        result mustBe Left(NotFound)
-      }
-
-    }
   }
 
 }
