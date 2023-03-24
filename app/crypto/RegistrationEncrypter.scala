@@ -102,7 +102,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
     import bankDetails._
 
     val b = bic.map(x => Bic(d(x)).getOrElse(throw new EncryptionDecryptionException("decryptBankDetails", "Unable to decrypt BIC", "")))
-    val i = Iban(d(iban)).right.getOrElse(throw new EncryptionDecryptionException("decryptBankDetails", "Unable to decrypt IBAN", ""))
+    val i = Iban(d(iban)).toOption.getOrElse(throw new EncryptionDecryptionException("decryptBankDetails", "Unable to decrypt IBAN", ""))
 
     BankDetails(d(accountName), b, i)
   }

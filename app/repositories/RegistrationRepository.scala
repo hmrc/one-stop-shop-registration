@@ -60,7 +60,7 @@ class RegistrationRepository @Inject()(
 
     collection
       .insertOne(encryptedRegistration)
-      .toFuture
+      .toFuture()
       .map(_ => InsertSucceeded)
       .recover {
         case Duplicate(_) => AlreadyExists
@@ -70,7 +70,7 @@ class RegistrationRepository @Inject()(
   def get(vrn: Vrn): Future[Option[Registration]] = {
     collection
       .find(Filters.equal("vrn", toBson(vrn)))
-      .headOption
+      .headOption()
       .map(_.map {
         r =>
           encrypter.decryptRegistration(r, r.vrn, encryptionKey)
@@ -84,7 +84,7 @@ class RegistrationRepository @Inject()(
 
     collection
       .insertMany(encryptedRegistrations)
-      .toFuture
+      .toFuture()
       .map(_ => InsertSucceeded)
       .recover {
         case Duplicate(_) => AlreadyExists

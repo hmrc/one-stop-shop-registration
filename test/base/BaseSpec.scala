@@ -29,7 +29,7 @@ trait BaseSpec
   protected val vrn: Vrn = Vrn("123456789")
 
   val stubClock: Clock = Clock.fixed(LocalDate.now.atStartOfDay(ZoneId.systemDefault).toInstant, ZoneId.systemDefault)
-  val iban: Iban = Iban("GB33BUKB20201555555555").right.get
+  val iban: Iban = Iban("GB33BUKB20201555555555").toOption.get
   val bic: Bic = Bic("ABCDGB2A").get
 
   val period: Period = Period(2021, Q3)
@@ -112,7 +112,7 @@ trait BaseSpec
       nonCompliantReturns = Some(1),
       nonCompliantPayments = Some(2)
     ),
-    BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").right.get)
+    BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get)
   )
 
 }

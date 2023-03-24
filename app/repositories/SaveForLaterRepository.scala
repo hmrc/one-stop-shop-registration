@@ -78,7 +78,7 @@ class SaveForLaterRepository @Inject()(
         replacement = encryptedAnswers,
         options     = ReplaceOptions().upsert(true)
       )
-      .toFuture
+      .toFuture()
       .map(_ => savedUserAnswers)
   }
 
@@ -86,7 +86,7 @@ class SaveForLaterRepository @Inject()(
     collection
       .find(
         byVrn(vrn)
-      ).headOption
+      ).headOption()
       .map(_.map {
         answers =>
           encryptor.decryptAnswers(answers, answers.vrn, encryptionKey)
@@ -95,7 +95,7 @@ class SaveForLaterRepository @Inject()(
   def clear(vrn: Vrn): Future[Boolean] =
     collection
       .deleteOne(byVrn(vrn))
-      .toFuture
+      .toFuture()
       .map(_ => true)
 }
 
