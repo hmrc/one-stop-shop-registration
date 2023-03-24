@@ -42,15 +42,15 @@ trait RegistrationService extends Logging {
       isOnlineMarketplace = request.isOnlineMarketplace,
       niPresence = request.niPresence,
       dateOfFirstSale = request.dateOfFirstSale,
-      submissionReceived = Instant.now(clock),
-      lastUpdated = Instant.now(clock),
+      submissionReceived = Some(Instant.now(clock)),
+      lastUpdated = Some(Instant.now(clock)),
       nonCompliantReturns = request.nonCompliantReturns,
       nonCompliantPayments = request.nonCompliantPayments
     )
 
   def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult]
 
-  def get(vrn: Vrn): Future[Option[Registration]]
+  def get(vrn: Vrn)(implicit hc: HeaderCarrier): Future[Option[Registration]]
 
 }
 

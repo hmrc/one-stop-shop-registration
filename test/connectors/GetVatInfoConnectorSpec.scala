@@ -75,7 +75,7 @@ class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
             singleMarketIndicator = Some(false)
           )
 
-          result mustEqual Right(expectedResult)
+          result mustBe Right(expectedResult)
         }
       }
 
@@ -93,7 +93,7 @@ class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
           val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
-          result mustEqual Left(NotFound)
+          result mustBe Left(NotFound)
         }
       }
 
@@ -111,7 +111,7 @@ class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
           val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
-          result mustEqual Left(InvalidVrn)
+          result mustBe Left(InvalidVrn)
         }
       }
 
@@ -129,7 +129,7 @@ class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
           val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
-          result mustEqual Left(ServiceUnavailable)
+          result mustBe Left(ServiceUnavailable)
         }
       }
 
@@ -147,7 +147,7 @@ class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
           val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
-          result mustEqual Left(ServerError)
+          result mustBe Left(ServerError)
         }
       }
 
@@ -167,7 +167,7 @@ class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
           val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
-          result mustEqual Left(InvalidJson)
+          result mustBe Left(InvalidJson)
         }
       }
 
@@ -177,9 +177,17 @@ class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
 
         val status = Gen.oneOf(401, 402, 403, 501, 502).sample.value
 
+        val errorResponseJson =
+          s"""{
+             |  "error": "$status",
+             |  "errorMessage": "Error"
+             |}""".stripMargin
+
         server.stubFor(
           get(urlEqualTo(desUrl))
-            .willReturn(aResponse().withStatus(status))
+            .willReturn(aResponse()
+              .withStatus(status)
+              .withBody(errorResponseJson))
         )
 
         running(app) {
@@ -187,11 +195,11 @@ class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
           val connector = app.injector.instanceOf[GetVatInfoConnector]
           val result = connector.getVatCustomerDetails(vrn).futureValue
 
-          result mustEqual Left(UnexpectedResponseStatus(status, s"Unexpected response from DES, received status $status"))
+          result mustBe Left(UnexpectedResponseStatus(status, s"Unexpected response from DES, received status $status with body $errorResponseJson"))
         }
       }
 
-    "must return Left(GatewayTimeout) when the server returns a GatewayTimeoutException" in {
+      "must return Left(GatewayTimeout) when the server returns a GatewayTimeoutException" in {
 
         val app = application
 

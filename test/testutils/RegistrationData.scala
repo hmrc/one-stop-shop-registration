@@ -1,8 +1,10 @@
 package testutils
 
 import models.EuTaxIdentifierType.{Other, Vat}
-import models.VatDetailSource.UserEntered
+import models.VatDetailSource.{Etmp, UserEntered}
 import models._
+import models.etmp.EtmpSchemeDetails.dateFormatter
+import models.etmp.{DisplayRegistration, EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
 import models.requests.RegistrationRequest
 import uk.gov.hmrc.domain.Vrn
 
@@ -103,15 +105,230 @@ object RegistrationData {
       isOnlineMarketplace = false,
       niPresence = Some(PrincipalPlaceOfBusinessInNi),
       dateOfFirstSale = Some(LocalDate.now),
-      submissionReceived = Instant.now(stubClock),
-      lastUpdated = Instant.now(stubClock),
+      submissionReceived = Some(Instant.now(stubClock)),
+      lastUpdated = Some(Instant.now(stubClock)),
       nonCompliantReturns = Some(1),
       nonCompliantPayments = Some(2)
     )
 
+  val fromEtmpRegistration: Registration =
+    Registration(
+      vrn = Vrn("123456789"),
+      registeredCompanyName = "Company name",
+      tradingNames = List("single", "double"),
+      vatDetails = VatDetails(
+        registrationDate = LocalDate.now,
+        address = DesAddress(
+          "Line 1",
+          None,
+          None,
+          None,
+          None,
+          Some("AA11 1AA"),
+          "GB",
+        ),
+        partOfVatGroup = false,
+        source = Etmp
+      ),
+      euRegistrations = Seq(
+        EuVatRegistration(
+          Country("ES", "Spain"),
+          "ES123"
+        ),
+        RegistrationWithoutTaxId(
+          Country("FR", "France")
+        ),
+        RegistrationWithFixedEstablishment(
+          Country("DE", "Germany"),
+          EuTaxIdentifier(Vat, "DE123"),
+          TradeDetails("Name", InternationalAddress("Line 1", Some("Line 2"), "Town", None, None, Country("DE", "Germany")))
+        ),
+        RegistrationWithoutFixedEstablishmentWithTradeDetails(
+          Country("BE", "Belgium"),
+          EuTaxIdentifier(Other, "12345"),
+          TradeDetails("Name", InternationalAddress("Line 1", Some("Line 2"), "Town", Some("Region"), Some("Postcode"), Country("BE", "Belgium")))
+        )
+      ),
+      contactDetails = new ContactDetails(
+        "Joe Bloggs",
+        "01112223344",
+        "email@email.com"
+      ),
+      websites = List("website1", "website2"),
+      commencementDate = LocalDate.of(2023, 1, 1),
+      previousRegistrations = Seq(
+        PreviousRegistrationNew(
+          country = Country("DE", "Germany"),
+          previousSchemesDetails = Seq(
+            PreviousSchemeDetails(
+              previousScheme = PreviousScheme.OSSU,
+              previousSchemeNumbers = PreviousSchemeNumbers(
+                previousSchemeNumber = "DE123",
+                previousIntermediaryNumber = None
+              )
+            )
+          )
+        ),
+        PreviousRegistrationNew(
+          country = Country("BE", "Belgium"),
+          previousSchemesDetails = Seq(
+            PreviousSchemeDetails(
+              previousScheme = PreviousScheme.OSSNU,
+              previousSchemeNumbers = PreviousSchemeNumbers(
+                previousSchemeNumber = "BE123",
+                previousIntermediaryNumber = None
+              )
+            )
+          )
+        ),
+        PreviousRegistrationNew(
+          country = Country("EE", "Estonia"),
+          previousSchemesDetails = Seq(
+            PreviousSchemeDetails(
+              previousScheme = PreviousScheme.OSSNU,
+              previousSchemeNumbers = PreviousSchemeNumbers(
+                previousSchemeNumber = "EE123",
+                previousIntermediaryNumber = None
+              )
+            ),
+            PreviousSchemeDetails(
+              previousScheme = PreviousScheme.IOSSWI,
+              previousSchemeNumbers = PreviousSchemeNumbers(
+                previousSchemeNumber = "EE234",
+                previousIntermediaryNumber = Some("IN234")
+              )
+            ),
+            PreviousSchemeDetails(
+              previousScheme = PreviousScheme.IOSSWOI,
+              previousSchemeNumbers = PreviousSchemeNumbers(
+                previousSchemeNumber = "EE312",
+                previousIntermediaryNumber = None
+              )
+            )
+          )
+        )
+      ),
+      bankDetails = BankDetails("Account name", Some(bic), iban),
+      isOnlineMarketplace = false,
+      niPresence = None,
+      dateOfFirstSale = Some(LocalDate.of(2023, 1, 25)),
+      submissionReceived = None,
+      lastUpdated = None,
+      nonCompliantReturns = Some(1),
+      nonCompliantPayments = Some(2)
+    )
+
+  val displayRegistration: DisplayRegistration =
+    DisplayRegistration(
+      tradingNames = Seq(EtmpTradingNames("single"), EtmpTradingNames("double")),
+      schemeDetails = EtmpSchemeDetails(
+        commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
+        firstSaleDate = Some(LocalDate.of(2023, 1, 25).format(dateFormatter)),
+        euRegistrationDetails = Seq(
+          EtmpEuRegistrationDetails(
+            countryOfRegistration = "ES",
+            vatNumber = Some("ES123")
+          ),
+          EtmpEuRegistrationDetails(
+            countryOfRegistration = "FR"
+          ),
+          EtmpEuRegistrationDetails(
+            countryOfRegistration = "DE",
+            vatNumber = Some("DE123"),
+            fixedEstablishment = Some(true),
+            tradingName = Some("Name"),
+            fixedEstablishmentAddressLine1 = Some("Line 1"),
+            fixedEstablishmentAddressLine2 = Some("Line 2"),
+            townOrCity = Some("Town"),
+          ),
+          EtmpEuRegistrationDetails(
+            countryOfRegistration = "BE",
+            taxIdentificationNumber = Some("12345"),
+            fixedEstablishment = Some(false),
+            tradingName = Some("Name"),
+            fixedEstablishmentAddressLine1 = Some("Line 1"),
+            fixedEstablishmentAddressLine2 = Some("Line 2"),
+            townOrCity = Some("Town"),
+            regionOrState = Some("Region"),
+            postcode = Some("Postcode")
+          )
+        ),
+        previousEURegistrationDetails = Seq(
+          EtmpPreviousEURegistrationDetails(
+            issuedBy = "DE",
+            registrationNumber = "DE123",
+            schemeType = SchemeType.OSSUnion,
+            intermediaryNumber = None
+          ),
+          EtmpPreviousEURegistrationDetails(
+            issuedBy = "BE",
+            registrationNumber = "BE123",
+            schemeType = SchemeType.OSSNonUnion,
+            intermediaryNumber = None
+          ),
+          EtmpPreviousEURegistrationDetails(
+            issuedBy = "EE",
+            registrationNumber = "EE123",
+            schemeType = SchemeType.OSSNonUnion,
+            intermediaryNumber = None
+          ),
+          EtmpPreviousEURegistrationDetails(
+            issuedBy = "EE",
+            registrationNumber = "EE234",
+            schemeType = SchemeType.IOSSWithIntermediary,
+            intermediaryNumber = Some("IN234")
+          ),
+          EtmpPreviousEURegistrationDetails(
+            issuedBy = "EE",
+            registrationNumber = "EE312",
+            schemeType = SchemeType.IOSSWithoutIntermediary,
+            intermediaryNumber = None
+          )
+        ),
+        onlineMarketPlace = false,
+        websites = Seq(
+          Website(
+            websiteAddress = "website1"
+          ),
+          Website(
+            websiteAddress = "website2"
+          )
+        ),
+        contactName = "Joe Bloggs",
+        businessTelephoneNumber = "01112223344",
+        businessEmailId = "email@email.com",
+        nonCompliantReturns = Some(1),
+        nonCompliantPayments = Some(2)
+      ),
+      bankDetails = BankDetails("Account name", Some(bic), iban)
+    )
+
+  val optionalDisplayRegistration: DisplayRegistration =
+    DisplayRegistration(
+      tradingNames = Seq.empty,
+      schemeDetails = EtmpSchemeDetails(
+        commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
+        None,
+        euRegistrationDetails = Seq.empty,
+        previousEURegistrationDetails = Seq.empty,
+        onlineMarketPlace = true,
+        websites = Seq.empty,
+        contactName = "Mr Test",
+        businessTelephoneNumber = "1234567890",
+        businessEmailId = "test@testEmail.com",
+        None,
+        None
+      ),
+      bankDetails = BankDetails(
+        accountName = "Bank Account Name",
+        None,
+        iban
+      )
+    )
+
   val invalidRegistration = """{"invalidName":"invalid"}"""
 
-  def toRegistrationRequest(registration: Registration) = {
+  def toRegistrationRequest(registration: Registration): RegistrationRequest = {
     RegistrationRequest(
       registration.vrn,
       registration.registeredCompanyName,

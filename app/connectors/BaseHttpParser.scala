@@ -31,27 +31,27 @@ trait BaseHttpParser extends Logging {
       case OK => response.json.validate[T] match {
           case JsSuccess(registration, _) => Right(registration)
           case JsError(errors) =>
-            logger.warn("Failed trying to parse JSON", errors)
+            logger.error(s"Failed trying to parse JSON with errors: $errors", errors)
             Left(InvalidJson)
         }
       case NOT_FOUND =>
         logger.warn(s"Received NotFound from ${serviceName}")
         Left(NotFound)
       case INTERNAL_SERVER_ERROR =>
-        logger.warn(s"Received InternalServerError from ${serviceName}")
+        logger.error(s"Received InternalServerError from ${serviceName}")
         Left(ServerError)
       case BAD_REQUEST =>
         logger.error(s"Received BadRequest from ${serviceName}")
         Left(InvalidVrn)
       case SERVICE_UNAVAILABLE =>
-        logger.warn(s"Received Service Unavailable from ${serviceName}")
+        logger.error(s"Received Service Unavailable from ${serviceName}")
         Left(ServiceUnavailable)
       case CONFLICT =>
-        logger.warn(s"Received Conflict from ${serviceName}")
+        logger.error(s"Received Conflict from ${serviceName}")
         Left(Conflict)
       case status =>
-        logger.warn(s"Unexpected response from ${serviceName}, received status $status")
-        Left(UnexpectedResponseStatus(status, s"Unexpected response from ${serviceName}, received status $status"))
+        logger.error(s"Unexpected response from ${serviceName}, received status $status with body ${response.body}")
+        Left(UnexpectedResponseStatus(status, s"Unexpected response from ${serviceName}, received status $status with body ${response.body}"))
     }
   }
 }

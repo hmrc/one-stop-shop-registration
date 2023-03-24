@@ -1,9 +1,11 @@
 package base
 
 import controllers.actions.{AuthAction, FakeAuthAction}
+import generators.Generators
 import models.Quarter.Q3
+import models.des.VatCustomerInfo
 import models.etmp._
-import models.{BankDetails, Bic, Iban, Period}
+import models.{BankDetails, Bic, DesAddress, Iban, Period}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -24,7 +26,8 @@ trait BaseSpec
     with OptionValues
     with ScalaFutures
     with IntegrationPatience
-    with MockitoSugar {
+    with MockitoSugar
+    with Generators {
 
   protected val vrn: Vrn = Vrn("123456789")
 
@@ -36,6 +39,16 @@ trait BaseSpec
 
   protected def applicationBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder().overrides(bind[AuthAction].to[FakeAuthAction])
+
+
+  val vatCustomerInfo: VatCustomerInfo =
+    VatCustomerInfo(
+      registrationDate = Some(LocalDate.now(stubClock)),
+      address = DesAddress("Line 1", None, None, None, None, Some("AA11 1AA"), "GB"),
+      partOfVatGroup = false,
+      organisationName = Some("Company name"),
+      singleMarketIndicator = Some(true)
+    )
 
   val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     .withLocale(Locale.UK)

@@ -6,8 +6,6 @@ import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
 import models._
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse, EtmpErrorDetail}
-import models.requests.RegistrationRequest
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
 import play.api.Application
@@ -17,11 +15,13 @@ import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
+import utils.DisplayRegistrationData.{arbitraryDisplayRegistration, writesEtmpSchemeDetails}
+import testutils.RegistrationData.optionalDisplayRegistration
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate, LocalDateTime}
+import java.time.{LocalDate, LocalDateTime}
 
-class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Generators {
+class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Generators {
 
   private def application: Application =
     new GuiceApplicationBuilder()
@@ -29,57 +29,17 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
         "microservice.services.if.host" -> "127.0.0.1",
         "microservice.services.if.port" -> server.port,
         "microservice.services.if.authorizationToken" -> "auth-token",
-        "microservice.services.if.environment" -> "test-environment"
+        "microservice.services.if.environment" -> "test-environment",
+        "microservice.services.display-registration.host" -> "127.0.0.1",
+        "microservice.services.display-registration.port" -> server.port,
+        "microservice.services.display-registration.authorizationToken" -> "auth-token",
+        "microservice.services.display-registration.environment" -> "test-environment"
       )
       .build()
 
-  def getRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/getRegistration/${vrn.value}"
+  def getDisplayRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/RESTAdapter/OSS/Subscription/${vrn.value}"
 
   def createRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/regdatatransfer/v1"
-
-  def getValidateRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/validateRegistration/${vrn.value}"
-
-
-  def generateRegistration(vrn: Vrn) = Registration(
-    vrn                   = vrn,
-    registeredCompanyName = arbitrary[String].sample.value,
-    tradingNames          = Seq.empty,
-    vatDetails            = arbitrary[VatDetails].sample.value,
-    euRegistrations       = Seq.empty,
-    contactDetails        = arbitrary[ContactDetails].sample.value,
-    websites              = Seq.empty,
-    commencementDate      = LocalDate.now,
-    previousRegistrations = Seq.empty,
-    bankDetails           = arbitrary[BankDetails].sample.value,
-    isOnlineMarketplace   = arbitrary[Boolean].sample.value,
-    niPresence            = None,
-    dateOfFirstSale       = None,
-    submissionReceived    = Instant.now(stubClock),
-    lastUpdated           = Instant.now(stubClock),
-    nonCompliantReturns   = Some(1),
-    nonCompliantPayments  = Some(2)
-  )
-
-  def toRegistrationRequest(registration: Registration) = {
-    RegistrationRequest(
-      registration.vrn,
-      registration.registeredCompanyName,
-      registration.tradingNames,
-      registration.vatDetails,
-      registration.euRegistrations,
-      registration.contactDetails,
-      registration.websites,
-      registration.commencementDate,
-      registration.previousRegistrations,
-      registration.bankDetails,
-      registration.isOnlineMarketplace,
-      registration.niPresence,
-      registration.dateOfFirstSale,
-      registration.nonCompliantReturns,
-      registration.nonCompliantPayments
-    )
-  }
-
 
   ".create" - {
 
@@ -239,41 +199,114 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
 
   "get" - {
 
-    "Should parse Registration payload correctly" in {
+    "Should parse Registration payload with all optional fields present correctly" in {
 
       val app = application
 
-      val registration = generateRegistration(vrn)
+      val etmpRegistration = arbitraryDisplayRegistration
 
-      val responseJson = Json.prettyPrint(Json.toJson(registration))
+      val responseJson =
+        s"""{
+          | "tradingNames" : ${Json.toJson(etmpRegistration.tradingNames)},
+          | "schemeDetails" :${Json.toJson(etmpRegistration.schemeDetails)(writesEtmpSchemeDetails)},
+          | "bankDetails" : ${Json.toJson(etmpRegistration.bankDetails)}
+          |}""".stripMargin
 
       server.stubFor(
-        get(urlEqualTo(getRegistrationUrl(vrn)))
+        get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
           .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-          .willReturn(ok(responseJson))
+          .willReturn(aResponse().withStatus(OK)
+            .withBody(responseJson))
       )
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
         val result = connector.get(vrn).futureValue
-        val expectedResult = registration
+        val expectedResult = etmpRegistration
         result mustBe Right(expectedResult)
 
       }
     }
 
-    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123")))
+    "Should parse Registration payload without all optional fields present correctly" in {
+
+      val app = application
+
+      val etmpRegistration = optionalDisplayRegistration
+
+      val responseJson =
+        """{
+          | "tradingNames" : [],
+          | "schemeDetails" : {
+          |   "commencementDate" : "2023-01-01",
+          |   "euRegistrationDetails" : [],
+          |   "previousEURegistrationDetails" : [],
+          |   "onlineMarketPlace" : true,
+          |   "websites" : [],
+          |   "contactDetails" : {
+          |     "contactNameOrBusinessAddress" : "Mr Test",
+          |     "businessTelephoneNumber" : "1234567890",
+          |     "businessEmailAddress" : "test@testEmail.com"
+          |   }
+          | },
+          | "bankDetails" : {
+          |   "accountName" : "Bank Account Name",
+          |   "iban" : "GB33BUKB20201555555555"
+          | }
+          |}""".stripMargin
+
+      server.stubFor(
+        get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .willReturn(aResponse().withStatus(OK)
+            .withBody(responseJson))
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.get(vrn).futureValue
+        val expectedResult = etmpRegistration
+        result mustBe Right(expectedResult)
+
+      }
+    }
+
+    "must return Left(InvalidJson) when the server returns OK with a payload that cannot be parsed" in {
+
+      val app = application
+
+      val responseJson = """{ "foo": "bar" }"""
+
+      server.stubFor(
+        get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
+          .willReturn(ok(responseJson))
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val result = connector.get(vrn).futureValue
+
+        result mustBe Left(InvalidJson)
+      }
+    }
+
+
+    val body = ""
+
+    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123 with body $body")))
       .foreach { error =>
         s"should return correct error response when server responds with ${error._1}" in {
 
           val app = application
 
           server.stubFor(
-            get(urlEqualTo(getRegistrationUrl(vrn)))
+            get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
               .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
               .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
-              .willReturn(aResponse().withStatus(error._1))
+              .willReturn(aResponse().withStatus(error._1).withBody(body))
           )
 
           running(app) {
@@ -289,7 +322,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
       val app = application
 
       server.stubFor(
-        get(urlEqualTo(getRegistrationUrl(vrn)))
+        get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
           .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
           .willReturn(aResponse()
