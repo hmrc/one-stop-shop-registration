@@ -7,8 +7,6 @@ import generators.Generators
 import models._
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse, EtmpErrorDetail}
 import models.etmp.AmendRegistrationResponse
-import models.requests.RegistrationRequest
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
 import play.api.Application
@@ -18,11 +16,11 @@ import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
-import utils.DisplayRegistrationData.{arbitraryDisplayRegistration, writesEtmpSchemeDetails}
 import testutils.RegistrationData.optionalDisplayRegistration
 import uk.gov.hmrc.domain.Vrn
+import utils.DisplayRegistrationData.{arbitraryDisplayRegistration, writesEtmpSchemeDetails}
 
-import java.time.{Instant, LocalDate, LocalDateTime}
+import java.time.{LocalDate, LocalDateTime}
 
 class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Generators {
 
@@ -42,54 +40,15 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
       )
       .build()
 
-  def getDisplayRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/RESTAdapter/OSS/Subscription/${vrn.value}"
+  private def getDisplayRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/RESTAdapter/OSS/Subscription/${vrn.value}"
 
-  def createRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/regdatatransfer/v1"
+  private def createRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/regdatatransfer/v1"
 
-  def getValidateRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/validateRegistration/${vrn.value}"
+  private def getAmendRegistrationUrl = "/one-stop-shop-registration-stub/RESTAdapter/OSS/Subscription/"
 
-  def getAmendRegistrationUrl = "/one-stop-shop-registration-stub/RESTAdapter/OSS/Subscription/"
+  private val fixedDelay = 21000
 
-
-  def generateRegistration(vrn: Vrn) = Registration(
-    vrn                   = vrn,
-    registeredCompanyName = arbitrary[String].sample.value,
-    tradingNames          = Seq.empty,
-    vatDetails            = arbitrary[VatDetails].sample.value,
-    euRegistrations       = Seq.empty,
-    contactDetails        = arbitrary[ContactDetails].sample.value,
-    websites              = Seq.empty,
-    commencementDate      = LocalDate.now,
-    previousRegistrations = Seq.empty,
-    bankDetails           = arbitrary[BankDetails].sample.value,
-    isOnlineMarketplace   = arbitrary[Boolean].sample.value,
-    niPresence            = None,
-    dateOfFirstSale       = None,
-    submissionReceived    = Some(Instant.now(stubClock)),
-    lastUpdated           = Some(Instant.now(stubClock)),
-    nonCompliantReturns   = Some(1),
-    nonCompliantPayments  = Some(2)
-  )
-
-  def toRegistrationRequest(registration: Registration) = {
-    RegistrationRequest(
-      registration.vrn,
-      registration.registeredCompanyName,
-      registration.tradingNames,
-      registration.vatDetails,
-      registration.euRegistrations,
-      registration.contactDetails,
-      registration.websites,
-      registration.commencementDate,
-      registration.previousRegistrations,
-      registration.bankDetails,
-      registration.isOnlineMarketplace,
-      registration.niPresence,
-      registration.dateOfFirstSale,
-      registration.nonCompliantReturns,
-      registration.nonCompliantPayments
-    )
-  }
+  private val timeOutSpan = 30
 
   private val amendRegistrationResponse: AmendRegistrationResponse =
     AmendRegistrationResponse(
@@ -98,7 +57,6 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
       vrn = "123456789",
       businessPartner = "businessPartner"
     )
-
 
   ".create" - {
 
@@ -240,13 +198,13 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
           .withRequestBody(equalTo(requestJson))
           .willReturn(aResponse()
-            .withStatus(504)
-            .withFixedDelay(21000))
+            .withStatus(GATEWAY_TIMEOUT)
+            .withFixedDelay(fixedDelay))
       )
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        whenReady(connector.create(etmpRegistrationRequest), Timeout(Span(30, Seconds))) { exp =>
+        whenReady(connector.create(etmpRegistrationRequest), Timeout(Span(timeOutSpan, Seconds))) { exp =>
           exp.isLeft mustBe true
           exp.left.toOption.get mustBe a[ErrorResponse]
         }
@@ -264,10 +222,10 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
 
       val responseJson =
         s"""{
-          | "tradingNames" : ${Json.toJson(etmpRegistration.tradingNames)},
-          | "schemeDetails" :${Json.toJson(etmpRegistration.schemeDetails)(writesEtmpSchemeDetails)},
-          | "bankDetails" : ${Json.toJson(etmpRegistration.bankDetails)}
-          |}""".stripMargin
+           | "tradingNames" : ${Json.toJson(etmpRegistration.tradingNames)},
+           | "schemeDetails" :${Json.toJson(etmpRegistration.schemeDetails)(writesEtmpSchemeDetails)},
+           | "bankDetails" : ${Json.toJson(etmpRegistration.bankDetails)}
+           |}""".stripMargin
 
       server.stubFor(
         get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
@@ -383,13 +341,13 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
           .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
           .willReturn(aResponse()
-            .withStatus(504)
-            .withFixedDelay(21000))
+            .withStatus(GATEWAY_TIMEOUT)
+            .withFixedDelay(fixedDelay))
       )
 
       running(app) {
         val connector = app.injector.instanceOf[RegistrationConnector]
-        whenReady(connector.get(vrn), Timeout(Span(30, Seconds))) { exp =>
+        whenReady(connector.get(vrn), Timeout(Span(timeOutSpan, Seconds))) { exp =>
           exp.isLeft mustBe true
           exp.left.toOption.get mustBe a[ErrorResponse]
         }
@@ -425,7 +383,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
 
     }
 
-    "must return not found when server responds with NOT_FOUND" in {
+    "should return not found when server responds with NOT_FOUND" in {
 
       val app = application
 
@@ -448,6 +406,30 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
         result mustBe Left(NotFound)
       }
 
+    }
+
+    "should return Error Response when server responds with Http Exception" in {
+
+      val app = application
+
+      server.stubFor(
+        put(urlEqualTo(getAmendRegistrationUrl))
+          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .willReturn(aResponse()
+            .withStatus(GATEWAY_TIMEOUT)
+            .withFixedDelay(fixedDelay))
+      )
+
+      running(app) {
+
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        whenReady(connector.amendRegistration(etmpRegistrationRequest), Timeout(Span(timeOutSpan, Seconds))) { exp =>
+          exp.isLeft mustBe true
+          exp.left.get mustBe a[ErrorResponse]
+        }
+
+      }
     }
 
   }

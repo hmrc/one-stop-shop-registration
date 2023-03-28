@@ -94,7 +94,11 @@ class RegistrationConnector @Inject()(
       s"${amendRegistrationConfig.baseUrl}RESTAdapter/OSS/Subscription/",
       registration,
       headers = headersWithCorrelationId
-    )
+    ).recover {
+      case e: HttpException =>
+        logger.error(s"Unexpected response from etmp registration ${e.getMessage}", e)
+        Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
+    }
   }
 
 }
