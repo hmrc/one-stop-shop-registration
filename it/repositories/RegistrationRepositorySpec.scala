@@ -18,23 +18,23 @@ package repositories
 
 import config.AppConfig
 import crypto.{RegistrationEncrypter, SecureGCMCipher}
+import models._
+import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import org.mockito.MockitoSugar
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepositorySupport}
-import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models._
 import testutils.RegistrationData
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, PlayMongoRepositorySupport}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RegistrationRepositorySpec extends AnyFreeSpec
   with Matchers
-  with DefaultPlayMongoRepositorySupport[EncryptedRegistration]
+  with PlayMongoRepositorySupport[EncryptedRegistration]
   with CleanMongoCollectionSupport
   with ScalaFutures
   with IntegrationPatience
