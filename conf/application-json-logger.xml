@@ -25,7 +25,7 @@
 
     <logger name="application.controllers.EnrolmentsSubscriptionController" level="INFO"/>
 
-    <root level="${logger.application:-WARN}">
+    <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
