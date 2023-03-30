@@ -16,9 +16,11 @@ import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepositorySupport}
 
-import java.time.{Instant, LocalDate}
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
 import utils.StringUtils
+
+import java.time.temporal.ChronoUnit
 
 class SaveForLaterRepositorySpec
   extends AnyFreeSpec
@@ -33,6 +35,9 @@ class SaveForLaterRepositorySpec
   private val encryptor = new SavedUserAnswersEncryptor(cipher)
   private val appConfig = mock[AppConfig]
   private val secretKey = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
+
+  private val instant = Instant.now
+  private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
   implicit val arbitraryVrn: Arbitrary[Vrn] =
     Arbitrary {
@@ -69,10 +74,12 @@ class SaveForLaterRepositorySpec
   ".set savedAnswers" - {
 
     "must insert saved answers for different VRNs" in {
-      val answers1    = arbitrary[SavedUserAnswers].sample.value
+      val answers    = arbitrary[SavedUserAnswers].sample.value
+      val answers1   = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
       val vrn2       = Vrn(StringUtils.rotateDigitsInString(answers1.vrn.vrn).mkString)
-      val answers2    = answers1 copy (
-        vrn       = vrn2
+      val answers2    = answers1.copy(
+        vrn         = vrn2,
+        lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS)
         )
 
       val insertResult1 = repository.set(answers1).futureValue
@@ -89,7 +96,7 @@ class SaveForLaterRepositorySpec
     "must replace saved answers with the same VRN" in {
 
       val answers = arbitrary[SavedUserAnswers].sample.value
-      val answers2 = answers.copy(lastUpdated = Instant.now())
+      val answers2 = answers.copy(lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
       val insertResult1 = repository.set(answers).futureValue
       val insertResult2 = repository.set(answers2).futureValue
 
@@ -107,7 +114,9 @@ class SaveForLaterRepositorySpec
 
     "must return Saved answers record when one exists for this VRN" in {
 
-      val answers = arbitrary[SavedUserAnswers].sample.value
+      val answers1 = arbitrary[SavedUserAnswers].sample.value
+
+      val answers = answers1.copy(lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
       insert(encryptor.encryptAnswers(answers, answers.vrn, secretKey)).futureValue
 

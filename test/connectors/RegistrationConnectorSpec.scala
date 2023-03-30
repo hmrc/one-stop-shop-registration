@@ -229,12 +229,10 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
         val connector = app.injector.instanceOf[RegistrationConnector]
         whenReady(connector.create(etmpRegistrationRequest), Timeout(Span(30, Seconds))) { exp =>
           exp.isLeft mustBe true
-          exp.left.get mustBe a[ErrorResponse]
+          exp.left.toOption.get mustBe a[ErrorResponse]
         }
       }
     }
-
-
   }
 
   "get" - {
@@ -301,7 +299,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper  with Gener
         val connector = app.injector.instanceOf[RegistrationConnector]
         whenReady(connector.get(vrn), Timeout(Span(30, Seconds))) { exp =>
           exp.isLeft mustBe true
-          exp.left.get mustBe a[ErrorResponse]
+          exp.left.toOption.get mustBe a[ErrorResponse]
         }
       }
     }

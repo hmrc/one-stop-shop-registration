@@ -68,7 +68,7 @@ object HashedExcludedTrader extends Logging {
 
   implicit val seqExcludedTrader: ConfigLoader[Seq[HashedExcludedTrader]] = new ConfigLoader[Seq[HashedExcludedTrader]] {
     override def load(rootConfig: Config, path: String): Seq[HashedExcludedTrader] = {
-      import scala.collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
 
       val config = rootConfig.getConfig(path)
 

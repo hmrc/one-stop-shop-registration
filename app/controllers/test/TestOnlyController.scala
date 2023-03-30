@@ -28,6 +28,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import java.time.{Clock, Instant, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
+import scala.language.postfixOps
 
 class TestOnlyController @Inject()(
                                     cc: ControllerComponents,
@@ -62,7 +63,7 @@ class TestOnlyController @Inject()(
 
   }
 
-  private val iban: Iban = Iban("GB33BUKB20201555555555").right.get
+  private val iban: Iban = Iban("GB33BUKB20201555555555").toOption.get
 
   private val registration: Registration =
     Registration(

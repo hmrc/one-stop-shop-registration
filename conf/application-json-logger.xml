@@ -5,27 +5,27 @@
         <encoder class="uk.gov.hmrc.play.logging.JsonEncoder"/>
     </appender>
 
-    <logger name="uk.gov" level="${logger.uk.gov:-WARN}"/>
+    <logger name="uk.gov" level="WARN"/>
 
-    <logger name="application.services.DataQueryServiceImpl" level="${logger.services.DataQueryService:-INFO}"/>
+    <logger name="application.services.DataQueryServiceImpl" level="INFO"/>
 
-    <logger name="application.services.DataUpdateServiceImpl" level="${logger.services.DataUpdateService:-INFO}"/>
+    <logger name="application.services.DataUpdateServiceImpl" level="INFO"/>
 
-    <logger name="application.repositories.RegistrationRepository" level="${logger.repositories.RegistrationRepository:-INFO}"/>
+    <logger name="application.repositories.RegistrationRepository" level="INFO"/>
 
-    <logger name="application.repositories.RegistrationBackUpRepository" level="${logger.repositories.RegistrationBackUpRepository:-INFO}"/>
+    <logger name="application.repositories.RegistrationBackUpRepository" level="INFO"/>
 
-    <logger name="application.connectors.ValidateCoreRegistrationConnector" level="${logger.connectors.ValidateCoreRegistrationConnector:-INFO}"/>
+    <logger name="application.connectors.ValidateCoreRegistrationConnector" level="INFO"/>
 
-    <logger name="application.controllers.ValidateCoreRegistrationController" level="${logger.controllers.ValidateCoreRegistrationController:-INFO}"/>
+    <logger name="application.controllers.ValidateCoreRegistrationController" level="INFO"/>
 
-    <logger name="application.connectors.RegistrationConnector" level="${logger.connectors.RegistrationConnector:-INFO}"/>
+    <logger name="application.connectors.RegistrationConnector" level="INFO"/>
 
-    <logger name="application.services.RegistrationServiceEtmpImpl" level="${logger.services.RegistrationServiceEtmpImpl:-INFO}"/>
+    <logger name="application.services.RegistrationServiceEtmpImpl" level="INFO"/>
 
-    <logger name="application.controllers.EnrolmentsSubscriptionController" level="${logger.controllers.EnrolmentsSubscriptionController:-INFO}"/>
+    <logger name="application.controllers.EnrolmentsSubscriptionController" level="INFO"/>
 
-    <root level="${logger.application:-WARN}">
+    <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
