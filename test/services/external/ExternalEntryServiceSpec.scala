@@ -1,0 +1,81 @@
+package services.external
+
+import base.BaseSpec
+import config.AppConfig
+import models.external.{ExternalEntry, ExternalRequest, ExternalResponse}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito._
+import org.scalatest.BeforeAndAfterEach
+import repositories.ExternalEntryRepository
+
+import java.time.Instant
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+class ExternalEntryServiceSpec
+  extends BaseSpec with BeforeAndAfterEach {
+
+  private val mockRepository = mock[ExternalEntryRepository]
+  private val mockConfig = mock[AppConfig]
+
+  override def beforeEach(): Unit = {
+    reset(mockRepository)
+    super.beforeEach()
+  }
+
+  "getExternalResponse" - {
+    val userId = "user-1234"
+    val responseUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-register"
+    val welshResponseUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-register"
+    when(mockConfig.externalEntryJourneyStartReturnUrl) thenReturn responseUrl
+    when(mockConfig.externalEntryNoMoreWelshReturnUrl) thenReturn welshResponseUrl
+
+    "must return ExternalResponse and save url in session when language is not Welsh" in {
+      val externalRequest = ExternalRequest("BTA", "/business-account")
+      val externalEntry = ExternalEntry(userId, responseUrl, Instant.now(stubClock))
+      when(mockRepository.set(any())) thenReturn Future.successful(externalEntry)
+      val service = new ExternalEntryService(mockRepository, mockConfig, stubClock)
+      service.getExternalResponse(externalRequest, userId).futureValue mustBe ExternalResponse(responseUrl)
+      verify(mockRepository, times(1)).set(any())
+    }
+
+    "must return ExternalResponse and save url in session when language is Welsh" in {
+      val externalRequest = ExternalRequest("BTA", "/business-account")
+      val externalEntry = ExternalEntry(userId, welshResponseUrl, Instant.now(stubClock))
+      when(mockRepository.set(any())) thenReturn Future.successful(externalEntry)
+      val service = new ExternalEntryService(mockRepository, mockConfig, stubClock)
+      service.getExternalResponse(externalRequest, "id", Some("cy")).futureValue mustBe ExternalResponse(welshResponseUrl)
+      verify(mockRepository, times(1)).set(any())
+    }
+
+    "must return ExternalResponse when session repository throws exception" in {
+      val externalRequest = ExternalRequest("BTA", "/business-account")
+      when(mockRepository.set(any())) thenReturn Future.failed(new Exception("error"))
+      val service = new ExternalEntryService(mockRepository, mockConfig, stubClock)
+      service.getExternalResponse(externalRequest, "id").futureValue mustBe ExternalResponse(responseUrl)
+      verify(mockRepository, times(1)).set(any())
+    }
+  }
+
+  "getSavedResponseUrl" - {
+    val userId = "user-1234"
+    val responseUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-register"
+
+    "must return url when response is Some" in {
+      val externalEntry = ExternalEntry(userId, responseUrl, Instant.now(stubClock))
+      when(mockRepository.get(any())) thenReturn Future.successful(Some(externalEntry))
+      val service = new ExternalEntryService(mockRepository, mockConfig, stubClock)
+      service.getSavedResponseUrl(userId).futureValue mustBe ExternalResponse(responseUrl)
+      verify(mockRepository, times(1)).get(any())
+    }
+
+    "must return None when None is returned by repo" in {
+      val externalRequest = ExternalRequest("BTA", "/business-account")
+      when(mockRepository.get(any())) thenReturn Future.successful(None)
+      val service = new ExternalEntryService(mockRepository, mockConfig, stubClock)
+      service.getSavedResponseUrl(userId).futureValue mustBe None
+      verify(mockRepository, times(1)).get(any())
+    }
+  }
+}
+

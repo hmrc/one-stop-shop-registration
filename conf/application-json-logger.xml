@@ -25,7 +25,7 @@
 
     <logger name="application.controllers.EnrolmentsSubscriptionController" level="INFO"/>
 
-    <logger name="application.controllers.ExternalEntryController" level="INFO"/>
+    <logger name="application.controllers.external.ExternalEntryController" level="INFO"/>
 
     <root level="WARN">
         <appender-ref ref="STDOUT"/>

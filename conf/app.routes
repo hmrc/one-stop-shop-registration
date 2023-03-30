@@ -17,4 +17,5 @@ GET         /save-for-later/delete                            controllers.SaveFo
 
 POST        /validate-core-registration                       controllers.ValidateCoreRegistrationController.post()
 
-POST        /external-entry                                   controllers.ExternalEntryController.onExternal()
+POST        /external-entry                                   controllers.external.ExternalEntryController.onExternal(lang: Option[String] ?= None)
+GET         /external-entry                                   controllers.external.ExternalEntryController.getExternalEntry()

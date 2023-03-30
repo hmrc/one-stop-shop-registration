@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.external
 
 import controllers.actions.AuthAction
 import logging.Logging
-import models.external.{ExternalRequest, ExternalResponse}
-import models.requests.SaveForLaterRequest
-import play.api.libs.json.{Json, JsValue}
+import models.external._
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import services.SaveForLaterService
+import services.external.ExternalEntryService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 
 class ExternalEntryController @Inject()(
                                         cc: ControllerComponents,
+                                        externalEntryService: ExternalEntryService,
                                         auth: AuthAction
                                       )(implicit ec: ExecutionContext)
   extends BackendController(cc) with Logging {
@@ -38,9 +38,18 @@ class ExternalEntryController @Inject()(
 
   def onExternal(lang: Option[String] = None): Action[ExternalRequest] = auth(parse.json[ExternalRequest]).async {
     implicit request =>
-      // TODO
-      logger.info(s"Session id was ${request.session} for user ${request.vrn} ${request.userId}")
-      Future.successful(Ok(Json.toJson(ExternalResponse("/pay-vat-on-goods-sold-to-eu/northern-ireland-register"))))
+      externalEntryService.getExternalResponse(request.body, request.userId, lang) map {
+        response =>
+          Ok(Json.toJson(response))
+      }
+  }
+
+  def getExternalEntry(): Action[AnyContent] = auth.async {
+    implicit request =>
+      externalEntryService.getSavedResponseUrl(request.userId).map {
+        response =>
+          Ok(Json.toJson(ExternalEntryUrlResponse(response)))
+      }
   }
 }
 
