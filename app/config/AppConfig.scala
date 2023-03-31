@@ -33,4 +33,8 @@ class AppConfig @Inject()(config: Configuration) {
   val excludedTraders: Seq[HashedExcludedTrader] = config.get[Seq[HashedExcludedTrader]]("features.exclusions.excluded-traders")
   val maxRetryCount: Int = config.get[Int]("features.maxRetryCount")
   val delay: Int = config.get[Int]("features.delay")
+
+  val externalEntryTtlDays: Int = config.get[Int]("features.externalEntry.ttlInDays")
+  val externalEntryJourneyStartReturnUrl: String = config.get[String]("features.externalEntry.urls.journeyStart")
+  val externalEntryNoMoreWelshReturnUrl: String = config.get[String]("features.externalEntry.urls.noMoreWelshJourneyStart")
 }
