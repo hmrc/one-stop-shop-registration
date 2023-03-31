@@ -65,7 +65,7 @@ class ExternalEntryServiceSpec
       val externalEntry = ExternalEntry(userId, responseUrl, Instant.now(stubClock))
       when(mockRepository.get(any())) thenReturn Future.successful(Some(externalEntry))
       val service = new ExternalEntryService(mockRepository, mockConfig, stubClock)
-      service.getSavedResponseUrl(userId).futureValue mustBe ExternalResponse(responseUrl)
+      service.getSavedResponseUrl(userId).futureValue mustBe Some(responseUrl)
       verify(mockRepository, times(1)).get(any())
     }
 
