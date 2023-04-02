@@ -27,7 +27,6 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-
 class ExternalEntryController @Inject()(
                                         cc: ControllerComponents,
                                         externalEntryService: ExternalEntryService,
