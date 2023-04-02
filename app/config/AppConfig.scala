@@ -39,6 +39,6 @@ class AppConfig @Inject()(config: Configuration) {
   val externalEntryJourneyStartReturnUrl: String = config.get[String]("features.externalEntry.urls.journeyStart")
   val externalEntryNoMoreWelshReturnUrl: String = config.get[String]("features.externalEntry.urls.noMoreWelshJourneyStart")
 
-  val historicTradersForEnrolmentEnabled: Boolean = config.get[Seq[HistoricTraderForEnrolment]]("features.enroll-historic-registration.enabled")
+  val historicTradersForEnrolmentEnabled: Boolean = config.get[Boolean]("features.enroll-historic-registration.enabled")
   val historicTradersForEnrolment: Seq[HistoricTraderForEnrolment] = config.get[Seq[HistoricTraderForEnrolment]]("features.enroll-historic-registration.historic-traders")
 }

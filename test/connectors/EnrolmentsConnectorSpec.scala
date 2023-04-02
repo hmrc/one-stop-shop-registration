@@ -8,6 +8,7 @@ import play.api.http.Status.{BAD_REQUEST, CREATED, NO_CONTENT, NOT_FOUND, UNAUTH
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{Json, JsValue}
 import play.api.test.Helpers.running
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDate
@@ -81,10 +82,10 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
   ".es8" - {
 
-    val subscriptionId = "123456789"
+    val vrn = Vrn("123456789")
     val groupId = UUID.randomUUID().toString
     val userId = "987654321"
-    val url = s"/${basePath}groups/$groupId/enrolments/$subscriptionId"
+    val url = s"/${basePath}groups/$groupId/enrolments/HMRC-OSS-ORG~${vrn.vrn}"
     val today = LocalDate.now()
 
     "must return an HttpResponse with status CREATED when the server returns NoContent" in {
@@ -98,7 +99,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
       running(app) {
         val connector = app.injector.instanceOf[EnrolmentsConnector]
-        val result = connector.es8(groupId, subscriptionId, userId, today).futureValue
+        val result = connector.es8(groupId, vrn, userId, today).futureValue
 
 
         result.status mustEqual CREATED
@@ -120,7 +121,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
           running(app) {
             val connector = app.injector.instanceOf[EnrolmentsConnector]
 
-            val result = connector.es8(groupId, subscriptionId, userId, today).futureValue
+            val result = connector.es8(groupId, vrn, userId, today).futureValue
 
             result.status mustEqual status
           }

@@ -21,6 +21,7 @@ import logging.Logging
 import metrics.{MetricsEnum, ServiceMetrics}
 import models.binders.Format.enrolmentDateFormatter
 import models.enrolments.{ES8Request, SubscriberRequest}
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
 
@@ -48,7 +49,9 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
     }
   }
 
-  def es8(groupId: String, vrn: String, userId: String, registrationDate: LocalDate)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def es8(groupId: String, vrn: Vrn, userId: String, registrationDate: LocalDate): Future[HttpResponse] = {
+
+    implicit val emptyHc: HeaderCarrier = HeaderCarrier()
 
     val friendlyName = "OSS Subscription"
     val `type` = "principal"
