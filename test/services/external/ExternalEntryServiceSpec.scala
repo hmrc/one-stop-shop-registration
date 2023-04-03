@@ -26,7 +26,7 @@ class ExternalEntryServiceSpec
   "getExternalResponse" - {
     val userId = "user-1234"
     val responseUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-register"
-    val welshResponseUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-register"
+    val welshResponseUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-register/no-more-welsh"
     when(mockConfig.externalEntryJourneyStartReturnUrl) thenReturn responseUrl
     when(mockConfig.externalEntryNoMoreWelshReturnUrl) thenReturn welshResponseUrl
 

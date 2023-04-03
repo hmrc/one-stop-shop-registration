@@ -53,7 +53,7 @@ class ExternalEntryService @Inject()(
 
     externalEntryRepository.set(externalEntry).map { _ => true }.recover {
       case e: Exception =>
-        logger.error(s"An error occurred while saving the external returnUrl in the session, ${e.getMessage}")
+        logger.error(s"An error occurred while saving the external returnUrl in the session, ${e.getMessage}", e)
         false
     }
   }
