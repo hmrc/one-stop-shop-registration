@@ -18,6 +18,7 @@ package connectors
 
 import config.EnrolmentsConfig
 import logging.Logging
+import metrics.{MetricsEnum, ServiceMetrics}
 import models.enrolments.SubscriberRequest
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
@@ -27,11 +28,11 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: HttpClient)
+class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: HttpClient, metrics: ServiceMetrics)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
   def confirmEnrolment(subscriptionId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-
+    val timerContext = metrics.startTimer(MetricsEnum.GetVatCustomerDetails)
     val etmpId = UUID.randomUUID().toString
 
     httpClient.PUT[SubscriberRequest, HttpResponse](
@@ -39,6 +40,10 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
       SubscriberRequest(enrolments.ossEnrolmentKey,
         s"${enrolments.callbackBaseUrl}${controllers.routes.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId).url}",
         etmpId
-      ))
+
+      )) .map { result =>
+      timerContext.stop()
+      result
+    }
   }
 }

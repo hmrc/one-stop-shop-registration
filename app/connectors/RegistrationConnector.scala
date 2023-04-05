@@ -29,9 +29,11 @@ import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
+import metrics.{MetricsEnum, ServiceMetrics}
 class RegistrationConnector @Inject()(
                                         httpClient: HttpClient,
-                                        ifConfig: IfConfig
+                                        ifConfig: IfConfig,
+                                        metrics: ServiceMetrics
                                       )(implicit ec: ExecutionContext) extends Logging {
 
   private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
@@ -41,22 +43,27 @@ class RegistrationConnector @Inject()(
 
     val correlationId = UUID.randomUUID().toString
     val headersWithCorrelationId = headers(correlationId)
-
+    val timerContext = metrics.startTimer(MetricsEnum.GetRegistration)
     httpClient.GET[GetRegistrationResponse](
       s"${ifConfig.baseUrl}getRegistration/${vrn.value}",
       headers = headersWithCorrelationId
-    ).recover {
+    ).map { result =>
+      timerContext.stop()
+      result
+    }.recover {
       case e: HttpException =>
+        timerContext.stop()
         logger.error(s"Unexpected response from etmp registration, received status ${e.responseCode}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
+
   }
 
   def create(registration: EtmpRegistrationRequest): Future[CreateEtmpRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString
     val headersWithCorrelationId = headers(correlationId)
-
+    val timerContext = metrics.startTimer(MetricsEnum.CreateEtmpRegistration)
     val headersWithoutAuth = headersWithCorrelationId.filterNot{
       case (key, _) => key.matches(AUTHORIZATION)
     }
@@ -67,8 +74,12 @@ class RegistrationConnector @Inject()(
       s"${ifConfig.baseUrl}vec/ossregistration/regdatatransfer/v1",
       registration,
       headers = headersWithCorrelationId
-    ).recover {
+    ).map { result =>
+      timerContext.stop()
+      result
+    }.recover {
       case e: HttpException =>
+        timerContext.stop()
         logger.error(s"Unexpected response from etmp registration ${e.getMessage}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }

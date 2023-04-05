@@ -28,7 +28,8 @@ lazy val microservice = Project(appName, file("."))
   .configs(Test)
   .settings(inConfig(Test)(testSettings): _*)
   .settings(resolvers += Resolver.jcenterRepo)
-
+  // suppress warnings in generated routes files
+  .settings(scalacOptions += "-Wconf:src=routes/.*:s")
 
 lazy val itSettings = Defaults.itSettings ++ Seq(
   unmanagedSourceDirectories := Seq(

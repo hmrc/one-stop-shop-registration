@@ -19,6 +19,7 @@ package connectors
 import config.CoreValidationConfig
 import connectors.ValidateCoreRegistrationHttpParser.{ValidateCoreRegistrationReads, ValidateCoreRegistrationResponse}
 import logging.Logging
+import metrics.{MetricsEnum, ServiceMetrics}
 import models.core.{CoreRegistrationRequest, EisErrorResponse}
 import models.EisError
 import play.api.http.HeaderNames.AUTHORIZATION
@@ -32,7 +33,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ValidateCoreRegistrationConnector @Inject()(
                                                    coreValidationConfig: CoreValidationConfig,
-                                                   httpClient: HttpClient
+                                                   httpClient: HttpClient,
+                                                   metrics: ServiceMetrics
                                                  )(implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
   private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
@@ -52,15 +54,19 @@ class ValidateCoreRegistrationConnector @Inject()(
     }
 
     logger.info(s"Sending request to EIS with headers $headersWithoutAuth and request ${Json.toJson(coreRegistrationRequest)}")
-
+    val timerContext = metrics.startTimer(MetricsEnum.ValidateCoreRegistration)
     val url = s"$baseUrl"
     httpClient.POST[CoreRegistrationRequest, ValidateCoreRegistrationResponse](
       url,
       coreRegistrationRequest,
       headers = headersWithCorrelationId
-    ).recover {
+    ).map { result =>
+      timerContext.stop()
+      result
+    }.recover {
       case e: HttpException =>
         val selfGeneratedRandomUUID = UUID.randomUUID()
+        timerContext.stop()
         logger.error(
           s"Unexpected error response from EIS $url, received status ${e.responseCode}," +
             s"body of response was: ${e.message} with self-generated CorrelationId $selfGeneratedRandomUUID " +
