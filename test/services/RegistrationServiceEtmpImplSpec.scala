@@ -35,11 +35,11 @@ import testutils.RegistrationData
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-
+import metrics.ServiceMetrics
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
+import com.codahale.metrics.Timer
 
 class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
@@ -52,6 +52,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   private val registrationStatusRepository = mock[RegistrationStatusRepository]
   private val retryService= mock[RetryService]
   private val appConfig = mock[AppConfig]
+  private val serviceMetrics: ServiceMetrics = mock[ServiceMetrics]
 
   private val exclusionService = mock[ExclusionService]
   private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector,
@@ -63,6 +64,10 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     reset(registrationStatusRepository)
     reset(exclusionService)
     reset(appConfig)
+    reset(serviceMetrics)
+
+    when(serviceMetrics.startTimer(any()))
+      .thenReturn(new Timer().time)
     super.beforeEach()
   }
 

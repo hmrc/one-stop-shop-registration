@@ -20,7 +20,7 @@ import logging.Logging
 import models.{InsertResult, RegistrationStatus}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.{Filters, Indexes, IndexModel, IndexOptions, ReplaceOptions}
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions}
 import repositories.MongoErrors.Duplicate
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.MongoComponent
@@ -54,7 +54,7 @@ class RegistrationStatusRepository @Inject()(
 
     collection
       .insertOne(registrationStatus)
-      .toFuture
+      .toFuture()
       .map(_ => InsertSucceeded)
       .recover {
         case Duplicate(_) => AlreadyExists
@@ -69,7 +69,7 @@ class RegistrationStatusRepository @Inject()(
         replacement = registrationStatus,
         options = ReplaceOptions().upsert(true)
       )
-      .toFuture
+      .toFuture()
       .map(_ => registrationStatus)
   }
 
@@ -81,6 +81,6 @@ class RegistrationStatusRepository @Inject()(
   def delete(subscriptionId: String): Future[Boolean] =
     collection
       .deleteOne(bySubscriptionId(subscriptionId))
-      .toFuture
+      .toFuture()
       .map(_ => true)
 }

@@ -20,7 +20,7 @@ import com.google.inject.AbstractModule
 import controllers.actions.{AuthAction, AuthActionImpl}
 import play.api.{Configuration, Environment}
 import services.{RegistrationService, RegistrationServiceEtmpImpl, RegistrationServiceRepositoryImpl}
-
+import metrics.{DefaultServiceMetrics, ServiceMetrics}
 import java.time.{Clock, ZoneOffset}
 
 class Module(environment: Environment, config: Configuration) extends AbstractModule {
@@ -30,6 +30,7 @@ class Module(environment: Environment, config: Configuration) extends AbstractMo
     val sendRegToEtmp: Boolean = config.get[Boolean]("features.sendRegToEtmp")
 
     bind(classOf[AuthAction]).to(classOf[AuthActionImpl]).asEagerSingleton()
+    bind(classOf[ServiceMetrics]).to(classOf[DefaultServiceMetrics])
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
     if(sendRegToEtmp) {
       bind(classOf[RegistrationService]).to(classOf[RegistrationServiceEtmpImpl]).asEagerSingleton()

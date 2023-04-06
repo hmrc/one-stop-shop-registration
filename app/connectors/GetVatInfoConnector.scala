@@ -21,6 +21,7 @@ import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier, HttpClient, Htt
 import config.GetVatInfoConfig
 import connectors.VatCustomerInfoHttpParser._
 import logging.Logging
+import metrics.{MetricsEnum, ServiceMetrics}
 import models.GatewayTimeout
 
 import javax.inject.Inject
@@ -28,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import play.api.http.HeaderNames
 
 
-class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClient: HttpClient)
+class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClient: HttpClient, metrics: ServiceMetrics)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
   private val headers = Seq(
@@ -38,8 +39,16 @@ class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClie
 
   def getVatCustomerDetails(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[VatCustomerInfoResponse] = {
     val url = s"${getVatInfoConfig.baseUrl}vat/customer/vrn/${vrn.value}/information"
-    httpClient.GET[VatCustomerInfoResponse](url = url, headers = headers).recover{
+    val timerContext = metrics.startTimer(MetricsEnum.GetVatCustomerDetails)
+    httpClient.GET[VatCustomerInfoResponse](
+      url = url,
+      headers = headers
+    ).map { result =>
+      timerContext.stop()
+      result
+    }.recover{
       case e: GatewayTimeoutException =>
+        timerContext.stop()
         logger.warn(s"Request timeout from Get vat info: $e")
         Left(GatewayTimeout)
     }
