@@ -1,11 +1,10 @@
 package controllers.external
 
 import base.BaseSpec
-import controllers.routes
 import generators.Generators
-import models.external.{ExternalEntry, ExternalEntryUrlResponse, ExternalRequest, ExternalResponse}
+import models.external.{ExternalEntryUrlResponse, ExternalRequest, ExternalResponse}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.inject
@@ -13,6 +12,7 @@ import play.api.libs.json.{JsNull, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.external.ExternalEntryService
+import services.AuditService
 
 import scala.concurrent.Future
 
@@ -28,13 +28,16 @@ class ExternalEntryControllerSpec
     "when correct ExternalRequest is posted" - {
       "must respond with OK(IndexController.onPageLoad().url)" in {
         val mockExternalService = mock[ExternalEntryService]
+        val mockAuditService = mock[AuditService]
         val url = "/pay-vat-on-goods-sold-to-eu/northern-ireland-register"
 
         when(mockExternalService.getExternalResponse(any(), any(), any())) thenReturn
           Future.successful(ExternalResponse(url))
+        doNothing().when(mockAuditService).audit(any())(any(), any())
 
         val application = applicationBuilder
           .overrides(inject.bind[ExternalEntryService].toInstance(mockExternalService))
+          .overrides(inject.bind[AuditService].toInstance(mockAuditService))
           .build()
 
         running(application) {
@@ -46,6 +49,7 @@ class ExternalEntryControllerSpec
           val result = route(application, request).value
           status(result) mustBe OK
           contentAsJson(result).as[ExternalResponse] mustBe ExternalResponse(url)
+          verify(mockAuditService, times(1)).audit(any())(any(), any())
         }
       }
 

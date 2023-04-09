@@ -24,6 +24,8 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class AppConfig @Inject()(config: Configuration) {
 
+  val appName: String = config.get[String]("appName")
+
   val encryptionKey: String = config.get[String]("mongodb.encryption.key")
   val duplicateRegistrationIntoRepository: Boolean = config.get[Boolean]("features.duplicateRegistrationIntoRepository")
   val cacheTtl: Int = config.get[Int]("mongodb.timeToLiveInDays")
