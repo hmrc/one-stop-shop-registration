@@ -21,6 +21,7 @@ import logging.Logging
 import metrics.{MetricsEnum, ServiceMetrics}
 import models.binders.Format.enrolmentDateFormatter
 import models.enrolments.{ES8Request, SubscriberRequest}
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
@@ -63,9 +64,11 @@ class EnrolmentsConnector @Inject()(
 
     val ossRegistrationDate = "OSSRegistrationDate"
 
+    val requestPayload = ES8Request(userId, friendlyName, `type`, Seq(Map("key" -> ossRegistrationDate, "value" -> registrationDate.format(enrolmentDateFormatter))))
+
     httpClient.POST[ES8Request, HttpResponse](
       s"${enrolmentStoreProxyConfig.baseUrl}enrolment-store/groups/$groupId/enrolments/$enrolmentKey",
-      ES8Request(userId, friendlyName, `type`, Map(ossRegistrationDate -> registrationDate.format(enrolmentDateFormatter)))
+      requestPayload
     )
   }
 }
