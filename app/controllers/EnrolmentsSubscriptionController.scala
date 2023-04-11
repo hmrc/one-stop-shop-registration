@@ -16,28 +16,36 @@
 
 package controllers
 
+import config.AppConfig
+import connectors.EnrolmentsConnector
+import controllers.actions.AuthAction
 import logging.Logging
 import models.enrolments.EnrolmentStatus
-import models.RegistrationStatus
+import models.{EtmpException, RegistrationStatus}
 import models.etmp.EtmpRegistrationStatus
 import play.api.libs.json.JsValue
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.RegistrationStatusRepository
+import services.RetryService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class EnrolmentsSubscriptionController @Inject()(
                                                   cc: ControllerComponents,
-                                                  registrationStatusRepository: RegistrationStatusRepository
-                                                ) extends BackendController(cc) with Logging {
+                                                  enrolmentsConnector: EnrolmentsConnector,
+                                                  registrationStatusRepository: RegistrationStatusRepository,
+                                                  retryService: RetryService,
+                                                  appConfig: AppConfig,
+                                                  auth: AuthAction
+                                                )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
   def authoriseEnrolment(subscriptionId: String): Action[JsValue] =
     Action.async(parse.json) {
       implicit request =>
         val enrolmentStatus = (request.body \ "state").as[EnrolmentStatus]
-        if(enrolmentStatus == EnrolmentStatus.Success) {
+        if (enrolmentStatus == EnrolmentStatus.Success) {
           logger.info(s"Enrolment complete for $subscriptionId, enrolment state = $enrolmentStatus")
           registrationStatusRepository.set(RegistrationStatus(subscriptionId,
             status = EtmpRegistrationStatus.Success))
@@ -48,4 +56,31 @@ class EnrolmentsSubscriptionController @Inject()(
         }
         Future.successful(NoContent)
     }
+
+  def confirmEnrolment(): Action[AnyContent] = auth.async {
+    implicit request =>
+      appConfig.subscriptionIds.find(_.vrn == request.vrn.vrn).map { traderSubscriptionId =>
+        val subscriptionId = traderSubscriptionId.subscriptionId
+        enrolmentsConnector.confirmEnrolment(subscriptionId).flatMap { enrolmentResponse =>
+          enrolmentResponse.status match {
+            case NO_CONTENT =>
+              retryService.getEtmpRegistrationStatus(appConfig.maxRetryCount, appConfig.delay, subscriptionId).map {
+                case EtmpRegistrationStatus.Success =>
+                  logger.info("Successfully enrolled")
+                  NoContent
+                case _ =>
+                  logger.error(s"Failed to add enrolment")
+                  registrationStatusRepository.set(RegistrationStatus(subscriptionId = subscriptionId, status = EtmpRegistrationStatus.Error))
+                  throw EtmpException("Failed to add enrolment")
+              }
+            case status =>
+              logger.error(s"Failed to add enrolment - $status with body ${enrolmentResponse.body}")
+              throw EtmpException(s"Failed to add enrolment - ${enrolmentResponse.body}")
+          }
+        }
+      }.getOrElse{
+        logger.error(s"No subscription id was found for user ${request.vrn}")
+        Future.successful(NotFound("No subscription id found"))
+      }
+  }
 }

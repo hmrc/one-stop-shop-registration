@@ -47,8 +47,7 @@ class EnrolmentsConnector @Inject()(
       SubscriberRequest(enrolments.ossEnrolmentKey,
         s"${enrolments.callbackBaseUrl}${controllers.routes.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId).url}",
         etmpId
-
-      )) .map { result =>
+      )).map { result =>
       timerContext.stop()
       result
     }
