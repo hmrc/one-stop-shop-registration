@@ -64,7 +64,7 @@ class EnrolmentsConnector @Inject()(
     val ossRegistrationDate = "OSSRegistrationDate"
 
     httpClient.POST[ES8Request, HttpResponse](
-      s"${enrolmentStoreProxyConfig.baseUrl}groups/$groupId/enrolments/$enrolmentKey",
+      s"${enrolmentStoreProxyConfig.baseUrl}enrolment-store/groups/$groupId/enrolments/$enrolmentKey",
       ES8Request(userId, friendlyName, `type`, Map(ossRegistrationDate -> registrationDate.format(enrolmentDateFormatter)))
     )
   }

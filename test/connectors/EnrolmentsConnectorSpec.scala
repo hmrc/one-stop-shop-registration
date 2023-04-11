@@ -97,7 +97,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
     val vrn = Vrn("123456789")
     val groupId = UUID.randomUUID().toString
     val userId = "987654321"
-    val url = s"/${basePath}groups/$groupId/enrolments/HMRC-OSS-ORG~${vrn.vrn}"
+    val url = s"/${basePath}enrolment-store/groups/$groupId/enrolments/HMRC-OSS-ORG~${vrn.vrn}"
     val today = LocalDate.now()
 
     "must return an HttpResponse with status CREATED when the server returns NoContent" in {
