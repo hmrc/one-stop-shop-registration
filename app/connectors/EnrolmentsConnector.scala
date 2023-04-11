@@ -32,7 +32,7 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
   def confirmEnrolment(subscriptionId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val timerContext = metrics.startTimer(MetricsEnum.GetVatCustomerDetails)
+    val timerContext = metrics.startTimer(MetricsEnum.ConfirmEnrolment)
     val etmpId = UUID.randomUUID().toString
 
     httpClient.PUT[SubscriberRequest, HttpResponse](
