@@ -62,12 +62,16 @@ class EnrolmentsConnector @Inject()(
     val `type` = "principal"
     val enrolmentKey = s"HMRC-OSS-ORG~VRN~$vrn"
 
+    val url = s"${enrolmentStoreProxyConfig.baseUrl}enrolment-store/groups/$groupId/enrolments/$enrolmentKey"
+
     val ossRegistrationDate = "OSSRegistrationDate"
 
     val requestPayload = ES8Request(userId, friendlyName, `type`, Seq(Map("key" -> ossRegistrationDate, "value" -> registrationDate.format(enrolmentDateFormatter))))
 
+    logger.info(s"Sending payload $requestPayload to url $url")
+
     httpClient.POST[ES8Request, HttpResponse](
-      s"${enrolmentStoreProxyConfig.baseUrl}enrolment-store/groups/$groupId/enrolments/$enrolmentKey",
+      url,
       requestPayload
     )
   }
