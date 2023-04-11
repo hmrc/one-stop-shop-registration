@@ -16,24 +16,24 @@ import java.util.UUID
 
 class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
-  private val basePath = "tax-enrolments/"
-
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   val errorResponseBody = "Error"
   val response: JsValue = Json.toJson(TaxEnrolmentErrorResponse(NOT_FOUND.toString, errorResponseBody))
 
-  private def application: Application =
-    new GuiceApplicationBuilder()
-      .configure(
-        "microservice.services.enrolments.host" -> "127.0.0.1",
-        "microservice.services.enrolments.port" -> server.port,
-        "microservice.services.enrolments.authorizationToken" -> "auth-token",
-        "microservice.services.enrolments.basePath" -> basePath
-      )
-      .build()
-
   ".confirmEnrolment" - {
+
+    val basePath = "tax-enrolments/"
+
+    def application: Application =
+      new GuiceApplicationBuilder()
+        .configure(
+          "microservice.services.enrolments.host" -> "127.0.0.1",
+          "microservice.services.enrolments.port" -> server.port,
+          "microservice.services.enrolments.authorizationToken" -> "auth-token",
+          "microservice.services.enrolments.basePath" -> basePath
+        )
+        .build()
 
     val subscriptionId = "123456789"
     val url = s"/${basePath}subscriptions/$subscriptionId/subscriber"
@@ -81,6 +81,18 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
   }
 
   ".es8" - {
+
+    val basePath = "enrolment-store-proxy/"
+
+    def application: Application =
+      new GuiceApplicationBuilder()
+        .configure(
+          "microservice.services.enrolment-store-proxy.host" -> "127.0.0.1",
+          "microservice.services.enrolment-store-proxy.port" -> server.port,
+          "microservice.services.enrolment-store-proxy.authorizationToken" -> "auth-token",
+          "microservice.services.enrolment-store-proxy.basePath" -> basePath
+        )
+        .build()
 
     val vrn = Vrn("123456789")
     val groupId = UUID.randomUUID().toString

@@ -17,9 +17,6 @@
 package models.external
 
 import play.api.libs.json._
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
-
-import java.time.Instant
 
 case class ExternalEntryUrlResponse(url: Option[String])
 

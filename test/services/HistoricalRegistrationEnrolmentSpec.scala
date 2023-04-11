@@ -4,9 +4,9 @@ import base.BaseSpec
 import config.AppConfig
 import connectors.EnrolmentsConnector
 import models.enrolments.HistoricTraderForEnrolment
-import org.scalatest.BeforeAndAfterEach
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.http.Status.CREATED
 import testutils.RegistrationData.registration
@@ -15,7 +15,6 @@ import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.Success
 
 class HistoricalRegistrationEnrolmentSpec extends BaseSpec with BeforeAndAfterEach with IntegrationPatience {
 

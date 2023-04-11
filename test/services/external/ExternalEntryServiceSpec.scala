@@ -70,7 +70,6 @@ class ExternalEntryServiceSpec
     }
 
     "must return None when None is returned by repo" in {
-      val externalRequest = ExternalRequest("BTA", "/business-account")
       when(mockRepository.get(any())) thenReturn Future.successful(None)
       val service = new ExternalEntryService(mockRepository, mockConfig, stubClock)
       service.getSavedResponseUrl(userId).futureValue mustBe None
