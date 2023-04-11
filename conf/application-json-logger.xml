@@ -27,6 +27,8 @@
 
     <logger name="application.controllers.external.ExternalEntryController" level="INFO"/>
 
+    <logger name="application.services.HistoricalRegistrationEnrolmentServiceImpl" level="INFO"/>
+
     <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>

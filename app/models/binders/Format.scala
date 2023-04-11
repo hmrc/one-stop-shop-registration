@@ -30,4 +30,9 @@ object Format {
   val eisDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z")
     .withLocale(Locale.UK)
     .withZone(ZoneId.of("GMT"))
+
+  val enrolmentDateFormatter: DateTimeFormatter = DateTimeFormatter
+    .ofPattern("yyyyMMdd")
+    .withLocale(Locale.UK)
+    .withZone(ZoneId.systemDefault())
 }

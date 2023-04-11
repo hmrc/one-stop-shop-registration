@@ -4,11 +4,15 @@ import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models._
 import play.api.Application
-import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, NOT_FOUND, UNAUTHORIZED}
+import play.api.http.Status.{BAD_REQUEST, CREATED, NO_CONTENT, NOT_FOUND, UNAUTHORIZED}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{Json, JsValue}
 import play.api.test.Helpers.running
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
+
+import java.time.LocalDate
+import java.util.UUID
 
 class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
 
@@ -29,12 +33,10 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
       )
       .build()
 
-  private val subscriptionId = "123456789"
-
-  private val url = s"/${basePath}subscriptions/$subscriptionId/subscriber"
-
   ".confirmEnrolment" - {
 
+    val subscriptionId = "123456789"
+    val url = s"/${basePath}subscriptions/$subscriptionId/subscriber"
 
     "must return an HttpResponse with status NoContent when the server returns NoContent" in {
 
@@ -70,6 +72,56 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
             val connector = app.injector.instanceOf[EnrolmentsConnector]
 
             val result = connector.confirmEnrolment(subscriptionId).futureValue
+
+            result.status mustEqual status
+          }
+        }
+    }
+
+  }
+
+  ".es8" - {
+
+    val vrn = Vrn("123456789")
+    val groupId = UUID.randomUUID().toString
+    val userId = "987654321"
+    val url = s"/${basePath}groups/$groupId/enrolments/HMRC-OSS-ORG~${vrn.vrn}"
+    val today = LocalDate.now()
+
+    "must return an HttpResponse with status CREATED when the server returns NoContent" in {
+
+      val app = application
+
+      server.stubFor(
+        post(urlEqualTo(url))
+          .willReturn(aResponse().withStatus(CREATED))
+      )
+
+      running(app) {
+        val connector = app.injector.instanceOf[EnrolmentsConnector]
+        val result = connector.es8(groupId, vrn, userId, today).futureValue
+
+
+        result.status mustEqual CREATED
+      }
+    }
+
+
+    Seq(BAD_REQUEST, UNAUTHORIZED).foreach {
+      status =>
+        s"must return an Http response with $status when the server returns $status" in {
+
+          val app = application
+
+          server.stubFor(
+            post(urlEqualTo(url))
+              .willReturn(aResponse().withStatus(status))
+          )
+
+          running(app) {
+            val connector = app.injector.instanceOf[EnrolmentsConnector]
+
+            val result = connector.es8(groupId, vrn, userId, today).futureValue
 
             result.status mustEqual status
           }

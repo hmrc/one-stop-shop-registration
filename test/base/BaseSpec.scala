@@ -11,6 +11,7 @@ import org.scalatest.{OptionValues, TryValues}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import services.{FakeHistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentService}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.format.DateTimeFormatter
@@ -35,7 +36,9 @@ trait BaseSpec
   val period: Period = Period(2021, Q3)
 
   protected def applicationBuilder: GuiceApplicationBuilder =
-    new GuiceApplicationBuilder().overrides(bind[AuthAction].to[FakeAuthAction])
+    new GuiceApplicationBuilder()
+      .overrides(bind[AuthAction].to[FakeAuthAction])
+      .overrides(bind[HistoricalRegistrationEnrolmentService].to[FakeHistoricalRegistrationEnrolmentService])
 
   val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     .withLocale(Locale.UK)
