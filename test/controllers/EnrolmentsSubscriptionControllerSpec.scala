@@ -53,6 +53,7 @@ class EnrolmentsSubscriptionControllerSpec extends BaseSpec with BeforeAndAfterE
         applicationBuilder
           .overrides(bind[EnrolmentsConnector].toInstance(mockEnrolmentsConnector))
           .overrides(bind[RegistrationStatusRepository].toInstance(mockRegistrationStatusRepository))
+          .overrides(bind[RetryService].toInstance(mockRetryService))
           .configure("features.fallbackEnrolment.traders.1.vrn" -> "123456789")
           .configure("features.fallbackEnrolment.traders.1.subscriptionId" -> subscriptionId)
           .build()
@@ -60,7 +61,7 @@ class EnrolmentsSubscriptionControllerSpec extends BaseSpec with BeforeAndAfterE
       running(app) {
 
         val request =
-          FakeRequest(GET, routes.EnrolmentsSubscriptionController.confirmEnrolment().url)
+          FakeRequest(POST, routes.EnrolmentsSubscriptionController.confirmEnrolment().url)
 
         val result = route(app, request).value
 
@@ -80,7 +81,7 @@ class EnrolmentsSubscriptionControllerSpec extends BaseSpec with BeforeAndAfterE
       running(app) {
 
         val request =
-          FakeRequest(GET, routes.EnrolmentsSubscriptionController.confirmEnrolment().url)
+          FakeRequest(POST, routes.EnrolmentsSubscriptionController.confirmEnrolment().url)
 
         val result = route(app, request).value
 

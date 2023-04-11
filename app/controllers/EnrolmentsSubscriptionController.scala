@@ -36,7 +36,7 @@ class EnrolmentsSubscriptionController @Inject()(
                                                   cc: ControllerComponents,
                                                   enrolmentsConnector: EnrolmentsConnector,
                                                   registrationStatusRepository: RegistrationStatusRepository,
-//                                                  retryService: RetryService,
+                                                  retryService: RetryService,
                                                   appConfig: AppConfig,
                                                   auth: AuthAction
                                                 )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
@@ -66,7 +66,7 @@ class EnrolmentsSubscriptionController @Inject()(
             case NO_CONTENT =>
               logger.info("Successfully enrolled")
               Future.successful(NoContent)
-              /*retryService.getEtmpRegistrationStatus(appConfig.maxRetryCount, appConfig.delay, subscriptionId).map {
+              retryService.getEtmpRegistrationStatus(appConfig.maxRetryCount, appConfig.delay, subscriptionId).map {
                 case EtmpRegistrationStatus.Success =>
                   logger.info("Successfully enrolled")
                   NoContent
@@ -74,7 +74,7 @@ class EnrolmentsSubscriptionController @Inject()(
                   logger.error(s"Failed to add enrolment")
                   registrationStatusRepository.set(RegistrationStatus(subscriptionId = subscriptionId, status = EtmpRegistrationStatus.Error))
                   throw EtmpException("Failed to add enrolment")
-              }*/
+              }
             case status =>
               logger.error(s"Failed to add enrolment - $status with body ${enrolmentResponse.body}")
               throw EtmpException(s"Failed to add enrolment - ${enrolmentResponse.body}")
