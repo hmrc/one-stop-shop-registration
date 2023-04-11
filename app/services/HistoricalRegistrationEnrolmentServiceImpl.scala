@@ -21,15 +21,11 @@ import connectors.EnrolmentsConnector
 import logging.Logging
 import models.enrolments.HistoricTraderForEnrolment
 import play.api.http.Status.CREATED
-import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 
 import java.time.{Clock, ZoneId}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
-
-//case class EnrolmentDetails(userId: String, groupId: String, formBundleNumber: String)
 
 trait HistoricalRegistrationEnrolmentService
 
@@ -47,7 +43,7 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
     if (appConfig.historicTradersForEnrolmentEnabled) {
       logger.info("Starting historic trader enrolment")
       val tradersToSubmit = appConfig.historicTradersForEnrolment
-      logger.info(s"There are ${tradersToSubmit.size} to submit")
+      logger.info(s"There are ${tradersToSubmit.size} historic traders to submit for enrolment")
       submitSequentially(tradersToSubmit).map {
         case Right(_) => true
         case Left(e) => throw new Exception(e.body)

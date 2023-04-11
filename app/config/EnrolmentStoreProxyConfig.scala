@@ -20,9 +20,7 @@ import play.api.Configuration
 
 import javax.inject.Inject
 
-class EnrolmentsConfig @Inject()(config: Configuration) {
+class EnrolmentStoreProxyConfig @Inject()(config: Configuration) {
 
-  val baseUrl: Service    = config.get[Service]("microservice.services.enrolments")
-  val callbackBaseUrl: String = config.get[String]("microservice.services.enrolments.callbackBaseUrl")
-  val ossEnrolmentKey: String = config.get[String]("ossEnrolmentKey")
+  val baseUrl: Service = config.get[Service]("microservice.services.enrolment-store-proxy")
 }

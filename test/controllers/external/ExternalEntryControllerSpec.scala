@@ -1,9 +1,8 @@
 package controllers.external
 
 import base.BaseSpec
-import controllers.routes
 import generators.Generators
-import models.external.{ExternalEntry, ExternalEntryUrlResponse, ExternalRequest, ExternalResponse}
+import models.external.{ExternalEntryUrlResponse, ExternalRequest, ExternalResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks

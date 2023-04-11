@@ -16,7 +16,7 @@
 
 package connectors
 
-import config.EnrolmentsConfig
+import config.{EnrolmentsConfig, EnrolmentStoreProxyConfig}
 import logging.Logging
 import metrics.{MetricsEnum, ServiceMetrics}
 import models.binders.Format.enrolmentDateFormatter
@@ -30,7 +30,11 @@ import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: HttpClient, metrics: ServiceMetrics)
+class EnrolmentsConnector @Inject()(
+                                     enrolments: EnrolmentsConfig,
+                                     enrolmentStoreProxyConfig: EnrolmentStoreProxyConfig,
+                                     httpClient: HttpClient,
+                                     metrics: ServiceMetrics)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
   def confirmEnrolment(subscriptionId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
@@ -60,7 +64,7 @@ class EnrolmentsConnector @Inject()(enrolments: EnrolmentsConfig, httpClient: Ht
     val ossRegistrationDate = "OSSRegistrationDate"
 
     httpClient.POST[ES8Request, HttpResponse](
-      s"${enrolments.baseUrl}groups/$groupId/enrolments/$enrolmentKey",
+      s"${enrolmentStoreProxyConfig.baseUrl}groups/$groupId/enrolments/$enrolmentKey",
       ES8Request(userId, friendlyName, `type`, Map(ossRegistrationDate -> registrationDate.format(enrolmentDateFormatter)))
     )
   }

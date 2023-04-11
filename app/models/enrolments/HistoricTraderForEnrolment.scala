@@ -17,7 +17,6 @@
 package models.enrolments
 
 import com.typesafe.config.Config
-import models.Period
 import play.api.libs.json.{Json, OFormat}
 import play.api.ConfigLoader
 import uk.gov.hmrc.domain.Vrn
@@ -30,7 +29,7 @@ object HistoricTraderForEnrolment {
 
   implicit val seqHistoricTraderForEnrolment: ConfigLoader[Seq[HistoricTraderForEnrolment]] = new ConfigLoader[Seq[HistoricTraderForEnrolment]] {
     override def load(rootConfig: Config, path: String): Seq[HistoricTraderForEnrolment] = {
-      import scala.collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
 
       val config = rootConfig.getConfig(path)
 
