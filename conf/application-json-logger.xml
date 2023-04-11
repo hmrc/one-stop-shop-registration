@@ -29,6 +29,8 @@
 
     <logger name="application.services.HistoricalRegistrationEnrolmentServiceImpl" level="INFO"/>
 
+    <logger name="application.connectors.EnrolmentsConnector" level="INFO"/>
+
     <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
