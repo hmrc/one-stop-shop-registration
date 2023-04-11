@@ -60,7 +60,7 @@ class EnrolmentsConnector @Inject()(
 
     val friendlyName = "OSS Subscription"
     val `type` = "principal"
-    val enrolmentKey = s"HMRC-OSS-ORG~$vrn"
+    val enrolmentKey = s"HMRC-OSS-ORG~VRN~$vrn"
 
     val ossRegistrationDate = "OSSRegistrationDate"
 
