@@ -68,7 +68,9 @@ class EnrolmentsConnector @Inject()(
 
     val requestPayload = ES8Request(userId, friendlyName, `type`, Seq(Map("key" -> ossRegistrationDate, "value" -> registrationDate.format(enrolmentDateFormatter))))
 
-    logger.info(s"Sending payload $requestPayload to url $url")
+    val jsonPayload = Json.toJson(requestPayload)
+
+    logger.info(s"Sending payload $requestPayload and json: $jsonPayload to url $url")
 
     httpClient.POST[ES8Request, HttpResponse](
       url,
