@@ -63,7 +63,7 @@ class RegistrationServiceEtmpImpl @Inject()(
                     logger.info("Insert succeeded")
                     registrationRepository.insert(buildRegistration(request, clock))
                   case _ =>
-                    logger.error(s"Failed to add enrolment with body ${enrolmentResponse.body}")
+                    logger.error(s"Failed to add enrolment")
                     registrationStatusRepository.set(RegistrationStatus(subscriptionId = response.formBundleNumber, status = EtmpRegistrationStatus.Error))
                     throw EtmpException("Failed to add enrolment")
                 }
