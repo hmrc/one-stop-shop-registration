@@ -4,7 +4,7 @@ import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models._
 import play.api.Application
-import play.api.http.Status.{BAD_REQUEST, CREATED, NO_CONTENT, NOT_FOUND, UNAUTHORIZED}
+import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{Json, JsValue}
 import play.api.test.Helpers.running
