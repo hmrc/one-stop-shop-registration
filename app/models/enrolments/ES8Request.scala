@@ -18,7 +18,7 @@ package models.enrolments
 
 import play.api.libs.json.{Json, OFormat}
 
-case class ES8Request(userId: String, friendlyName: String, `type`: String, verifiers: Seq[Map[String, String]])
+case class ES8Request(userId: String, friendlyName: String, `type`: String, action: String, verifiers: Seq[Map[String, String]])
 
 object ES8Request {
 
