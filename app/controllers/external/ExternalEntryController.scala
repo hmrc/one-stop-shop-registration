@@ -18,7 +18,7 @@ package controllers.external
 
 import controllers.actions.AuthAction
 import logging.Logging
-import models.audit.BtaExternalEntryAuditModel
+import models.audit.BTAExternalEntryAuditModel
 import models.external._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
@@ -42,7 +42,7 @@ class ExternalEntryController @Inject()(
     implicit request =>
       externalEntryService.getExternalResponse(request.body, request.userId, lang) map {
         response =>
-          auditService.audit(BtaExternalEntryAuditModel.build)
+          auditService.audit(BTAExternalEntryAuditModel.build(response.redirectUrl))
           Ok(Json.toJson(response))
       }
   }
