@@ -64,7 +64,7 @@ class EnrolmentsSubscriptionController @Inject()(
         enrolmentsConnector.confirmEnrolment(subscriptionId).flatMap { enrolmentResponse =>
           enrolmentResponse.status match {
             case NO_CONTENT =>
-              logger.info("Successfully enrolled")
+              logger.info("Sent enrolment issuer call to tax-enrolments")
               Future.successful(NoContent)
               retryService.getEtmpRegistrationStatus(appConfig.maxRetryCount, appConfig.delay, subscriptionId).map {
                 case EtmpRegistrationStatus.Success =>
