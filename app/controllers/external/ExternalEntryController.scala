@@ -18,10 +18,12 @@ package controllers.external
 
 import controllers.actions.AuthAction
 import logging.Logging
+import models.audit.BtaExternalEntryAuditModel
 import models.external._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.external.ExternalEntryService
+import services.AuditService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -30,6 +32,7 @@ import scala.concurrent.ExecutionContext
 class ExternalEntryController @Inject()(
                                         cc: ControllerComponents,
                                         externalEntryService: ExternalEntryService,
+                                        auditService: AuditService,
                                         auth: AuthAction
                                       )(implicit ec: ExecutionContext)
   extends BackendController(cc) with Logging {
@@ -39,6 +42,7 @@ class ExternalEntryController @Inject()(
     implicit request =>
       externalEntryService.getExternalResponse(request.body, request.userId, lang) map {
         response =>
+          auditService.audit(BtaExternalEntryAuditModel.build)
           Ok(Json.toJson(response))
       }
   }
