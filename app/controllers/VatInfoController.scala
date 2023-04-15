@@ -19,24 +19,22 @@ package controllers
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import connectors.GetVatInfoConnector
-import controllers.actions.AuthAction
+import controllers.actions.{AuthAction, AuthenticatedControllerComponents}
 import logging.Logging
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
 import models.{NotFound => DesNotFound}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class VatInfoController @Inject()(
-                                   cc: ControllerComponents,
-                                   getVatInfoConnector: GetVatInfoConnector,
-                                   auth: AuthAction
+                                   cc: AuthenticatedControllerComponents,
+                                   getVatInfoConnector: GetVatInfoConnector
                                  )
                                  (implicit ec: ExecutionContext)
   extends BackendController(cc) with Logging {
 
-  def get(): Action[AnyContent] = auth.async {
+  def get(): Action[AnyContent] = cc.authAndRequireVat().async {
     implicit request =>
       getVatInfoConnector.getVatCustomerDetails(request.vrn) map {
         case Right(response) => Ok(Json.toJson(response))

@@ -1,5 +1,6 @@
 package controllers.actions
 
+import base.BaseSpec
 import com.google.inject.Inject
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -8,16 +9,15 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.mvc.{Action, AnyContent, BodyParsers, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import testutils.TestAuthRetrievals._
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.{~, Retrieval}
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
-import base.BaseSpec
-import testutils.TestAuthRetrievals._
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class AuthActionSpec extends BaseSpec with BeforeAndAfterEach {
 

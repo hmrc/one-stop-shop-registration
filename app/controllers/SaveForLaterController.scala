@@ -16,9 +16,9 @@
 
 package controllers
 
-import controllers.actions.AuthAction
+import controllers.actions.{AuthAction, AuthenticatedControllerComponents}
 import models.requests.SaveForLaterRequest
-import play.api.libs.json.{Json}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.SaveForLaterService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -28,21 +28,20 @@ import scala.concurrent.ExecutionContext
 
 
 class SaveForLaterController @Inject()(
-                                        cc: ControllerComponents,
-                                        saveForLaterService: SaveForLaterService,
-                                        auth: AuthAction
+                                        cc: AuthenticatedControllerComponents,
+                                        saveForLaterService: SaveForLaterService
                                       )(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
 
-  def post(): Action[SaveForLaterRequest] = auth(parse.json[SaveForLaterRequest]).async {
+  def post(): Action[SaveForLaterRequest] = cc.authAndRequireVat()(parse.json[SaveForLaterRequest]).async {
     implicit request =>
       saveForLaterService.saveAnswers(request.body).map {
         answers => Created(Json.toJson(answers))
       }
   }
 
-  def get(): Action[AnyContent] = auth.async {
+  def get(): Action[AnyContent] = cc.authAndRequireVat().async {
     implicit request =>
       saveForLaterService.get(request.vrn).map {
         value => value
@@ -51,7 +50,7 @@ class SaveForLaterController @Inject()(
       }
   }
 
-  def delete(): Action[AnyContent] = auth.async {
+  def delete(): Action[AnyContent] = cc.authAndRequireVat().async {
     implicit request =>
       saveForLaterService.delete(request.vrn).map(
         result => Ok(Json.toJson(result)))
