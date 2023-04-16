@@ -121,27 +121,6 @@ class AuthActionSpec extends BaseSpec with BeforeAndAfterEach {
       }
     }
 
-    "when the user has logged in as an Organisation Admin with strong credentials but no vat enrolment" - {
-
-      "must return Unauthorized" in {
-
-        val application = applicationBuilder.build()
-
-        running(application) {
-          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-
-          when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-            .thenReturn(Future.successful(Some("id") ~ Enrolments(Set.empty) ~ Some(Organisation) ~ ConfidenceLevel.L50 ~ Some(User)))
-
-          val action = new AuthActionImpl(mockAuthConnector, bodyParsers)
-          val controller = new Harness(action)
-          val result = controller.onPageLoad()(FakeRequest())
-
-          status(result) mustEqual UNAUTHORIZED
-        }
-      }
-    }
-
     "when the user has logged in as an Individual with a VAT enrolment and strong credentials, but confidence level less than 200" - {
 
       "must return Unauthorized" in {
@@ -159,48 +138,6 @@ class AuthActionSpec extends BaseSpec with BeforeAndAfterEach {
           val result = controller.onPageLoad()(FakeRequest())
 
           status(result) mustEqual UNAUTHORIZED
-        }
-      }
-    }
-
-    "when the user has logged in as an Individual without a VAT enrolment" - {
-
-      "must be redirected to the insufficient Enrolments page" in {
-
-        val application = applicationBuilder.build()
-
-        running(application) {
-          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-
-          when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-            .thenReturn(Future.successful(Some("id") ~ Enrolments(Set.empty) ~ Some(Individual) ~ ConfidenceLevel.L200 ~ None))
-
-          val action = new AuthActionImpl(mockAuthConnector, bodyParsers)
-          val controller = new Harness(action)
-          val result = controller.onPageLoad()(FakeRequest())
-
-          status(result) mustEqual UNAUTHORIZED
-        }
-      }
-    }
-
-    "when the user has logged in as an Individual with no ID" - {
-
-      "must throw Unauthorized" in {
-
-        val application = applicationBuilder.build()
-
-        running(application) {
-          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-
-          when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-            .thenReturn(Future.successful(None ~ Enrolments(Set.empty) ~ Some(Individual) ~ ConfidenceLevel.L200 ~ None))
-
-          val action = new AuthActionImpl(mockAuthConnector, bodyParsers)
-          val controller = new Harness(action)
-          val result = controller.onPageLoad()(FakeRequest())
-
-          whenReady(result.failed) { exp => exp mustBe a[UnauthorizedException] }
         }
       }
     }

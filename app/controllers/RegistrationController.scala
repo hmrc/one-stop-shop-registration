@@ -16,7 +16,7 @@
 
 package controllers
 
-import controllers.actions.{AuthAction, AuthenticatedControllerComponents}
+import controllers.actions.AuthenticatedControllerComponents
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.RegistrationRequest
 import play.api.libs.json.Json

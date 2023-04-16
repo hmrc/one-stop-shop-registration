@@ -16,13 +16,13 @@
 
 package controllers
 
-import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import connectors.GetVatInfoConnector
-import controllers.actions.{AuthAction, AuthenticatedControllerComponents}
+import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import models.{NotFound => DesNotFound}
+import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext

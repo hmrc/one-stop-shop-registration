@@ -51,7 +51,7 @@ class AuditServiceSpec extends AnyFreeSpec with MockitoSugar with ScalaFutures w
       service.audit(BTAExternalEntryAuditModel(
         userId = "test",
         userAgent = "test",
-        vrn = "vrn",
+        vrn = Some("vrn"),
         redirectUrl = "/test"
       ))(hc, FakeRequest("POST", "test"))
       verify(auditConnector, times(1)).sendExtendedEvent(any())(any(), any())

@@ -12,6 +12,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import services.{FakeHistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentService}
+import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.format.DateTimeFormatter
@@ -39,6 +40,8 @@ trait BaseSpec
     new GuiceApplicationBuilder()
       .overrides(bind[AuthAction].to[FakeAuthAction])
       .overrides(bind[HistoricalRegistrationEnrolmentService].to[FakeHistoricalRegistrationEnrolmentService])
+
+  val userId: String = "12345-userId"
 
   val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     .withLocale(Locale.UK)

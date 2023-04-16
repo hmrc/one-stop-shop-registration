@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.ValidateCoreRegistrationConnector
-import controllers.actions.{AuthAction, AuthenticatedControllerComponents}
+import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.core.CoreRegistrationRequest
 import play.api.libs.json.Json

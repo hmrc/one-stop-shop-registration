@@ -16,22 +16,22 @@
 
 package controllers.actions
 
-import controllers.routes
+import logging.Logging
 import play.api.mvc.{ActionRefiner, Result}
-import play.api.mvc.Results.Redirect
-import uk.gov.hmrc.auth.core.InsufficientEnrolments
+import play.api.mvc.Results.Unauthorized
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class VatRequiredAction @Inject()(implicit val executionContext: ExecutionContext)
-  extends ActionRefiner[AuthorisedRequest, AuthorisedMandatoryVrnRequest] {
+  extends ActionRefiner[AuthorisedRequest, AuthorisedMandatoryVrnRequest] with Logging {
 
   override protected def refine[A](request: AuthorisedRequest[A]): Future[Either[Result, AuthorisedMandatoryVrnRequest[A]]] = {
 
     request.vrn match {
       case None =>
-        throw InsufficientEnrolments("Insufficient enrolments")
+        logger.info("insufficient enrolments")
+        Future.successful(Left(Unauthorized))
       case Some(vrn) =>
         Future.successful(Right(AuthorisedMandatoryVrnRequest(request.request, request.userId, vrn)))
     }
