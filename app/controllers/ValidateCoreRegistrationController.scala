@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.ValidateCoreRegistrationConnector
-import controllers.actions.AuthAction
+import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.core.CoreRegistrationRequest
 import play.api.libs.json.Json
@@ -28,14 +28,13 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class ValidateCoreRegistrationController @Inject()(
-                                                    cc: ControllerComponents,
+                                                    cc: AuthenticatedControllerComponents,
                                                     validateCoreRegistrationConnector: ValidateCoreRegistrationConnector,
-                                                    auth: AuthAction
                                                   )
                                                   (implicit ec: ExecutionContext)
   extends BackendController(cc) with Logging {
 
-  def post: Action[CoreRegistrationRequest] = auth(parse.json[CoreRegistrationRequest]).async {
+  def post: Action[CoreRegistrationRequest] = cc.authAndRequireVat()(parse.json[CoreRegistrationRequest]).async {
     implicit request =>
 
       validateCoreRegistrationConnector.validateCoreRegistration(request.body).map {

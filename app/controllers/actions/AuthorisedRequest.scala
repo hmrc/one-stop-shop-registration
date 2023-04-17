@@ -19,4 +19,6 @@ package controllers.actions
 import play.api.mvc.{Request, WrappedRequest}
 import uk.gov.hmrc.domain.Vrn
 
-case class AuthorisedRequest[A](request: Request[A], userId: String, vrn: Vrn) extends WrappedRequest[A](request)
+case class AuthorisedRequest[A](request: Request[A], userId: String, vrn: Option[Vrn]) extends WrappedRequest[A](request)
+
+case class AuthorisedMandatoryVrnRequest[A](request: Request[A], userId: String, vrn: Vrn) extends WrappedRequest[A](request)

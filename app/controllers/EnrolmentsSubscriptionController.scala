@@ -18,13 +18,13 @@ package controllers
 
 import config.AppConfig
 import connectors.EnrolmentsConnector
-import controllers.actions.AuthAction
+import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.enrolments.EnrolmentStatus
 import models.{EtmpException, RegistrationStatus}
+import models.enrolments.EnrolmentStatus
 import models.etmp.EtmpRegistrationStatus
 import play.api.libs.json.JsValue
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, AnyContent}
 import repositories.RegistrationStatusRepository
 import services.RetryService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -33,12 +33,11 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class EnrolmentsSubscriptionController @Inject()(
-                                                  cc: ControllerComponents,
+                                                  cc: AuthenticatedControllerComponents,
                                                   enrolmentsConnector: EnrolmentsConnector,
                                                   registrationStatusRepository: RegistrationStatusRepository,
                                                   retryService: RetryService,
-                                                  appConfig: AppConfig,
-                                                  auth: AuthAction
+                                                  appConfig: AppConfig
                                                 )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
   def authoriseEnrolment(subscriptionId: String): Action[JsValue] =
@@ -57,7 +56,7 @@ class EnrolmentsSubscriptionController @Inject()(
         Future.successful(NoContent)
     }
 
-  def confirmEnrolment(): Action[AnyContent] = auth.async {
+  def confirmEnrolment(): Action[AnyContent] = cc.authAndRequireVat().async {
     implicit request =>
       appConfig.subscriptionIds.find(_.vrn == request.vrn.vrn).map { traderSubscriptionId =>
         val subscriptionId = traderSubscriptionId.subscriptionId

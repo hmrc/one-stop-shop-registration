@@ -16,11 +16,11 @@
 
 package controllers
 
-import controllers.actions.AuthAction
+import controllers.actions.AuthenticatedControllerComponents
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.RegistrationRequest
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, AnyContent}
 import services.RegistrationService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -29,12 +29,11 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class RegistrationController @Inject()(
-                                        cc: ControllerComponents,
-                                        registrationService: RegistrationService,
-                                        auth: AuthAction
+                                        cc: AuthenticatedControllerComponents,
+                                        registrationService: RegistrationService
                                       )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
-  def create(): Action[RegistrationRequest] = auth(parse.json[RegistrationRequest]).async {
+  def create(): Action[RegistrationRequest] = cc.authAndRequireVat()(parse.json[RegistrationRequest]).async {
     implicit request =>
       registrationService
         .createRegistration(request.body)
@@ -44,7 +43,7 @@ class RegistrationController @Inject()(
         }
   }
 
-  def get: Action[AnyContent] = auth.async {
+  def get: Action[AnyContent] = cc.authAndRequireVat().async {
     implicit request =>
       registrationService.get(request.vrn) map {
         case Some(registration) => Ok(Json.toJson(registration))

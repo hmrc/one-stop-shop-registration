@@ -55,32 +55,24 @@ class AuthActionImpl @Inject()(
         Retrievals.credentialRole) {
 
       case Some(internalId) ~ enrolments ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == User =>
-        findVrnFromEnrolments(enrolments) match {
-          case Some(vrn) => block(AuthorisedRequest(request, internalId, vrn))
-          case None      => throw InsufficientEnrolments("Insufficient enrolments")
-        }
+        val maybeVrn = findVrnFromEnrolments(enrolments)
+        block(AuthorisedRequest(request, internalId, maybeVrn))
 
       case _ ~ _ ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
         throw UnsupportedCredentialRole("Unsupported credential role")
 
       case Some(internalId) ~ enrolments ~ Some(Individual) ~ confidence ~ _ =>
-        findVrnFromEnrolments(enrolments) match {
-          case Some(vrn) =>
+        val maybeVrn = findVrnFromEnrolments(enrolments)
             if (confidence >= ConfidenceLevel.L200) {
-              block(AuthorisedRequest(request, internalId, vrn))
+              block(AuthorisedRequest(request, internalId, maybeVrn))
             } else {
               throw InsufficientConfidenceLevel("Insufficient confidence level")
             }
-
-          case None =>
-            throw InsufficientEnrolments("Insufficient enrolments")
-        }
-
       case _ =>
         throw new UnauthorizedException("Unable to retrieve authorisation data")
     } recover {
       case e: AuthorisationException =>
-        logger.info(e.getMessage)
+        logger.info(e.getMessage, e)
         Unauthorized
     }
   }

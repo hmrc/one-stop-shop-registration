@@ -22,7 +22,7 @@ import play.api.libs.json.{Json, JsValue}
 case class BTAExternalEntryAuditModel(
                                        userId: String,
                                        userAgent: String,
-                                       vrn: String,
+                                       vrn: Option[String],
                                        redirectUrl: String
                                      ) extends JsonAuditModel {
 
@@ -43,7 +43,7 @@ object BTAExternalEntryAuditModel {
     BTAExternalEntryAuditModel(
       userId = request.userId,
       userAgent = request.headers.get("user-agent").getOrElse(""),
-      vrn = request.vrn.vrn,
+      vrn = request.vrn.map(_.vrn),
       redirectUrl = redirectUrl
     )
 }

@@ -16,12 +16,12 @@
 
 package controllers.external
 
-import controllers.actions.AuthAction
+import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.audit.BTAExternalEntryAuditModel
 import models.external._
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, AnyContent}
 import services.external.ExternalEntryService
 import services.AuditService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -30,15 +30,13 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class ExternalEntryController @Inject()(
-                                        cc: ControllerComponents,
-                                        externalEntryService: ExternalEntryService,
-                                        auditService: AuditService,
-                                        auth: AuthAction
-                                      )(implicit ec: ExecutionContext)
+                                         cc: AuthenticatedControllerComponents,
+                                         externalEntryService: ExternalEntryService,
+                                         auditService: AuditService
+                                       )(implicit ec: ExecutionContext)
   extends BackendController(cc) with Logging {
 
-
-  def onExternal(lang: Option[String] = None): Action[ExternalRequest] = auth(parse.json[ExternalRequest]).async {
+  def onExternal(lang: Option[String] = None): Action[ExternalRequest] = cc.auth()(parse.json[ExternalRequest]).async {
     implicit request =>
       externalEntryService.getExternalResponse(request.body, request.userId, lang) map {
         response =>
@@ -47,7 +45,7 @@ class ExternalEntryController @Inject()(
       }
   }
 
-  def getExternalEntry(): Action[AnyContent] = auth.async {
+  def getExternalEntry(): Action[AnyContent] = cc.authAndRequireVat().async {
     implicit request =>
       externalEntryService.getSavedResponseUrl(request.userId).map {
         response =>
