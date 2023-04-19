@@ -52,7 +52,7 @@ class HistoricalRegistrationEnrolmentSpec extends BaseSpec with BeforeAndAfterEa
         verify(mockEnrolmentsConnector, times(2)).es8(any(), any(), any(), any())
       }
 
-      "must stop upon one failure" in {
+      "must not stop upon failure" in {
         when(mockAppConfig.historicTradersForEnrolmentEnabled) thenReturn true
         when(mockAppConfig.historicTradersForEnrolment) thenReturn Seq(historicTraderForEnrolment1, historicTraderForEnrolment2)
         when(mockRegistrationService.get(any())) thenReturn Future.successful(Some(registration))
@@ -60,7 +60,7 @@ class HistoricalRegistrationEnrolmentSpec extends BaseSpec with BeforeAndAfterEa
 
         service.sendEnrolmentForUsers().futureValue mustBe true
 
-        verify(mockEnrolmentsConnector, times(1)).es8(any(), any(), any(), any())
+        verify(mockEnrolmentsConnector, times(2)).es8(any(), any(), any(), any())
       }
     }
 

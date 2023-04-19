@@ -56,28 +56,35 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
 
   private def submitSequentially(remainingTraders: Seq[HistoricTraderForEnrolment]): Future[Either[HttpResponse, Unit]] = {
     remainingTraders match {
+      case Nil => Future.successful(Right())
+      case traderToEnrol +: Nil =>
+        getRegAndTriggerEs8(traderToEnrol, Seq.empty)
       case traderToEnrol +: otherTraders =>
-        registrationService.get(traderToEnrol.vrn).flatMap {
-          case Some(registration) =>
-            enrolmentsConnector.es8(traderToEnrol.groupId, traderToEnrol.vrn, traderToEnrol.userId, registration.submissionReceived.atZone(ZoneId.systemDefault).toLocalDate).flatMap { a =>
-              a.status match {
-                case CREATED =>
-                  logger.info(s"Successfully created enrolment for ${traderToEnrol.vrn}")
-                  if (otherTraders.nonEmpty) {
-                    submitSequentially(otherTraders)
-                  } else {
-                    logger.info("Completed submitting enrolment for existing users")
-                    Future.successful(Right(()))
-                  }
-                case status =>
-                  logger.error(s"Received unexpected response for ${traderToEnrol}: $status ${a.body}")
-                  Future.successful(Right(()))
+        getRegAndTriggerEs8(traderToEnrol, otherTraders)
+    }
+  }
+
+  private def getRegAndTriggerEs8(traderToEnrol: HistoricTraderForEnrolment, otherTraders: Seq[HistoricTraderForEnrolment]) = {
+    registrationService.get(traderToEnrol.vrn).flatMap {
+      case Some(registration) =>
+        enrolmentsConnector.es8(traderToEnrol.groupId, traderToEnrol.vrn, traderToEnrol.userId, registration.submissionReceived.atZone(ZoneId.systemDefault).toLocalDate).flatMap { a =>
+          a.status match {
+            case CREATED =>
+              logger.info(s"Successfully created enrolment for ${traderToEnrol.vrn}")
+              if (otherTraders.nonEmpty) {
+                submitSequentially(otherTraders)
+              } else {
+                logger.info("Completed submitting enrolment for existing users")
+                Future.successful(Right(()))
               }
-            }
-          case _ =>
-            logger.error(s"Unable to find registration for ${traderToEnrol.vrn}")
-            Future.failed(new Exception("User didn't exist in registration"))
+            case status =>
+              logger.error(s"Received unexpected response for ${traderToEnrol}: $status ${a.body}")
+              submitSequentially(otherTraders)
+          }
         }
+      case _ =>
+        logger.error(s"Unable to find registration for ${traderToEnrol.vrn}")
+        Future.failed(new Exception("User didn't exist in registration"))
     }
   }
 }
