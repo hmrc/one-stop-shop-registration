@@ -71,7 +71,7 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
                   }
                 case status =>
                   logger.error(s"Received unexpected response for ${traderToEnrol}: $status ${a.body}")
-                  Future.successful(Right(()))
+                  submitSequentially(otherTraders)
               }
             }
           case _ =>
