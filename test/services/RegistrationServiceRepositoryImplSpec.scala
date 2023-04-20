@@ -19,12 +19,15 @@ package services
 import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import config.AppConfig
+import controllers.actions.AuthorisedMandatoryVrnRequest
 import models.InsertResult.InsertSucceeded
 import models.exclusions.ExcludedTrader
 import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
+import play.api.mvc.AnyContent
+import play.api.test.FakeRequest
 import play.api.test.Helpers.running
 import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
@@ -32,18 +35,20 @@ import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
-  private val registrationRequest    = mock[RegistrationRequest]
+  private val registrationRequest = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]
   private val mockConfig = mock[AppConfig]
   private val exclusionService = mock[ExclusionService]
   private val registrationService = new RegistrationServiceRepositoryImpl(registrationRepository, stubClock, mockConfig, exclusionService)
+
+  implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
@@ -102,7 +107,7 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
 
       "must return a Some(registration) when the connector returns right" in {
         when(registrationRepository.get(any())) thenReturn Future.successful(Some(registration))
-        when(mockConfig.exclusionsEnabled) thenReturn(true)
+        when(mockConfig.exclusionsEnabled) thenReturn true
         when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
         registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationRepository, times(1)).get(Vrn("123456789"))

@@ -1,22 +1,21 @@
 package base
 
 import controllers.actions.{AuthAction, FakeAuthAction}
+import models.{BankDetails, Bic, Iban, Period}
 import models.Quarter.Q3
 import models.etmp._
-import models.{BankDetails, Bic, Iban, Period}
+import org.scalatest.{OptionValues, TryValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.{OptionValues, TryValues}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import services.{FakeHistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentService}
-import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.format.DateTimeFormatter
 import java.time.{Clock, LocalDate, ZoneId}
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 trait BaseSpec

@@ -38,7 +38,7 @@ class RegistrationControllerSpec extends BaseSpec {
     "must return 201 when given a valid payload and the registration is created successfully" in {
 
       val mockService = mock[RegistrationServiceRepositoryImpl]
-      when(mockService.createRegistration(any())(any())) thenReturn Future.successful(InsertSucceeded)
+      when(mockService.createRegistration(any())(any(), any())) thenReturn Future.successful(InsertSucceeded)
 
       val app =
         applicationBuilder
@@ -76,7 +76,7 @@ class RegistrationControllerSpec extends BaseSpec {
     "must return Conflict when trying to insert a duplicate" in {
 
       val mockService = mock[RegistrationServiceRepositoryImpl]
-      when(mockService.createRegistration(any())(any())) thenReturn Future.successful(AlreadyExists)
+      when(mockService.createRegistration(any())(any(), any())) thenReturn Future.successful(AlreadyExists)
 
       val app =
         applicationBuilder

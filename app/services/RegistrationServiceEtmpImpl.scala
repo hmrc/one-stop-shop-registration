@@ -18,11 +18,13 @@ package services
 
 import config.AppConfig
 import connectors.{EnrolmentsConnector, RegistrationConnector}
+import controllers.actions.AuthorisedMandatoryVrnRequest
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
 import models.etmp.{EtmpRegistrationRequest, EtmpRegistrationStatus}
 import models.requests.RegistrationRequest
 import models.{EtmpEnrolmentError, EtmpException, InsertResult, Registration, RegistrationStatus}
+import models.audit.{EtmpRegistrationAuditModel, SubmissionResult}
 import play.api.http.Status.NO_CONTENT
 import repositories.{RegistrationRepository, RegistrationStatusRepository}
 import services.exclusions.ExclusionService
@@ -42,13 +44,16 @@ class RegistrationServiceEtmpImpl @Inject()(
                                              retryService: RetryService,
                                              appConfig: AppConfig,
                                              exclusionService: ExclusionService,
+                                             auditService: AuditService,
                                              clock: Clock
                                            )(implicit ec: ExecutionContext) extends RegistrationService {
 
-  def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult] = {
-    val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
-    registrationConnector.create(registrationRequest).flatMap {
+  def createRegistration(registrationRequest: RegistrationRequest)
+                        (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult] = {
+    val etmpRegistrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest)
+    registrationConnector.create(etmpRegistrationRequest).flatMap {
       case Right(response) =>
+        auditService.audit(EtmpRegistrationAuditModel.build(etmpRegistrationRequest, Some(response), None, SubmissionResult.Success))
         (for {
           _ <- registrationStatusRepository.delete(response.formBundleNumber)
           _ <- registrationStatusRepository.insert(RegistrationStatus(subscriptionId = response.formBundleNumber,
@@ -61,7 +66,7 @@ class RegistrationServiceEtmpImpl @Inject()(
                 retryService.getEtmpRegistrationStatus(appConfig.maxRetryCount, appConfig.delay, response.formBundleNumber).flatMap {
                   case EtmpRegistrationStatus.Success =>
                     logger.info("Insert succeeded")
-                    registrationRepository.insert(buildRegistration(request, clock))
+                    registrationRepository.insert(buildRegistration(registrationRequest, clock))
                   case _ =>
                     logger.error(s"Failed to add enrolment")
                     registrationStatusRepository.set(RegistrationStatus(subscriptionId = response.formBundleNumber, status = EtmpRegistrationStatus.Error))
@@ -75,12 +80,13 @@ class RegistrationServiceEtmpImpl @Inject()(
               throw EtmpException(s"Failed to add enrolment - ${enrolmentResponse.body}")
           }
         }).flatten
-
       case Left(EtmpEnrolmentError(EtmpEnrolmentErrorResponse.alreadyActiveSubscriptionErrorCode, _)) =>
         logger.warn("Enrolment already existed")
+        auditService.audit(EtmpRegistrationAuditModel.build(etmpRegistrationRequest, None, None, SubmissionResult.Duplicate))
         Future.successful(AlreadyExists)
       case Left(error) =>
         logger.error(s"There was an error creating Registration enrolment from ETMP: $error")
+        auditService.audit(EtmpRegistrationAuditModel.build(etmpRegistrationRequest, None, Some(error.body), SubmissionResult.Failure))
         throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
     }
   }

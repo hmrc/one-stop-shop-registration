@@ -17,8 +17,9 @@
 package services
 
 import config.AppConfig
-import models.requests.RegistrationRequest
+import controllers.actions.AuthorisedMandatoryVrnRequest
 import models.{InsertResult, Registration}
+import models.requests.RegistrationRequest
 import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.domain.Vrn
@@ -36,8 +37,9 @@ class RegistrationServiceRepositoryImpl @Inject()(
                                      exclusionService: ExclusionService
                                    )(implicit ec: ExecutionContext) extends RegistrationService {
 
-  def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult] =
-    registrationRepository.insert(buildRegistration(request, clock))
+  def createRegistration(registrationRequest: RegistrationRequest)
+                        (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult] =
+    registrationRepository.insert(buildRegistration(registrationRequest, clock))
 
   def get(vrn: Vrn): Future[Option[Registration]] = {
     for {
