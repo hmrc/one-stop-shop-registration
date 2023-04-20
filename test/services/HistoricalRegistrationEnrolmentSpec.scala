@@ -11,7 +11,7 @@ import org.scalatest.concurrent.IntegrationPatience
 import play.api.http.Status.CREATED
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -25,6 +25,8 @@ class HistoricalRegistrationEnrolmentSpec extends BaseSpec with BeforeAndAfterEa
   // TODO generators
   private val historicTraderForEnrolment1 = HistoricTraderForEnrolment(Vrn("123456789"), "groupId1", "userId1")
   private val historicTraderForEnrolment2 = HistoricTraderForEnrolment(Vrn("987654321"), "groupId2", "userId2")
+
+  private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
 
   override def beforeEach(): Unit = {
     reset(mockEnrolmentsConnector)
