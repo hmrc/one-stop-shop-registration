@@ -20,8 +20,8 @@ import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import config.AppConfig
 import controllers.actions.AuthorisedMandatoryVrnRequest
-import models.InsertResult.InsertSucceeded
 import models.exclusions.ExcludedTrader
+import models.repository.InsertResult.InsertSucceeded
 import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
