@@ -18,11 +18,13 @@ package services
 
 import config.AppConfig
 import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
-import models.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
 import models.etmp.{EtmpRegistrationRequest, EtmpRegistrationStatus}
 import models.requests.RegistrationRequest
 import models._
+import models.repository.{AmendResult, InsertResult}
+import models.repository.AmendResult.AmendSucceeded
 import play.api.http.Status.NO_CONTENT
 import repositories.{RegistrationRepository, RegistrationStatusRepository}
 import services.exclusions.ExclusionService
@@ -128,6 +130,22 @@ class RegistrationServiceEtmpImpl @Inject()(
         logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
         throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
       }
+    }
+  }
+
+  def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] = {
+    val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
+    registrationConnector.amendRegistration(registrationRequest).flatMap {
+      case Right(amendRegistrationResponse) =>
+        logger.info(s"Successfully sent amend registration to ETMP at ${amendRegistrationResponse.processingDateTime} for vrn ${amendRegistrationResponse.vrn}")
+        if(appConfig.duplicateRegistrationIntoRepository) {
+          registrationRepository.set(buildRegistration(request, clock))
+        } else {
+          Future.successful(AmendSucceeded)
+        }
+      case Left(e) =>
+        logger.error(s"An error occurred while amending registration ${e.getClass} ${e.body}")
+        throw EtmpException(s"There was an error amending Registration from ETMP: ${e.getClass} ${e.body}")
     }
   }
 

@@ -18,7 +18,8 @@ package services
 
 import logging.Logging
 import models.requests.RegistrationRequest
-import models.{InsertResult, Registration}
+import models.Registration
+import models.repository.{AmendResult, InsertResult}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -51,6 +52,8 @@ trait RegistrationService extends Logging {
   def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult]
 
   def get(vrn: Vrn)(implicit hc: HeaderCarrier): Future[Option[Registration]]
+
+  def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult]
 
 }
 

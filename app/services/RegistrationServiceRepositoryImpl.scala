@@ -18,7 +18,8 @@ package services
 
 import config.AppConfig
 import models.requests.RegistrationRequest
-import models.{InsertResult, Registration}
+import models.Registration
+import models.repository.{AmendResult, InsertResult}
 import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.domain.Vrn
@@ -53,4 +54,6 @@ class RegistrationServiceRepositoryImpl @Inject()(
       }
     }
   }
+
+  def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] = throw new NotImplementedError("Amend is not implemented for repository service")
 }
