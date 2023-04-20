@@ -51,7 +51,7 @@ class RegistrationController @Inject()(
       }
   }
 
-  def getByVrn(vrn: String): Action[AnyContent] = auth.async {
+  def getByVrn(vrn: String): Action[AnyContent] = cc.authAndRequireVat().async {
     implicit request =>
       registrationService.get(Vrn(vrn)) map {
         case Some(registration) => Ok(Json.toJson(registration))

@@ -21,7 +21,7 @@ import connectors.EnrolmentsConnector
 import logging.Logging
 import models.enrolments.HistoricTraderForEnrolment
 import play.api.http.Status.CREATED
-import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import java.time.{Clock, ZoneId}
 import javax.inject.Inject
@@ -35,7 +35,7 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
                                                             registrationService: RegistrationService,
                                                             clock: Clock
                                                           )
-                                                          (implicit ec: ExecutionContext) extends HistoricalRegistrationEnrolmentService with Logging {
+                                                          (implicit ec: ExecutionContext, hc: HeaderCarrier) extends HistoricalRegistrationEnrolmentService with Logging {
 
   val startTransfer: Future[Any] = sendEnrolmentForUsers()
 
@@ -67,7 +67,11 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
   private def getRegAndTriggerEs8(traderToEnrol: HistoricTraderForEnrolment, otherTraders: Seq[HistoricTraderForEnrolment]) = {
     registrationService.get(traderToEnrol.vrn).flatMap {
       case Some(registration) =>
-        enrolmentsConnector.es8(traderToEnrol.groupId, traderToEnrol.vrn, traderToEnrol.userId, registration.submissionReceived.atZone(ZoneId.systemDefault).toLocalDate).flatMap { a =>
+        enrolmentsConnector.es8(traderToEnrol.groupId, traderToEnrol.vrn, traderToEnrol.userId, registration.submissionReceived.getOrElse{
+          val exception = new IllegalStateException(s"Registration for user ${traderToEnrol.vrn} did not have a submission received date")
+          logger.error(exception.getMessage, exception)
+          throw exception
+        }.atZone(ZoneId.systemDefault).toLocalDate).flatMap { a =>
           a.status match {
             case CREATED =>
               logger.info(s"Successfully created enrolment for ${traderToEnrol.vrn}")
