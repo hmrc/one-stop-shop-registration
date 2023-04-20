@@ -46,7 +46,7 @@ class HistoricalRegistrationEnrolmentSpec extends BaseSpec with BeforeAndAfterEa
       "must submit enrolments for multiple users" in {
         when(mockAppConfig.historicTradersForEnrolmentEnabled) thenReturn true
         when(mockAppConfig.historicTradersForEnrolment) thenReturn Seq(historicTraderForEnrolment1, historicTraderForEnrolment2)
-        when(mockRegistrationService.get(any())) thenReturn Future.successful(Some(registration))
+        when(mockRegistrationService.get(any())(any())) thenReturn Future.successful(Some(registration))
         when(mockEnrolmentsConnector.es8(any(), any(), any(), any())) thenReturn Future(HttpResponse(CREATED, ""))
 
         service.sendEnrolmentForUsers().futureValue mustBe true
@@ -57,7 +57,7 @@ class HistoricalRegistrationEnrolmentSpec extends BaseSpec with BeforeAndAfterEa
       "must not stop upon failure" in {
         when(mockAppConfig.historicTradersForEnrolmentEnabled) thenReturn true
         when(mockAppConfig.historicTradersForEnrolment) thenReturn Seq(historicTraderForEnrolment1, historicTraderForEnrolment2)
-        when(mockRegistrationService.get(any())) thenReturn Future.successful(Some(registration))
+        when(mockRegistrationService.get(any())(any())) thenReturn Future.successful(Some(registration))
         when(mockEnrolmentsConnector.es8(any(), any(), any(), any())) thenReturn Future(HttpResponse(500, "error"))
 
         service.sendEnrolmentForUsers().futureValue mustBe true
