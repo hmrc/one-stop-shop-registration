@@ -35,7 +35,7 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
                                                             registrationService: RegistrationService,
                                                             clock: Clock
                                                           )
-                                                          (implicit ec: ExecutionContext, hc: HeaderCarrier) extends HistoricalRegistrationEnrolmentService with Logging {
+                                                          (implicit ec: ExecutionContext) extends HistoricalRegistrationEnrolmentService with Logging {
 
   val startTransfer: Future[Any] = sendEnrolmentForUsers()
 
@@ -65,6 +65,7 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
   }
 
   private def getRegAndTriggerEs8(traderToEnrol: HistoricTraderForEnrolment, otherTraders: Seq[HistoricTraderForEnrolment]) = {
+    implicit val hc: HeaderCarrier = HeaderCarrier()
     registrationService.get(traderToEnrol.vrn).flatMap {
       case Some(registration) =>
         enrolmentsConnector.es8(traderToEnrol.groupId, traderToEnrol.vrn, traderToEnrol.userId, registration.submissionReceived.getOrElse{
