@@ -19,7 +19,8 @@ package repositories
 import config.AppConfig
 import crypto.{RegistrationEncrypter, SecureGCMCipher}
 import models._
-import models.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.repository.AmendResult.AmendSucceeded
+import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import org.mockito.MockitoSugar
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -118,6 +119,30 @@ class RegistrationRepositorySpec extends AnyFreeSpec
       val registrations = List(registration, registration2)
       repository.insertMany(registrations).futureValue
       val secondResult = repository.insertMany(registrations).futureValue
+
+      secondResult mustEqual AlreadyExists
+    }
+  }
+
+  ".update" - {
+
+    "must update a registration" in {
+
+      repository.insert(registration).futureValue
+      val updatedRegistration = registration.copy(tradingNames = List("single", "double", "triple"))
+      val updateResult = repository.set(updatedRegistration).futureValue
+
+      val databaseRecord = findAll().futureValue.headOption.value
+      val decryptedRecord = encrypter.decryptRegistration(databaseRecord, registration.vrn, secretKey)
+
+      updateResult mustEqual AmendSucceeded
+      decryptedRecord mustEqual updatedRegistration
+    }
+
+    "must not allow duplicate registrations to be inserted" in {
+
+      repository.insert(registration).futureValue
+      val secondResult = repository.insert(registration).futureValue
 
       secondResult mustEqual AlreadyExists
     }

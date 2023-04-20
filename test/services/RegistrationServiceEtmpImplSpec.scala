@@ -24,10 +24,11 @@ import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnect
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import metrics.ServiceMetrics
 import models._
-import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentResponse
-import models.etmp.EtmpRegistrationStatus
+import models.etmp.{AmendRegistrationResponse, EtmpRegistrationStatus}
 import models.exclusions.ExcludedTrader
+import models.repository.AmendResult.AmendSucceeded
+import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
@@ -262,6 +263,71 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
     }
 
+  }
+
+  ".amendRegistration" - {
+
+
+    "duplicateRegistrationIntoRepository.disabled" - {
+
+      "must create a registration from the request, save it and return the result of the save operation" in {
+
+        when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+        when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
+          Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
+
+        registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
+        verify(registrationRepository, times(0)).insert(any())
+      }
+
+      "must throw EtmpException when connector an error" in {
+
+        when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+        when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(Left(ServiceUnavailable))
+
+        whenReady(registrationService.amend(registrationRequest).failed) {
+          exp => exp mustBe EtmpException(s"There was an error amending Registration from ETMP: ${ServiceUnavailable.getClass} ${ServiceUnavailable.body}")
+        }
+        verify(registrationRepository, times(0)).insert(any())
+      }
+    }
+
+    "duplicateRegistrationIntoRepository.enabled" - {
+
+      "must create a registration from the request, save it and return the result of the save operation" in {
+
+        when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+        when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
+          Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
+        when(registrationRepository.set(any())) thenReturn successful(AmendSucceeded)
+
+        registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
+        verify(registrationRepository, times(1)).set(any())
+      }
+
+/*      "must return an error when repository returns an error" in {
+
+        when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+        when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
+          Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
+        when(registrationRepository.set(any())) thenReturn successful(AlreadyExists)
+
+        registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
+        verify(registrationRepository, times(1)).insert(any())
+      }*/
+
+      "must throw EtmpException when connector returns an error" in {
+
+        when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+        when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(Left(ServiceUnavailable))
+
+        whenReady(registrationService.amend(registrationRequest).failed) {
+          exp => exp mustBe EtmpException(s"There was an error amending Registration from ETMP: ${ServiceUnavailable.getClass} ${ServiceUnavailable.body}")
+        }
+        verifyNoInteractions(registrationRepository)
+      }
+
+    }
   }
 
 }

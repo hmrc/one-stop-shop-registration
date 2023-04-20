@@ -2,7 +2,7 @@ package repositories
 
 import config.AppConfig
 import models.etmp.EtmpRegistrationStatus
-import models.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.RegistrationStatus
 import org.mockito.MockitoSugar
 import org.scalatest.freespec.AnyFreeSpec
