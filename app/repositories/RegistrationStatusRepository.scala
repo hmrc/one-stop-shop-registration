@@ -17,8 +17,9 @@
 package repositories
 
 import logging.Logging
-import models.{InsertResult, RegistrationStatus}
-import models.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.RegistrationStatus
+import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.repository.InsertResult
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions}
 import repositories.MongoErrors.Duplicate
