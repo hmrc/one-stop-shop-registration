@@ -18,16 +18,21 @@ package services
 
 import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
+import com.codahale.metrics.Timer
 import config.AppConfig
 import connectors.{EnrolmentsConnector, RegistrationConnector}
-import models.InsertResult.{AlreadyExists, InsertSucceeded}
+import controllers.actions.AuthorisedMandatoryVrnRequest
+import metrics.ServiceMetrics
 import models._
+import models.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentResponse
 import models.etmp.EtmpRegistrationStatus
 import models.exclusions.ExcludedTrader
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
+import play.api.mvc.AnyContent
+import play.api.test.FakeRequest
 import play.api.test.Helpers.running
 import repositories.{RegistrationRepository, RegistrationStatusRepository}
 import services.exclusions.ExclusionService
@@ -35,11 +40,10 @@ import testutils.RegistrationData
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import metrics.ServiceMetrics
+
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import com.codahale.metrics.Timer
 
 class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
@@ -50,13 +54,18 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   private val enrolmentsConnector = mock[EnrolmentsConnector]
   private val registrationRepository = mock[RegistrationRepository]
   private val registrationStatusRepository = mock[RegistrationStatusRepository]
-  private val retryService= mock[RetryService]
+  private val retryService = mock[RetryService]
   private val appConfig = mock[AppConfig]
   private val serviceMetrics: ServiceMetrics = mock[ServiceMetrics]
 
   private val exclusionService = mock[ExclusionService]
+
+  private val auditService = mock[AuditService]
+
   private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector,
-    registrationRepository, registrationStatusRepository, retryService, appConfig, exclusionService, stubClock)
+    registrationRepository, registrationStatusRepository, retryService, appConfig, exclusionService, auditService, stubClock)
+
+  implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
 
   override def beforeEach(): Unit = {
     reset(registrationConnector)
@@ -121,12 +130,12 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
           when(registrationConnector.create(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
-        whenReady(registrationService.createRegistration(registrationRequest).failed) {
-          exp => exp mustBe EtmpException(s"There was an error creating Registration enrolment from ETMP: ${ServiceUnavailable.body}")
+          whenReady(registrationService.createRegistration(registrationRequest).failed) {
+            exp => exp mustBe EtmpException(s"There was an error creating Registration enrolment from ETMP: ${ServiceUnavailable.body}")
+          }
+          verify(registrationRepository, times(0)).insert(any())
         }
-        verify(registrationRepository, times(0)).insert(any())
       }
-    }
 
       "duplicateRegistrationIntoRepository.enabled" - {
 
@@ -139,7 +148,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           when(registrationRepository.insert(any())) thenReturn successful(InsertSucceeded)
           when(registrationStatusRepository.delete(any())) thenReturn Future.successful(true)
           when(registrationStatusRepository.insert(any())) thenReturn successful(InsertSucceeded)
-          when(retryService.getEtmpRegistrationStatus(any(),any(),any())) thenReturn successful(EtmpRegistrationStatus.Success)
+          when(retryService.getEtmpRegistrationStatus(any(), any(), any())) thenReturn successful(EtmpRegistrationStatus.Success)
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
           verify(registrationRepository, times(1)).insert(any())
@@ -216,7 +225,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
       "must return a Some(registration) when the connector returns right" in {
         when(registrationConnector.get(any())) thenReturn Future.successful(Right(registration))
-        when(appConfig.exclusionsEnabled) thenReturn(true)
+        when(appConfig.exclusionsEnabled) thenReturn true
         when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
         registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationConnector, times(1)).get(Vrn("123456789"))

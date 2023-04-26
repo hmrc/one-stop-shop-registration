@@ -16,6 +16,7 @@
 
 package services
 
+import controllers.actions.AuthorisedMandatoryVrnRequest
 import logging.Logging
 import models.requests.RegistrationRequest
 import models.{InsertResult, Registration}
@@ -48,7 +49,8 @@ trait RegistrationService extends Logging {
       nonCompliantPayments = request.nonCompliantPayments
     )
 
-  def createRegistration(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[InsertResult]
+  def createRegistration(registrationRequest: RegistrationRequest)
+                        (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult]
 
   def get(vrn: Vrn): Future[Option[Registration]]
 
