@@ -31,6 +31,11 @@ class VatCustomerInfoSpec extends BaseSpec {
               "effectiveRegistrationDate" -> "2020-01-02",
               "partyType" -> "Z2",
               "organisationName" -> "Foo",
+              "individual" -> Json.obj(
+                "firstName" -> "A",
+                "middleName" -> "B",
+                "lastName" -> "C"
+              ),
               "singleMarketIndicator" -> false
             )
           )
@@ -41,7 +46,8 @@ class VatCustomerInfoSpec extends BaseSpec {
           registrationDate = Some(LocalDate.of(2020, 1, 2)),
           partOfVatGroup = true,
           organisationName = Some("Foo"),
-          singleMarketIndicator = Some(false)
+          singleMarketIndicator = Some(false),
+          individualName = Some("A B C")
         )
 
         json.validate[VatCustomerInfo](VatCustomerInfo.desReads) mustEqual JsSuccess(expectedResult)
@@ -66,6 +72,11 @@ class VatCustomerInfoSpec extends BaseSpec {
               "effectiveRegistrationDate" -> "2020-01-02",
               "partyType" -> "ZZ",
               "organisationName" -> "Foo",
+              "individual" -> Json.obj(
+                "firstName" -> "A",
+                "middleName" -> "B",
+                "lastName" -> "C"
+              ),
               "singleMarketIndicator" -> false
             )
           )
@@ -76,7 +87,8 @@ class VatCustomerInfoSpec extends BaseSpec {
           registrationDate = Some(LocalDate.of(2020, 1, 2)),
           partOfVatGroup = false,
           organisationName = Some("Foo"),
-          singleMarketIndicator = Some(false)
+          singleMarketIndicator = Some(false),
+          individualName = Some("A B C")
         )
 
         json.validate[VatCustomerInfo](VatCustomerInfo.desReads) mustEqual JsSuccess(expectedResult)
@@ -101,7 +113,8 @@ class VatCustomerInfoSpec extends BaseSpec {
           registrationDate = None,
           partOfVatGroup = false,
           organisationName = None,
-          singleMarketIndicator = None
+          singleMarketIndicator = None,
+          individualName = None
         )
 
         json.validate[VatCustomerInfo](VatCustomerInfo.desReads) mustEqual JsSuccess(expectedResult)

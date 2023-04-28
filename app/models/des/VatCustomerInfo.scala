@@ -28,6 +28,7 @@ case class VatCustomerInfo(
                             registrationDate: Option[LocalDate],
                             partOfVatGroup: Boolean,
                             organisationName: Option[String],
+                            individualName: Option[String],
                             singleMarketIndicator: Option[Boolean]
                           )
 
@@ -38,8 +39,16 @@ object VatCustomerInfo {
                               registrationDate: Option[LocalDate],
                               partyType: Option[PartyType],
                               organisationName: Option[String],
+                              individualFirstName: Option[String],
+                              individualMiddleName: Option[String],
+                              individualLastName: Option[String],
                               singleMarketIndicator: Option[Boolean]
-                            ): VatCustomerInfo =
+                            ): VatCustomerInfo = {
+
+    val firstName = individualFirstName.fold("")(fn => s"$fn ")
+    val middleName = individualMiddleName.fold("")(mn => s"$mn ")
+    val lastName = individualLastName.fold("")(ln => s"$ln")
+
     VatCustomerInfo(
       address = address,
       registrationDate = registrationDate,
@@ -48,8 +57,14 @@ object VatCustomerInfo {
         case _ => false
       },
       organisationName = organisationName,
+      individualName = if(individualFirstName.isEmpty && individualMiddleName.isEmpty && individualLastName.isEmpty) {
+        None
+      } else {
+        Some(s"$firstName$middleName$lastName")
+      },
       singleMarketIndicator = singleMarketIndicator
     )
+  }
 
   implicit val desReads: Reads[VatCustomerInfo] =
     (
@@ -57,6 +72,9 @@ object VatCustomerInfo {
         (__ \ "approvedInformation" \ "customerDetails" \ "effectiveRegistrationDate").readNullable[LocalDate] and
         (__ \ "approvedInformation" \ "customerDetails" \ "partyType").readNullable[PartyType] and
         (__ \ "approvedInformation" \ "customerDetails" \ "organisationName").readNullable[String] and
+        (__ \ "approvedInformation" \ "customerDetails" \ "individual" \ "firstName").readNullable[String] and
+        (__ \ "approvedInformation" \ "customerDetails" \ "individual" \ "middleName").readNullable[String] and
+        (__ \ "approvedInformation" \ "customerDetails" \ "individual" \ "lastName").readNullable[String] and
         (__ \ "approvedInformation" \ "customerDetails" \ "singleMarketIndicator").readNullable[Boolean]
       ) (VatCustomerInfo.fromDesPayload _)
 
