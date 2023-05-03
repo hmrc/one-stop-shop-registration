@@ -40,11 +40,11 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
       )
       .build()
 
-  private def getDisplayRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/RESTAdapter/OSS/Subscription/${vrn.value}"
+  private def getDisplayRegistrationUrl(vrn: Vrn) = s"/one-stop-shop-registration-stub/vec/ossregistration/viewreg/v1/${vrn.value}"
 
   private def createRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/regdatatransfer/v1"
 
-  private def getAmendRegistrationUrl = "/one-stop-shop-registration-stub/RESTAdapter/OSS/Subscription/"
+  private def amendRegistrationUrl = "/one-stop-shop-registration-stub/vec/ossregistration/amendreg/v1"
 
   private val fixedDelay = 21000
 
@@ -364,7 +364,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
       val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
 
       server.stubFor(
-        put(urlEqualTo(getAmendRegistrationUrl))
+        put(urlEqualTo(amendRegistrationUrl))
           .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
           .withRequestBody(equalTo(requestJson))
@@ -390,7 +390,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
       val requestJson = Json.stringify(Json.toJson(etmpRegistrationRequest))
 
       server.stubFor(
-        put(urlEqualTo(getAmendRegistrationUrl))
+        put(urlEqualTo(amendRegistrationUrl))
           .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
           .withRequestBody(equalTo(requestJson))
@@ -413,7 +413,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
       val app = application
 
       server.stubFor(
-        put(urlEqualTo(getAmendRegistrationUrl))
+        put(urlEqualTo(amendRegistrationUrl))
           .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
           .willReturn(aResponse()
