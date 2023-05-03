@@ -47,7 +47,7 @@ class RegistrationConnector @Inject()(
     val correlationId = UUID.randomUUID().toString
     val headersWithCorrelationId = getHeaders(correlationId)
     val timerContext = metrics.startTimer(MetricsEnum.GetRegistration)
-    val url = s"${displayRegistrationConfig.baseUrl}RESTAdapter/OSS/Subscription/${vrn.value}"
+    val url = s"${displayRegistrationConfig.baseUrl}vec/ossregistration/viewreg/v1/${vrn.value}"
     httpClient.GET[DisplayRegistrationResponse](url = url, headers = headersWithCorrelationId).map { result =>
       timerContext.stop()
       result
@@ -91,7 +91,7 @@ class RegistrationConnector @Inject()(
     val headersWithCorrelationId = createHeaders(correlationId)
 
     httpClient.PUT[EtmpRegistrationRequest, CreateAmendRegistrationResponse](
-      s"${amendRegistrationConfig.baseUrl}RESTAdapter/OSS/Subscription/",
+      s"${amendRegistrationConfig.baseUrl}vec/ossregistration/amendreg/v1",
       registration,
       headers = headersWithCorrelationId
     ).recover {
