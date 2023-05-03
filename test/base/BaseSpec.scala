@@ -2,11 +2,11 @@ package base
 
 import controllers.actions.{AuthAction, FakeAuthAction}
 import generators.Generators
-import models.{BankDetails, Bic, Iban, Period}
+import models._
 import models.Quarter.Q3
 import models.des.VatCustomerInfo
 import models.etmp._
-import models._
+import org.scalatest.{OptionValues, TryValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -52,7 +52,8 @@ trait BaseSpec
       address = DesAddress("Line 1", None, None, None, None, Some("AA11 1AA"), "GB"),
       partOfVatGroup = false,
       organisationName = Some("Company name"),
-      singleMarketIndicator = Some(true)
+      singleMarketIndicator = Some(true),
+      individualName = None
     )
 
   val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
