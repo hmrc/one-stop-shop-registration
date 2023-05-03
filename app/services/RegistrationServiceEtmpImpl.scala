@@ -24,6 +24,7 @@ import models.enrolments.EtmpEnrolmentErrorResponse
 import models.etmp.{EtmpRegistrationRequest, EtmpRegistrationStatus}
 import models.requests.RegistrationRequest
 import models._
+import models.audit.{EtmpRegistrationAuditModel, SubmissionResult}
 import models.repository.{AmendResult, InsertResult}
 import models.repository.AmendResult.AmendSucceeded
 import play.api.http.Status.NO_CONTENT
