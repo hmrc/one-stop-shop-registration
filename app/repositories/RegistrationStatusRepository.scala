@@ -16,6 +16,7 @@
 
 package repositories
 
+import config.AppConfig
 import logging.Logging
 import models.{InsertResult, RegistrationStatus}
 import models.InsertResult.{AlreadyExists, InsertSucceeded}
@@ -25,13 +26,15 @@ import repositories.MongoErrors.Duplicate
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.MongoComponent
 
+import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 
 @Singleton
 class RegistrationStatusRepository @Inject()(
-                                              mongoComponent: MongoComponent
+                                              mongoComponent: MongoComponent,
+                                              appConfig: AppConfig
                                             )(implicit ec: ExecutionContext)
   extends PlayMongoRepository[RegistrationStatus] (
     collectionName = "registration-status",
@@ -44,6 +47,8 @@ class RegistrationStatusRepository @Inject()(
         IndexOptions()
           .name("subscriptionIdIndex")
           .unique(true)
+          .expireAfter(appConfig.registrationStatusTtl, TimeUnit.HOURS)
+
       )
     )
   ) with Logging {
