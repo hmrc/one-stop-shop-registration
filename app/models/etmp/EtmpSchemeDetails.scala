@@ -41,10 +41,10 @@ object EtmpSchemeDetails {
   private def fromDisplayRegistrationPayload(
                                               commencementDate: String,
                                               firstSaleDate: Option[String],
-                                              euRegistrationDetails: Seq[EtmpEuRegistrationDetails],
-                                              previousEURegistrationDetails: Seq[EtmpPreviousEURegistrationDetails],
+                                              euRegistrationDetails: Option[Seq[EtmpEuRegistrationDetails]],
+                                              previousEURegistrationDetails: Option[Seq[EtmpPreviousEURegistrationDetails]],
                                               onlineMarketPlace: Boolean,
-                                              websites: Seq[Website],
+                                              websites: Option[Seq[Website]],
                                               contactNameOrBusinessAddress: String,
                                               businessTelephoneNumber: String,
                                               businessEmailAddress: String,
@@ -54,10 +54,10 @@ object EtmpSchemeDetails {
     EtmpSchemeDetails(
       commencementDate = commencementDate,
       firstSaleDate = firstSaleDate,
-      euRegistrationDetails = euRegistrationDetails,
-      previousEURegistrationDetails = previousEURegistrationDetails,
+      euRegistrationDetails = euRegistrationDetails.fold(Seq.empty[EtmpEuRegistrationDetails])(a => a),
+      previousEURegistrationDetails = previousEURegistrationDetails.fold(Seq.empty[EtmpPreviousEURegistrationDetails])(a => a),
       onlineMarketPlace = onlineMarketPlace,
-      websites = websites,
+      websites = websites.fold(Seq.empty[Website])(a => a),
       contactName = contactNameOrBusinessAddress,
       businessTelephoneNumber = businessTelephoneNumber,
       businessEmailId = businessEmailAddress,
@@ -69,10 +69,10 @@ object EtmpSchemeDetails {
     (
       (__ \ "commencementDate").read[String] and
         (__ \ "firstSaleDate").readNullable[String] and
-        (__ \ "euRegistrationDetails").read[Seq[EtmpEuRegistrationDetails]] and
-        (__ \ "previousEURegistrationDetails").read[Seq[EtmpPreviousEURegistrationDetails]] and
+        (__ \ "euRegistrationDetails").readNullable[Seq[EtmpEuRegistrationDetails]] and
+        (__ \ "previousEURegistrationDetails").readNullable[Seq[EtmpPreviousEURegistrationDetails]] and
         (__ \ "onlineMarketPlace").read[Boolean] and
-        (__ \ "websites").read[Seq[Website]] and
+        (__ \ "websites").readNullable[Seq[Website]] and
         (__ \ "contactDetails" \ "contactNameOrBusinessAddress").read[String] and
         (__ \ "contactDetails" \ "businessTelephoneNumber").read[String] and
         (__ \ "contactDetails" \ "businessEmailAddress").read[String] and
