@@ -17,7 +17,8 @@
 package models.etmp
 
 import models.BankDetails
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{Json, OWrites, Reads, __}
 
 
 case class DisplayRegistration(
@@ -29,6 +30,25 @@ case class DisplayRegistration(
 
 object DisplayRegistration {
 
-  implicit val format: OFormat[DisplayRegistration] = Json.format[DisplayRegistration]
+  private def fromDisplayRegistrationPayload(
+                                              tradingNames: Option[Seq[EtmpTradingNames]],
+                                              schemeDetails: EtmpSchemeDetails,
+                                              bankDetails: BankDetails
+                                            ): DisplayRegistration =
+    DisplayRegistration(
+      tradingNames = tradingNames.fold(Seq.empty[EtmpTradingNames])(a => a),
+      schemeDetails = schemeDetails,
+      bankDetails = bankDetails
+    )
+
+  implicit val reads: Reads[DisplayRegistration] =
+    (
+      (__ \ "tradingNames").readNullable[Seq[EtmpTradingNames]] and
+        (__ \ "schemeDetails").read[EtmpSchemeDetails] and
+        (__ \ "bankDetails").read[BankDetails]
+      )(DisplayRegistration.fromDisplayRegistrationPayload _)
+
+  implicit val writes: OWrites[DisplayRegistration] =
+    Json.writes[DisplayRegistration]
 
 }

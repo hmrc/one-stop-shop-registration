@@ -31,7 +31,6 @@ class DisplayRegistrationConfig @Inject()(config: Configuration, genericConfig: 
 
 
   def eisEtmpGetHeaders(correlationId: String): Seq[(String, String)] = genericConfig.eisEtmpGenericHeaders(correlationId) ++ Seq(
-    ACCEPT_ENCODING -> "identity",
     HeaderNames.AUTHORIZATION -> s"Bearer $authorizationToken"
   )
 }
