@@ -18,6 +18,7 @@ package config
 
 import play.api.Configuration
 import play.api.http.HeaderNames
+import play.api.http.HeaderNames.ACCEPT_ENCODING
 
 import javax.inject.Inject
 
@@ -30,6 +31,7 @@ class DisplayRegistrationConfig @Inject()(config: Configuration, genericConfig: 
 
 
   def eisEtmpGetHeaders(correlationId: String): Seq[(String, String)] = genericConfig.eisEtmpGenericHeaders(correlationId) ++ Seq(
+    ACCEPT_ENCODING -> "identity",
     HeaderNames.AUTHORIZATION -> s"Bearer $authorizationToken"
   )
 }
