@@ -75,7 +75,6 @@ class TestOnlyController @Inject()(
       logger.warn(s"Hit test-only endpoint for getting registration for ${vrn}")
       registrationService.get(Vrn(vrn)) map {
         case Some(registration) =>
-          println(s"[[[[replying with ${Json.toJson(registration)}")
           Ok(Json.toJson(registration))
         case None => NotFound
       }
