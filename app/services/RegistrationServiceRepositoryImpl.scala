@@ -58,5 +58,6 @@ class RegistrationServiceRepositoryImpl @Inject()(
     }
   }
 
-  def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] = throw new NotImplementedError("Amend is not implemented for repository service")
+  def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] =
+    registrationRepository.set(buildRegistration(request, clock))
 }

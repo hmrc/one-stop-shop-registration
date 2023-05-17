@@ -21,6 +21,7 @@ import base.BaseSpec
 import config.AppConfig
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import models.exclusions.ExcludedTrader
+import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.InsertSucceeded
 import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
@@ -114,6 +115,26 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
       }
     }
 
+  }
+
+  ".amendRegistration" - {
+
+    "must amend a registration from the request, save it and return the result of the save operation" in {
+
+      when(registrationRepository.set(any())).thenReturn(successful(AmendSucceeded))
+
+      registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
+    }
+
+    "propagate any error" in {
+      when(registrationRepository.set(any())).thenThrow(emulatedFailure)
+
+      val caught = intercept[RuntimeException] {
+        registrationService.amend(registrationRequest).futureValue
+      }
+
+      caught mustBe emulatedFailure
+    }
   }
 
 }

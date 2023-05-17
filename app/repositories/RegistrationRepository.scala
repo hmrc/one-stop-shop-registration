@@ -103,7 +103,7 @@ class RegistrationRepository @Inject()(
         options = ReplaceOptions().upsert(true)
       )
       .toFuture()
-      .map(_ => AmendSucceeded) // TODO check what happens when a registration doesn't exist
+      .map(_ => AmendSucceeded)
   }
 }
 
