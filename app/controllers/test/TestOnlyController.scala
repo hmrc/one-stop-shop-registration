@@ -16,12 +16,18 @@
 
 package controllers.test
 
+import controllers.actions.AuthenticatedControllerComponents
+import logging.Logging
 import models.EuTaxIdentifierType.Vat
 import models.VatDetailSource.UserEntered
 import models._
+import models.repository.AmendResult.AmendSucceeded
+import models.requests.RegistrationRequest
 import org.mongodb.scala.model.Filters
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.RegistrationRepository
+import services.RegistrationServiceRepositoryImpl
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -31,10 +37,11 @@ import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 
 class TestOnlyController @Inject()(
-                                    cc: ControllerComponents,
+                                    cc: AuthenticatedControllerComponents,
+                                    registrationService: RegistrationServiceRepositoryImpl,
                                     clock: Clock,
                                     registrationRepository: RegistrationRepository)(implicit ec: ExecutionContext)
-  extends BackendController(cc) {
+  extends BackendController(cc) with Logging {
 
   def deleteAccounts(): Action[AnyContent] = Action.async {
 
@@ -61,6 +68,26 @@ class TestOnlyController @Inject()(
       Ok(s"Inserted Perf Tests Registrations for vrns $startVrn to $endVrn and commencementDate $commencementDate MongoDB")
     }
 
+  }
+
+  def getRegistration(vrn: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      logger.warn(s"Hit test-only endpoint for getting registration for ${vrn}")
+      registrationService.get(Vrn(vrn)) map {
+        case Some(registration) =>
+          println(s"[[[[replying with ${Json.toJson(registration)}")
+          Ok(Json.toJson(registration))
+        case None => NotFound
+      }
+  }
+
+  def amendRegistration(): Action[RegistrationRequest] = Action(parse.json[RegistrationRequest]).async {
+    implicit request =>
+      registrationService
+        .amend(request.body)
+        .map {
+          case AmendSucceeded => Ok
+        }
   }
 
   private val iban: Iban = Iban("GB33BUKB20201555555555").toOption.get

@@ -95,47 +95,32 @@ class RegistrationServiceEtmpImpl @Inject()(
   }
 
   def get(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[Option[Registration]] = {
-    if (appConfig.duplicateRegistrationIntoRepository) {
-      for {
-        maybeRegistration <- registrationRepository.get(vrn)
-        maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
-      } yield {
-        maybeRegistration.map { registration =>
+    registrationConnector.get(vrn).flatMap {
+      case Right(etmpRegistration) =>
+        getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
+          case Right(vatDetails) =>
+
+            val registration = Registration.fromEtmpRegistration(
+              vrn, vatDetails, etmpRegistration.tradingNames, etmpRegistration.schemeDetails, etmpRegistration.bankDetails
+            )
+
           if (appConfig.exclusionsEnabled) {
-            registration.copy(excludedTrader = maybeExcludedTrader)
-          } else {
-            registration
-          }
-        }
-      }
-    } else {
-      registrationConnector.get(vrn).flatMap {
-        case Right(etmpRegistration) =>
-          getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
-            case Right(vatDetails) =>
-
-              val registration = Registration.fromEtmpRegistration(
-                vrn, vatDetails, etmpRegistration.tradingNames, etmpRegistration.schemeDetails, etmpRegistration.bankDetails
-              )
-
-            if (appConfig.exclusionsEnabled) {
-              exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
-                Some(registration.copy(excludedTrader = maybeExcludedTrader))
-              }
-            } else {
-              Future.successful(Some(registration))
+            exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
+              Some(registration.copy(excludedTrader = maybeExcludedTrader))
             }
-          case Left(error) =>
-            logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
-            Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
-        }
-      case Left(NotFound) =>
-        logger.info(s"There was no Registration from ETMP found")
-        Future.successful(None)
-      case Left(error) =>
-        logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
-        throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
+          } else {
+            Future.successful(Some(registration))
+          }
+        case Left(error) =>
+          logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
+          Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
       }
+    case Left(NotFound) =>
+      logger.info(s"There was no Registration from ETMP found")
+      Future.successful(None)
+    case Left(error) =>
+      logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
+      throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
     }
   }
 

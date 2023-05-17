@@ -189,9 +189,14 @@ object Registration extends Logging {
   }
 
   private def getCountry(countryCode: String): Country = {
-    val countryName = Country
-      .euCountries.find(_.code == countryCode).get.name
-    Country(code = countryCode, name = countryName)
+    Country
+      .euCountries.find(_.code == countryCode) match {
+      case Some(country) => country
+      case _ =>
+        val exception = new IllegalStateException(s"Unable to find country $countryCode")
+        logger.error(exception.getMessage, exception)
+        throw exception
+    }
   }
 
   private def getTradeDetails(etmpEuRegistrationDetails: EtmpEuRegistrationDetails): TradeDetails = {

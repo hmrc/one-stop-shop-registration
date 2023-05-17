@@ -48,6 +48,7 @@ class RegistrationServiceRepositoryImpl @Inject()(
       maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
     } yield {
       maybeRegistration.map { registration =>
+        println(s"got reg ${registration}")
         if (appConfig.exclusionsEnabled) {
           registration.copy(excludedTrader = maybeExcludedTrader)
         } else {
