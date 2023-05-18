@@ -58,8 +58,8 @@ trait BaseSpec
       ),
         EtmpEuRegistrationDetails(
           countryOfRegistration = "DE",
-          vatNumber = None,
-          taxIdentificationNumber = Some("DE123"),
+          vatNumber = Some("DE123"),
+          taxIdentificationNumber = None,
           fixedEstablishment = Some(true),
           tradingName = Some("Name"),
           fixedEstablishmentAddressLine1 = Some("Line 1"),
