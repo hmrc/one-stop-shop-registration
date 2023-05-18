@@ -45,7 +45,16 @@ object EtmpEuRegistrationDetails {
         val registrationNumber = CountryWithValidationDetails.convertTaxIdentifierForTransfer(registrationWithFE.taxIdentifier.value, registrationWithFE.country.code)
         EtmpEuRegistrationDetails(
           countryOfRegistration = registrationWithFE.country.code,
-          taxIdentificationNumber = Some(registrationNumber),
+          if (registrationWithFE.taxIdentifier.identifierType == EuTaxIdentifierType.Vat) {
+            Some(registrationNumber)
+          } else {
+            None
+          },
+          taxIdentificationNumber = if (registrationWithFE.taxIdentifier.identifierType == EuTaxIdentifierType.Other) {
+            Some(registrationNumber)
+          } else {
+            None
+          },
           fixedEstablishment = Some(true),
           tradingName = Some(registrationWithFE.fixedEstablishment.tradingName),
           fixedEstablishmentAddressLine1 = Some(registrationWithFE.fixedEstablishment.address.line1),
@@ -57,8 +66,17 @@ object EtmpEuRegistrationDetails {
       case registrationWithoutFEWithTradeDetails: RegistrationWithoutFixedEstablishmentWithTradeDetails =>
         val registrationNumber = CountryWithValidationDetails.convertTaxIdentifierForTransfer(registrationWithoutFEWithTradeDetails.taxIdentifier.value, registrationWithoutFEWithTradeDetails.country.code)
         EtmpEuRegistrationDetails(
-          countryOfRegistration =  registrationWithoutFEWithTradeDetails.country.code,
-          taxIdentificationNumber = Some(registrationNumber),
+          countryOfRegistration = registrationWithoutFEWithTradeDetails.country.code,
+          if (registrationWithoutFEWithTradeDetails.taxIdentifier.identifierType == EuTaxIdentifierType.Vat) {
+            Some(registrationNumber)
+          } else {
+            None
+          },
+          taxIdentificationNumber = if (registrationWithoutFEWithTradeDetails.taxIdentifier.identifierType == EuTaxIdentifierType.Other) {
+            Some(registrationNumber)
+          } else {
+            None
+          },
           fixedEstablishment = Some(false),
           tradingName = Some(registrationWithoutFEWithTradeDetails.tradeDetails.tradingName),
           fixedEstablishmentAddressLine1 = Some(registrationWithoutFEWithTradeDetails.tradeDetails.address.line1),
