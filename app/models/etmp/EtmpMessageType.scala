@@ -16,10 +16,19 @@
 
 package models.etmp
 
-import play.api.libs.json.{Json, OFormat}
+import models.{Enumerable, WithName}
 
-case class EtmpAdministration(messageType: EtmpMessageType, regimeID: String = "OSS")
+sealed trait EtmpMessageType
 
-object EtmpAdministration {
-  implicit val format: OFormat[EtmpAdministration] = Json.format[EtmpAdministration]
+object EtmpMessageType extends Enumerable.Implicits {
+  case object OSSSubscriptionCreate extends WithName("OSSSubscriptionCreate") with EtmpMessageType
+  case object OSSSubscriptionAmend extends WithName("OSSSubscriptionAmend") with EtmpMessageType
+
+  val values: Seq[EtmpMessageType] = Seq(
+    OSSSubscriptionCreate,
+    OSSSubscriptionAmend
+  )
+
+  implicit val enumerable: Enumerable[EtmpMessageType] =
+    Enumerable(values.map(v => v.toString -> v): _*)
 }

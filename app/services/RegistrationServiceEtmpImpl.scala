@@ -21,7 +21,7 @@ import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnect
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
-import models.etmp.{EtmpRegistrationRequest, EtmpRegistrationStatus}
+import models.etmp.{EtmpMessageType, EtmpRegistrationRequest, EtmpRegistrationStatus}
 import models.requests.RegistrationRequest
 import models._
 import models.audit.{EtmpRegistrationAuditModel, SubmissionResult}
@@ -53,7 +53,7 @@ class RegistrationServiceEtmpImpl @Inject()(
 
   def createRegistration(registrationRequest: RegistrationRequest)
                         (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult] = {
-    val etmpRegistrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest)
+    val etmpRegistrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate)
     registrationConnector.create(etmpRegistrationRequest).flatMap {
       case Right(response) =>
         auditService.audit(EtmpRegistrationAuditModel.build(etmpRegistrationRequest, Some(response), None, SubmissionResult.Success))
@@ -125,7 +125,7 @@ class RegistrationServiceEtmpImpl @Inject()(
   }
 
   def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] = {
-    val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
+    val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request, EtmpMessageType.OSSSubscriptionAmend)
     registrationConnector.amendRegistration(registrationRequest).flatMap {
       case Right(amendRegistrationResponse) =>
         logger.info(s"Successfully sent amend registration to ETMP at ${amendRegistrationResponse.processingDateTime} for vrn ${amendRegistrationResponse.vrn}")

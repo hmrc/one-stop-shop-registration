@@ -30,9 +30,9 @@ case class EtmpRegistrationRequest(
 
 object EtmpRegistrationRequest {
 
-  def fromRegistrationRequest(registration: RegistrationRequest): EtmpRegistrationRequest = {
+  def fromRegistrationRequest(registration: RegistrationRequest, etmpMessageType: EtmpMessageType): EtmpRegistrationRequest = {
     EtmpRegistrationRequest(
-      administration = EtmpAdministration(),
+      administration = EtmpAdministration(etmpMessageType),
       customerIdentification = EtmpCustomerIdentification(registration.vrn),
       tradingNames = registration.tradingNames.map(EtmpTradingNames(_)),
       schemeDetails = EtmpSchemeDetails(
