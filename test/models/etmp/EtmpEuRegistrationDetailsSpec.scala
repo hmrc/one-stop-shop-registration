@@ -119,7 +119,7 @@ class EtmpEuRegistrationDetailsSpec extends BaseSpec {
 
         val etmpEuRegistrationDetails = EtmpEuRegistrationDetails(
           countryOfRegistration = "ES",
-          taxIdentificationNumber = Some("123456789"),
+          vatNumber = Some("123456789"),
           fixedEstablishment = Some(true),
           tradingName = Some("Spanish Trading Name"),
           fixedEstablishmentAddressLine1 = Some("Line 1"),

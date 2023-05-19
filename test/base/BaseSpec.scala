@@ -61,7 +61,7 @@ trait BaseSpec
     .withZone(ZoneId.of("GMT"))
 
   val etmpRegistrationRequest: EtmpRegistrationRequest = EtmpRegistrationRequest(
-    administration = EtmpAdministration(),
+    administration = EtmpAdministration(EtmpMessageType.OSSSubscriptionCreate),
     customerIdentification = EtmpCustomerIdentification(vrn),
     tradingNames = Seq(EtmpTradingNames("Foo")),
     schemeDetails = EtmpSchemeDetails(
@@ -133,6 +133,8 @@ trait BaseSpec
     ),
     BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get)
   )
+
+  val etmpAmendRegistrationRequest: EtmpRegistrationRequest = etmpRegistrationRequest.copy(administration = EtmpAdministration(EtmpMessageType.OSSSubscriptionAmend))
 
 }
 

@@ -104,6 +104,9 @@ object RegistrationHttpParser extends BaseHttpParser {
         case NOT_FOUND =>
           logger.warn(s"url not reachable")
           Left(NotFound)
+        case status =>
+          logger.error(s"Unknown error happened on amend registration $status with body ${response.body}")
+          Left(ServerError)
       }
   }
 

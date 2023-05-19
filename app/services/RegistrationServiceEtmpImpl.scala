@@ -21,7 +21,7 @@ import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnect
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
-import models.etmp.{EtmpRegistrationRequest, EtmpRegistrationStatus}
+import models.etmp.{EtmpMessageType, EtmpRegistrationRequest, EtmpRegistrationStatus}
 import models.requests.RegistrationRequest
 import models._
 import models.audit.{EtmpRegistrationAuditModel, SubmissionResult}
@@ -53,7 +53,7 @@ class RegistrationServiceEtmpImpl @Inject()(
 
   def createRegistration(registrationRequest: RegistrationRequest)
                         (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult] = {
-    val etmpRegistrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest)
+    val etmpRegistrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate)
     registrationConnector.create(etmpRegistrationRequest).flatMap {
       case Right(response) =>
         auditService.audit(EtmpRegistrationAuditModel.build(etmpRegistrationRequest, Some(response), None, SubmissionResult.Success))
@@ -95,52 +95,37 @@ class RegistrationServiceEtmpImpl @Inject()(
   }
 
   def get(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[Option[Registration]] = {
-    if (appConfig.duplicateRegistrationIntoRepository) {
-      for {
-        maybeRegistration <- registrationRepository.get(vrn)
-        maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
-      } yield {
-        maybeRegistration.map { registration =>
+    registrationConnector.get(vrn).flatMap {
+      case Right(etmpRegistration) =>
+        getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
+          case Right(vatDetails) =>
+
+            val registration = Registration.fromEtmpRegistration(
+              vrn, vatDetails, etmpRegistration.tradingNames, etmpRegistration.schemeDetails, etmpRegistration.bankDetails
+            )
+
           if (appConfig.exclusionsEnabled) {
-            registration.copy(excludedTrader = maybeExcludedTrader)
-          } else {
-            registration
-          }
-        }
-      }
-    } else {
-      registrationConnector.get(vrn).flatMap {
-        case Right(etmpRegistration) =>
-          getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
-            case Right(vatDetails) =>
-
-              val registration = Registration.fromEtmpRegistration(
-                vrn, vatDetails, etmpRegistration.tradingNames, etmpRegistration.schemeDetails, etmpRegistration.bankDetails
-              )
-
-            if (appConfig.exclusionsEnabled) {
-              exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
-                Some(registration.copy(excludedTrader = maybeExcludedTrader))
-              }
-            } else {
-              Future.successful(Some(registration))
+            exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
+              Some(registration.copy(excludedTrader = maybeExcludedTrader))
             }
-          case Left(error) =>
-            logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
-            Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
-        }
-      case Left(NotFound) =>
-        logger.info(s"There was no Registration from ETMP found")
-        Future.successful(None)
-      case Left(error) =>
-        logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
-        throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
+          } else {
+            Future.successful(Some(registration))
+          }
+        case Left(error) =>
+          logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
+          Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
       }
+    case Left(NotFound) =>
+      logger.info(s"There was no Registration from ETMP found")
+      Future.successful(None)
+    case Left(error) =>
+      logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
+      throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
     }
   }
 
   def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] = {
-    val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request)
+    val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request, EtmpMessageType.OSSSubscriptionAmend)
     registrationConnector.amendRegistration(registrationRequest).flatMap {
       case Right(amendRegistrationResponse) =>
         logger.info(s"Successfully sent amend registration to ETMP at ${amendRegistrationResponse.processingDateTime} for vrn ${amendRegistrationResponse.vrn}")

@@ -18,7 +18,7 @@ package models.etmp
 
 import models.BankDetails
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Json, OWrites, Reads, __}
+import play.api.libs.json.{__, Json, OWrites, Reads}
 
 
 case class DisplayRegistration(

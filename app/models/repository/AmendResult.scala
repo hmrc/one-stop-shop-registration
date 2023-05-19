@@ -21,5 +21,4 @@ sealed trait AmendResult
 object AmendResult {
   case object AmendSucceeded extends AmendResult
 
-  case object DoesntExist extends AmendResult
 }

@@ -10,6 +10,8 @@
 # Failing to follow this rule may result in test routes deployed in production.
 
 # Add all the application routes to the prod.routes file
-->         /                          prod.Routes
-DELETE     /one-stop-shop-registration/test-only/delete-accounts                          @controllers.test.TestOnlyController.deleteAccounts()
-PUT        /one-stop-shop-registration/test-only/create-registrations/:startVrn/:endVrn/:commencementDate   @controllers.test.TestOnlyController.createRegistrations(startVrn:Int, endVrn: Int, commencementDate: LocalDate)
+->            /                                                                                                     prod.Routes
+DELETE        /one-stop-shop-registration/test-only/delete-accounts                                                 @controllers.test.TestOnlyController.deleteAccounts()
+PUT           /one-stop-shop-registration/test-only/create-registrations/:startVrn/:endVrn/:commencementDate        @controllers.test.TestOnlyController.createRegistrations(startVrn:Int, endVrn: Int, commencementDate: LocalDate)
+GET           /one-stop-shop-registration/test-only/get-registration/:vrn                                           @controllers.test.TestOnlyController.getRegistration(vrn: String)
+PUT           /one-stop-shop-registration/test-only/amend-registration                                              @controllers.test.TestOnlyController.amendRegistration()
