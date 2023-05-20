@@ -57,6 +57,9 @@ class RegistrationServiceRepositoryImpl @Inject()(
     }
   }
 
-  def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] =
-    registrationRepository.set(buildRegistration(request, clock))
+  def amend(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[AmendResult] =
+    registrationRepository.set(buildRegistration(registrationRequest, clock))
+
+  def amendWithoutAudit(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] =
+    registrationRepository.set(buildRegistration(registrationRequest, clock))
 }

@@ -55,7 +55,9 @@ trait RegistrationService extends Logging {
 
   def get(vrn: Vrn)(implicit hc: HeaderCarrier): Future[Option[Registration]]
 
-  def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult]
+  def amend(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[AmendResult]
+
+  def amendWithoutAudit(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult]
 
 }
 

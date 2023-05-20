@@ -181,7 +181,7 @@ class RegistrationControllerSpec extends BaseSpec {
     "must return 201 when given a valid payload and the registration is created successfully" in {
 
       val mockService = mock[RegistrationServiceRepositoryImpl]
-      when(mockService.amend(any())(any())) thenReturn Future.successful(AmendSucceeded)
+      when(mockService.amend(any())(any(), any())) thenReturn Future.successful(AmendSucceeded)
 
       val app =
         applicationBuilder
