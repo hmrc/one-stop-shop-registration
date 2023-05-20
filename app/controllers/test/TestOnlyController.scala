@@ -83,7 +83,7 @@ class TestOnlyController @Inject()(
   def amendRegistration(): Action[RegistrationRequest] = Action(parse.json[RegistrationRequest]).async {
     implicit request =>
       registrationService
-        .amend(request.body)
+        .amendWithoutAudit(request.body)
         .map {
           case AmendSucceeded => Ok
         }

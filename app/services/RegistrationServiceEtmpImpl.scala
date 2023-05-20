@@ -21,10 +21,10 @@ import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnect
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
-import models.etmp.{EtmpMessageType, EtmpRegistrationRequest, EtmpRegistrationStatus}
+import models.etmp.{AmendRegistrationResponse, EtmpMessageType, EtmpRegistrationRequest, EtmpRegistrationStatus}
 import models.requests.RegistrationRequest
 import models._
-import models.audit.{EtmpRegistrationAuditModel, SubmissionResult}
+import models.audit.{EtmpRegistrationAuditModel, EtmpRegistrationAuditType, SubmissionResult}
 import models.repository.{AmendResult, InsertResult}
 import models.repository.AmendResult.AmendSucceeded
 import play.api.http.Status.NO_CONTENT
@@ -56,7 +56,7 @@ class RegistrationServiceEtmpImpl @Inject()(
     val etmpRegistrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate)
     registrationConnector.create(etmpRegistrationRequest).flatMap {
       case Right(response) =>
-        auditService.audit(EtmpRegistrationAuditModel.build(etmpRegistrationRequest, Some(response), None, SubmissionResult.Success))
+        auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.CreateRegistration, etmpRegistrationRequest, Some(response), None, None, SubmissionResult.Success))
         (for {
           _ <- registrationStatusRepository.delete(response.formBundleNumber)
           _ <- registrationStatusRepository.insert(RegistrationStatus(subscriptionId = response.formBundleNumber,
@@ -85,11 +85,11 @@ class RegistrationServiceEtmpImpl @Inject()(
         }).flatten
       case Left(EtmpEnrolmentError(EtmpEnrolmentErrorResponse.alreadyActiveSubscriptionErrorCode, _)) =>
         logger.warn("Enrolment already existed")
-        auditService.audit(EtmpRegistrationAuditModel.build(etmpRegistrationRequest, None, None, SubmissionResult.Duplicate))
+        auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.CreateRegistration, etmpRegistrationRequest, None, None, None, SubmissionResult.Duplicate))
         Future.successful(AlreadyExists)
       case Left(error) =>
         logger.error(s"There was an error creating Registration enrolment from ETMP: $error")
-        auditService.audit(EtmpRegistrationAuditModel.build(etmpRegistrationRequest, None, Some(error.body), SubmissionResult.Failure))
+        auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.CreateRegistration, etmpRegistrationRequest, None, None, Some(error.body), SubmissionResult.Failure))
         throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
     }
   }
@@ -108,33 +108,56 @@ class RegistrationServiceEtmpImpl @Inject()(
               etmpRegistration.bankDetails
             )
 
-          if (appConfig.exclusionsEnabled) {
-            exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
-              Some(registration.copy(excludedTrader = maybeExcludedTrader))
+            if (appConfig.exclusionsEnabled) {
+              exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
+                Some(registration.copy(excludedTrader = maybeExcludedTrader))
+              }
+            } else {
+              Future.successful(Some(registration))
             }
-          } else {
-            Future.successful(Some(registration))
-          }
-        case Left(error) =>
-          logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
-          Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
-      }
-    case Left(NotFound) =>
-      logger.info(s"There was no Registration from ETMP found")
-      Future.successful(None)
-    case Left(error) =>
-      logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
-      throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
+          case Left(error) =>
+            logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
+            Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
+        }
+      case Left(NotFound) =>
+        logger.info(s"There was no Registration from ETMP found")
+        Future.successful(None)
+      case Left(error) =>
+        logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
+        throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
     }
   }
 
-  def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] = {
-    val registrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(request, EtmpMessageType.OSSSubscriptionAmend)
-    registrationConnector.amendRegistration(registrationRequest).flatMap {
+  def amend(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[AmendResult] = {
+
+    val auditBlock = (etmpRegistrationRequest: EtmpRegistrationRequest, amendRegistrationResponse: AmendRegistrationResponse) =>
+      auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.CreateRegistration, etmpRegistrationRequest, None, Some(amendRegistrationResponse), None, SubmissionResult.Success))
+
+    amendRegistration(
+      registrationRequest,
+      auditBlock
+    )
+  }
+
+  def amendWithoutAudit(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] = {
+
+    val emptyAuditBlock = (_: EtmpRegistrationRequest, _: AmendRegistrationResponse) => ()
+
+    amendRegistration(
+      registrationRequest,
+      emptyAuditBlock
+    )
+  }
+
+  private def amendRegistration(registrationRequest: RegistrationRequest, auditBlock: (EtmpRegistrationRequest, AmendRegistrationResponse) => Unit): Future[AmendResult] = {
+    val etmpRegistrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionAmend)
+    registrationConnector.amendRegistration(etmpRegistrationRequest).flatMap {
       case Right(amendRegistrationResponse) =>
+        auditBlock(etmpRegistrationRequest, amendRegistrationResponse)
+
         logger.info(s"Successfully sent amend registration to ETMP at ${amendRegistrationResponse.processingDateTime} for vrn ${amendRegistrationResponse.vrn}")
-        if(appConfig.duplicateRegistrationIntoRepository) {
-          registrationRepository.set(buildRegistration(request, clock))
+        if (appConfig.duplicateRegistrationIntoRepository) {
+          registrationRepository.set(buildRegistration(registrationRequest, clock))
         } else {
           Future.successful(AmendSucceeded)
         }
@@ -143,5 +166,4 @@ class RegistrationServiceEtmpImpl @Inject()(
         throw EtmpException(s"There was an error amending Registration from ETMP: ${e.getClass} ${e.body}")
     }
   }
-
 }
