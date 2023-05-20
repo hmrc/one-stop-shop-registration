@@ -76,6 +76,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     reset(exclusionService)
     reset(appConfig)
     reset(serviceMetrics)
+    reset(auditService)
 
     when(serviceMetrics.startTimer(any()))
       .thenReturn(new Timer().time)
@@ -106,7 +107,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
           when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
-          when(auditService.audit(any()))
+          doNothing().when(auditService).audit(any())(any(), any())
           when(registrationConnector.create(any())) thenReturn Future.successful(
             Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
           when(registrationRepository.insert(any())) thenReturn successful(InsertSucceeded)
@@ -115,31 +116,33 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
           verify(registrationRepository, times(0)).insert(any())
-          verify(auditService, times(1)).audit(any())
+          verify(auditService, times(1)).audit(any())(any(), any())
         }
 
         "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
           when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+          doNothing().when(auditService).audit(any())(any(), any())
           when(registrationConnector.create(any())) thenReturn Future.successful(Left(EtmpEnrolmentError("007", "error")))
           when(registrationRepository.insert(any())) thenReturn successful(AlreadyExists)
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
           verify(registrationRepository, times(0)).insert(any())
-          verify(auditService, times(1)).audit(any())
+          verify(auditService, times(1)).audit(any())(any(), any())
         }
 
         "must throw EtmpException when connector returns any other error" in {
 
           when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+          doNothing().when(auditService).audit(any())(any(), any())
           when(registrationConnector.create(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
           whenReady(registrationService.createRegistration(registrationRequest).failed) {
             exp => exp mustBe EtmpException(s"There was an error creating Registration enrolment from ETMP: ${ServiceUnavailable.body}")
           }
           verify(registrationRepository, times(0)).insert(any())
-          verify(auditService, times(1)).audit(any())
+          verify(auditService, times(1)).audit(any())(any(), any())
         }
       }
 
@@ -149,6 +152,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
           when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          doNothing().when(auditService).audit(any())(any(), any())
           when(registrationConnector.create(any())) thenReturn Future.successful(
             Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
           when(registrationRepository.insert(any())) thenReturn successful(InsertSucceeded)
@@ -158,13 +162,14 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
           verify(registrationRepository, times(1)).insert(any())
-          verify(auditService, times(1)).audit(any())
+          verify(auditService, times(1)).audit(any())(any(), any())
         }
 
         "must return an error when repository returns an error" in {
 
           when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          doNothing().when(auditService).audit(any())(any(), any())
           when(registrationConnector.create(any())) thenReturn Future.successful(
             Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
           when(registrationRepository.insert(any())) thenReturn successful(AlreadyExists)
@@ -173,36 +178,39 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
           verify(registrationRepository, times(1)).insert(any())
-          verify(auditService, times(1)).audit(any())
+          verify(auditService, times(1)).audit(any())(any(), any())
         }
 
         "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
           when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          doNothing().when(auditService).audit(any())(any(), any())
           when(registrationConnector.create(any())) thenReturn Future.successful(Left(EtmpEnrolmentError("007", "error")))
 
           registrationService.createRegistration(registrationRequest).futureValue mustEqual AlreadyExists
           verify(registrationRepository, times(0)).insert(any())
-          verify(auditService, times(1)).audit(any())
+          verify(auditService, times(1)).audit(any())(any(), any())
         }
 
         "must throw EtmpException when connector returns any other error" in {
 
           when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          doNothing().when(auditService).audit(any())(any(), any())
           when(registrationConnector.create(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
           whenReady(registrationService.createRegistration(registrationRequest).failed) {
             exp => exp mustBe EtmpException(s"There was an error creating Registration enrolment from ETMP: ${ServiceUnavailable.body}")
           }
           verify(registrationRepository, times(0)).insert(any())
-          verify(auditService, times(1)).audit(any())
+          verify(auditService, times(1)).audit(any())(any(), any())
         }
 
         "must throw EtmpException when the retryService returns an error" in {
 
           when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          doNothing().when(auditService).audit(any())(any(), any())
           when(registrationConnector.create(any())) thenReturn Future.successful(
             Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
 
@@ -215,7 +223,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
             exp => exp mustBe EtmpException(s"Failed to add enrolment")
           }
           verify(registrationRepository, times(0)).insert(any())
-          verify(auditService, times(1)).audit(any())
+          verify(auditService, times(1)).audit(any())(any(), any())
         }
 
       }
@@ -282,24 +290,26 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       "must create a registration from the request, save it and return the result of the save operation" in {
 
         when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+        doNothing().when(auditService).audit(any())(any(), any())
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
           Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
 
         registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
         verify(registrationRepository, times(0)).insert(any())
-        verify(auditService, times(1)).audit(any())
+        verify(auditService, times(1)).audit(any())(any(), any())
       }
 
       "must throw EtmpException when connector an error" in {
 
         when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+        doNothing().when(auditService).audit(any())(any(), any())
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
         whenReady(registrationService.amend(registrationRequest).failed) {
           exp => exp mustBe EtmpException(s"There was an error amending Registration from ETMP: ${ServiceUnavailable.getClass} ${ServiceUnavailable.body}")
         }
         verify(registrationRepository, times(0)).insert(any())
-        verify(auditService, times(1)).audit(any())
+        verifyNoInteractions(auditService)
       }
     }
 
@@ -308,25 +318,27 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       "must create a registration from the request, save it and return the result of the save operation" in {
 
         when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+        doNothing().when(auditService).audit(any())(any(), any())
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
           Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
         when(registrationRepository.set(any())) thenReturn successful(AmendSucceeded)
 
         registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
         verify(registrationRepository, times(1)).set(any())
-        verify(auditService, times(1)).audit(any())
+        verify(auditService, times(1)).audit(any())(any(), any())
       }
 
       "must throw EtmpException when connector returns an error" in {
 
         when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+        doNothing().when(auditService).audit(any())(any(), any())
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
         whenReady(registrationService.amend(registrationRequest).failed) {
           exp => exp mustBe EtmpException(s"There was an error amending Registration from ETMP: ${ServiceUnavailable.getClass} ${ServiceUnavailable.body}")
         }
         verifyNoInteractions(registrationRepository)
-        verify(auditService, times(1)).audit(any())
+        verifyNoInteractions(auditService)
       }
 
     }
