@@ -36,7 +36,8 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
         "microservice.services.display-registration.authorizationToken" -> "auth-token",
         "microservice.services.display-registration.environment" -> "test-environment",
         "microservice.services.amend-registration.host" -> "127.0.0.1",
-        "microservice.services.amend-registration.port" -> server.port
+        "microservice.services.amend-registration.port" -> server.port,
+        "microservice.services.amend-registration.authorizationToken" -> "reallySecret"
       )
       .build()
 
@@ -365,7 +366,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
 
       server.stubFor(
         put(urlEqualTo(amendRegistrationUrl))
-          .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+          .withHeader(AUTHORIZATION, equalTo("Bearer reallySecret"))
           .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
           .withRequestBody(equalTo(requestJson))
           .willReturn(aResponse()
