@@ -42,6 +42,8 @@ class RegistrationConnector @Inject()(
   private def getHeaders(correlationId: String): Seq[(String, String)] = displayRegistrationConfig.eisEtmpGetHeaders(correlationId)
   private def createHeaders(correlationId: String): Seq[(String, String)] = ifConfig.eisEtmpCreateHeaders(correlationId)
 
+  private def amendHeaders(correlationId: String): Seq[(String, String)] = amendRegistrationConfig.eisEtmpAmendHeaders(correlationId)
+
   def get(vrn: Vrn): Future[DisplayRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString
@@ -68,7 +70,7 @@ class RegistrationConnector @Inject()(
       case (key, _) => key.matches(AUTHORIZATION)
     }
 
-    logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
+    logger.info(s"Sending create request to etmp with headers $headersWithoutAuth")
 
     httpClient.POST[EtmpRegistrationRequest, CreateEtmpRegistrationResponse](
       s"${ifConfig.baseUrl}vec/ossregistration/regdatatransfer/v1",
@@ -88,7 +90,12 @@ class RegistrationConnector @Inject()(
   def amendRegistration(registration: EtmpRegistrationRequest): Future[CreateAmendRegistrationResponse] = {
 
     val correlationId: String = UUID.randomUUID().toString
-    val headersWithCorrelationId = createHeaders(correlationId)
+    val headersWithCorrelationId = amendHeaders(correlationId)
+    val headersWithoutAuth = headersWithCorrelationId.filterNot {
+      case (key, _) => key.matches(AUTHORIZATION)
+    }
+
+    logger.info(s"Sending amend request to etmp with headers $headersWithoutAuth")
 
     httpClient.PUT[EtmpRegistrationRequest, CreateAmendRegistrationResponse](
       s"${amendRegistrationConfig.baseUrl}vec/ossregistration/amendreg/v1",
