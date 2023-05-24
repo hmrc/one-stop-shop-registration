@@ -59,8 +59,10 @@ object Registration extends Logging {
     Registration(
       vrn = vrn,
       registeredCompanyName = vatDetails.organisationName.getOrElse {
-        logger.warn("Registration did not contain a registered company name")
-        throw new IllegalStateException("Registration must have a registered company name")
+        vatDetails.individualName.getOrElse{
+          logger.warn("Registration did not contain a registered company name or individual name")
+          throw new IllegalStateException("Registration must have a registered company name or individual name")
+        }
       },
       tradingNames = tradingNames.map(_.tradingName),
       vatDetails = VatDetails(
