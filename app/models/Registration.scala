@@ -25,7 +25,7 @@ import models.exclusions.ExcludedTrader
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate}
+import java.time.{Instant, LocalDate, ZoneId}
 
 case class Registration(
                          vrn: Vrn,
@@ -86,7 +86,7 @@ object Registration extends Logging {
       isOnlineMarketplace = schemeDetails.onlineMarketPlace,
       niPresence = None,
       dateOfFirstSale = schemeDetails.firstSaleDate.map(date => LocalDate.parse(date, dateFormatter)),
-      submissionReceived = None,
+      submissionReceived = schemeDetails.registrationDate.map(registrationDate => LocalDate.parse(registrationDate, dateFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant),
       lastUpdated = None,
       nonCompliantReturns = schemeDetails.nonCompliantReturns,
       nonCompliantPayments = schemeDetails.nonCompliantPayments

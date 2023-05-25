@@ -21,8 +21,9 @@ import play.api.libs.json.{Json, OWrites, Reads, __}
 
 import java.time.format.DateTimeFormatter
 
-//TODO Extra fields that will need to be pulled in from display - Suggest a trait
 case class EtmpSchemeDetails(commencementDate: String,
+                             requestDate: Option[String] = None,
+                             registrationDate: Option[String] = None,
                              firstSaleDate: Option[String],
                              euRegistrationDetails: Seq[EtmpEuRegistrationDetails],
                              previousEURegistrationDetails: Seq[EtmpPreviousEURegistrationDetails],
@@ -40,6 +41,8 @@ object EtmpSchemeDetails {
 
   private def fromDisplayRegistrationPayload(
                                               commencementDate: String,
+                                              requestDate: Option[String],
+                                              registrationDate: Option[String],
                                               firstSaleDate: Option[String],
                                               euRegistrationDetails: Option[Seq[EtmpEuRegistrationDetails]],
                                               previousEURegistrationDetails: Option[Seq[EtmpPreviousEURegistrationDetails]],
@@ -53,6 +56,8 @@ object EtmpSchemeDetails {
                                             ): EtmpSchemeDetails =
     EtmpSchemeDetails(
       commencementDate = commencementDate,
+      requestDate = requestDate,
+      registrationDate = registrationDate,
       firstSaleDate = firstSaleDate,
       euRegistrationDetails = euRegistrationDetails.fold(Seq.empty[EtmpEuRegistrationDetails])(a => a),
       previousEURegistrationDetails = previousEURegistrationDetails.fold(Seq.empty[EtmpPreviousEURegistrationDetails])(a => a),
@@ -68,6 +73,8 @@ object EtmpSchemeDetails {
   implicit val reads: Reads[EtmpSchemeDetails] =
     (
       (__ \ "commencementDate").read[String] and
+        (__ \ "requestDate").readNullable[String] and
+        (__ \ "registrationDate").readNullable[String] and
         (__ \ "firstSaleDate").readNullable[String] and
         (__ \ "euRegistrationDetails").readNullable[Seq[EtmpEuRegistrationDetails]] and
         (__ \ "previousEURegistrationDetails").readNullable[Seq[EtmpPreviousEURegistrationDetails]] and

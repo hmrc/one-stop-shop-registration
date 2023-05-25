@@ -100,8 +100,18 @@ class RegistrationServiceEtmpImpl @Inject()(
         getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
           case Right(vatDetails) =>
 
+            println()
+            println()
+            println(etmpRegistration.schemeDetails.registrationDate)
+            println()
+            println()
+
             val registration = Registration.fromEtmpRegistration(
-              vrn, vatDetails, etmpRegistration.tradingNames, etmpRegistration.schemeDetails, etmpRegistration.bankDetails
+              vrn,
+              vatDetails,
+              etmpRegistration.tradingNames,
+              etmpRegistration.schemeDetails,
+              etmpRegistration.bankDetails
             )
 
           if (appConfig.exclusionsEnabled) {
