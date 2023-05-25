@@ -368,6 +368,8 @@ trait Generators {
         EtmpSchemeDetails(
           commencementDate,
           firstSaleDate,
+          None,
+          None,
           euRegistrationDetails,
           previousEURegistrationDetails,
           onlineMarketPlace,

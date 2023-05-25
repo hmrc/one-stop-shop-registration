@@ -33,6 +33,8 @@ object DisplayRegistrationData extends BaseSpec {
   implicit val writesEtmpSchemeDetails: OWrites[EtmpSchemeDetails] = {
     (
       (__ \ "commencementDate").write[String] and
+        (__ \ "requestDate").writeNullable[String] and
+        (__ \ "registrationDate").writeNullable[String] and
         (__ \ "firstSaleDate").writeNullable[String] and
         (__ \ "euRegistrationDetails").write[Seq[EtmpEuRegistrationDetails]] and
         (__ \ "previousEURegistrationDetails").write[Seq[EtmpPreviousEURegistrationDetails]] and

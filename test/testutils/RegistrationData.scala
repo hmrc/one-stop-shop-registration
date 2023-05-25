@@ -309,6 +309,8 @@ object RegistrationData {
       schemeDetails = EtmpSchemeDetails(
         commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
         None,
+        None,
+        None,
         euRegistrationDetails = Seq.empty,
         previousEURegistrationDetails = Seq.empty,
         onlineMarketPlace = true,
