@@ -44,12 +44,12 @@ trait RegistrationService extends Logging {
       isOnlineMarketplace = request.isOnlineMarketplace,
       niPresence = request.niPresence,
       dateOfFirstSale = request.dateOfFirstSale,
-      submissionReceived = Some(Instant.now(clock)),
-      lastUpdated = if (isAmend) {
-        Some(Instant.now(clock))
-      } else {
+      submissionReceived = if (isAmend) {
         None
+      } else {
+        Some(Instant.now(clock))
       },
+      lastUpdated = Some(Instant.now(clock)),
       nonCompliantReturns = request.nonCompliantReturns,
       nonCompliantPayments = request.nonCompliantPayments
     )
