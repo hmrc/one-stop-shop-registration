@@ -58,5 +58,5 @@ class RegistrationServiceRepositoryImpl @Inject()(
   }
 
   def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] =
-    registrationRepository.set(buildRegistration(request, clock, isAmend = false))
+    registrationRepository.set(buildRegistration(request, clock, isAmend = true))
 }
