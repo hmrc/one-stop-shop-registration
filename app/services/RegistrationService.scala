@@ -44,12 +44,7 @@ trait RegistrationService extends Logging {
       isOnlineMarketplace = request.isOnlineMarketplace,
       niPresence = request.niPresence,
       dateOfFirstSale = request.dateOfFirstSale,
-      submissionReceived = Some(request.submissionReceived
-        .getOrElse {
-          val now = Instant.now(clock)
-          println(now)
-          now
-        }),
+      submissionReceived = Some(request.submissionReceived.getOrElse(Instant.now(clock))),
       lastUpdated = Some(Instant.now(clock)),
       nonCompliantReturns = request.nonCompliantReturns,
       nonCompliantPayments = request.nonCompliantPayments
