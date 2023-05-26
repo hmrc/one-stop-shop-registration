@@ -27,6 +27,7 @@ import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
+import play.api.inject.bind
 import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
 import play.api.test.Helpers.running
@@ -36,6 +37,7 @@ import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.{Clock, Instant}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -77,12 +79,14 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
 
     "must create a registration from the request, save it and return the result of the save operation" in {
 
+      when(registrationRequest.submissionReceived) thenReturn None
       when(registrationRepository.insert(any())).thenReturn(successful(InsertSucceeded))
 
       registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
     }
 
     "propagate any error" in {
+      when(registrationRequest.submissionReceived) thenReturn None
       when(registrationRepository.insert(any())).thenThrow(emulatedFailure)
 
       val caught = intercept[RuntimeException] {
@@ -121,12 +125,15 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
 
     "must amend a registration from the request, save it and return the result of the save operation" in {
 
+      when(registrationRequest.submissionReceived) thenReturn Some(Instant.now())
       when(registrationRepository.set(any())).thenReturn(successful(AmendSucceeded))
 
       registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
     }
 
     "propagate any error" in {
+
+      when(registrationRequest.submissionReceived) thenReturn Some(Instant.now())
       when(registrationRepository.set(any())).thenThrow(emulatedFailure)
 
       val caught = intercept[RuntimeException] {

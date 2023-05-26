@@ -69,7 +69,7 @@ class RegistrationServiceEtmpImpl @Inject()(
                 retryService.getEtmpRegistrationStatus(appConfig.maxRetryCount, appConfig.delay, response.formBundleNumber).flatMap {
                   case EtmpRegistrationStatus.Success =>
                     logger.info("Insert succeeded")
-                    registrationRepository.insert(buildRegistration(registrationRequest, clock, isAmend = false))
+                    registrationRepository.insert(buildRegistration(registrationRequest, clock))
                   case _ =>
                     logger.error(s"Failed to add enrolment")
                     registrationStatusRepository.set(RegistrationStatus(subscriptionId = response.formBundleNumber, status = EtmpRegistrationStatus.Error))
@@ -134,7 +134,7 @@ class RegistrationServiceEtmpImpl @Inject()(
       case Right(amendRegistrationResponse) =>
         logger.info(s"Successfully sent amend registration to ETMP at ${amendRegistrationResponse.processingDateTime} for vrn ${amendRegistrationResponse.vrn}")
         if(appConfig.duplicateRegistrationIntoRepository) {
-          registrationRepository.set(buildRegistration(request, clock, isAmend = true))
+          registrationRepository.set(buildRegistration(request, clock))
         } else {
           Future.successful(AmendSucceeded)
         }

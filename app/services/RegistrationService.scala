@@ -29,7 +29,7 @@ import scala.concurrent.Future
 
 trait RegistrationService extends Logging {
 
-  def buildRegistration(request: RegistrationRequest, clock: Clock, isAmend: Boolean): Registration = {
+  def buildRegistration(request: RegistrationRequest, clock: Clock): Registration = {
     Registration(
       vrn = request.vrn,
       registeredCompanyName = request.registeredCompanyName,
@@ -44,11 +44,12 @@ trait RegistrationService extends Logging {
       isOnlineMarketplace = request.isOnlineMarketplace,
       niPresence = request.niPresence,
       dateOfFirstSale = request.dateOfFirstSale,
-      submissionReceived = if (isAmend) {
-        None
-      } else {
-        Some(Instant.now(clock))
-      },
+      submissionReceived = Some(request.submissionReceived
+        .getOrElse {
+          val now = Instant.now(clock)
+          println(now)
+          now
+        }),
       lastUpdated = Some(Instant.now(clock)),
       nonCompliantReturns = request.nonCompliantReturns,
       nonCompliantPayments = request.nonCompliantPayments

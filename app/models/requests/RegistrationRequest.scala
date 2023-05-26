@@ -20,7 +20,7 @@ import models._
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 
 case class RegistrationRequest(
                                 vrn: Vrn,
@@ -37,7 +37,8 @@ case class RegistrationRequest(
                                 niPresence: Option[NiPresence],
                                 dateOfFirstSale: Option[LocalDate],
                                 nonCompliantReturns: Option[Int],
-                                nonCompliantPayments: Option[Int]
+                                nonCompliantPayments: Option[Int],
+                                submissionReceived: Option[Instant]
                               )
 
 object RegistrationRequest {

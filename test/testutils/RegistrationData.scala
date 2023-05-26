@@ -346,7 +346,8 @@ object RegistrationData {
       registration.niPresence,
       registration.dateOfFirstSale,
       registration.nonCompliantReturns,
-      registration.nonCompliantPayments
+      registration.nonCompliantPayments,
+      registration.submissionReceived
     )
   }
 

@@ -40,7 +40,7 @@ class RegistrationServiceRepositoryImpl @Inject()(
 
   def createRegistration(registrationRequest: RegistrationRequest)
                         (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult] =
-    registrationRepository.insert(buildRegistration(registrationRequest, clock, isAmend = false))
+    registrationRepository.insert(buildRegistration(registrationRequest, clock))
 
   def get(vrn: Vrn)(implicit hc: HeaderCarrier): Future[Option[Registration]] = {
     for {
@@ -58,5 +58,5 @@ class RegistrationServiceRepositoryImpl @Inject()(
   }
 
   def amend(request: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] =
-    registrationRepository.set(buildRegistration(request, clock, isAmend = true))
+    registrationRepository.set(buildRegistration(request, clock))
 }
