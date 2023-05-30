@@ -131,7 +131,7 @@ class RegistrationServiceEtmpImpl @Inject()(
   def amend(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[AmendResult] = {
 
     val auditBlock = (etmpRegistrationRequest: EtmpRegistrationRequest, amendRegistrationResponse: AmendRegistrationResponse) =>
-      auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.CreateRegistration, etmpRegistrationRequest, None, Some(amendRegistrationResponse), None, SubmissionResult.Success))
+      auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.AmendRegistration, etmpRegistrationRequest, None, Some(amendRegistrationResponse), None, SubmissionResult.Success))
 
     amendRegistration(
       registrationRequest,

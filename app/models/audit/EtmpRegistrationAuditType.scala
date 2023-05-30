@@ -29,7 +29,7 @@ object EtmpRegistrationAuditType extends Enumerable.Implicits {
     override val transactionName: String = "etmp-registration"
   }
   case object AmendRegistration extends WithName("AmendRegistration") with EtmpRegistrationAuditType {
-    override val auditType: String = "RegistrationAmended"
-    override val transactionName: String = "registration-amended"
+    override val auditType: String = "EtmpRegistrationAmended"
+    override val transactionName: String = "etmp-registration-amended"
   }
 }
