@@ -32,6 +32,7 @@ trait BaseHttpParser extends Logging {
           case JsSuccess(registration, _) => Right(registration)
           case JsError(errors) =>
             logger.error(s"Failed trying to parse JSON with errors: $errors", errors)
+            logger.error(s"Body was [${response.body}]") // TODO remove
             Left(InvalidJson)
         }
       case NOT_FOUND =>
