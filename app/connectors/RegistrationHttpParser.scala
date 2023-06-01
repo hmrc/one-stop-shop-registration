@@ -16,10 +16,10 @@
 
 package connectors
 
+import models._
+import models.core.EisDisplayErrorResponse
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
 import models.etmp.{AmendRegistrationResponse, DisplayRegistration}
-import models._
-import models.core.{EisDisplayErrorResponse, EisErrorResponse}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -114,7 +114,7 @@ object RegistrationHttpParser extends BaseHttpParser {
           logger.warn(s"Url not reachable")
           Left(NotFound)
         case status =>
-          logger.error(s"Unknown error happened on amend registration $status with body ${response.body}")
+          logger.error(s"Unknown error happened on display registration $status with body ${response.body}")
           Left(ServerError)
       }
   }
