@@ -25,6 +25,7 @@ import models.etmp.{AmendRegistrationResponse, EtmpMessageType, EtmpRegistration
 import models.requests.RegistrationRequest
 import models._
 import models.audit.{EtmpRegistrationAuditModel, EtmpRegistrationAuditType, SubmissionResult}
+import models.core.EisDisplayErrorResponse
 import models.repository.{AmendResult, InsertResult}
 import models.repository.AmendResult.AmendSucceeded
 import play.api.http.Status.NO_CONTENT
@@ -119,7 +120,7 @@ class RegistrationServiceEtmpImpl @Inject()(
             logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
             Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
         }
-      case Left(NotFound) =>
+      case Left(EisDisplayRegistrationError(eisDisplayErrorResponse)) if eisDisplayErrorResponse.errorDetail.errorCode == EisDisplayErrorResponse.displayErrorCodeNoRegistration =>
         logger.info(s"There was no Registration from ETMP found")
         Future.successful(None)
       case Left(error) =>

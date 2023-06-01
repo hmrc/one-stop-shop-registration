@@ -31,3 +31,22 @@ object EisErrorResponse {
   implicit val format: OFormat[EisErrorResponse] = Json.format[EisErrorResponse]
 
 }
+
+case class EisDisplayErrorResponse(
+                                    errorDetail: EisDisplayErrorDetail
+                                  )
+
+case class EisDisplayErrorDetail(
+                                  correlationId: String,
+                                  errorCode: String,
+                                  errorMessage: String,
+                                  timestamp: String
+                                )
+
+object EisDisplayErrorResponse {
+
+  val displayErrorCodeNoRegistration = "089"
+
+  implicit val format: OFormat[EisDisplayErrorResponse] = Json.format[EisDisplayErrorResponse]
+
+}
