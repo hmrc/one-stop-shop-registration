@@ -16,9 +16,10 @@
 
 package connectors
 
-import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
-import models.etmp.{DisplayRegistration, AmendRegistrationResponse}
 import models._
+import models.core.EisDisplayErrorResponse
+import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
+import models.etmp.{AmendRegistrationResponse, DisplayRegistration}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -89,7 +90,33 @@ object RegistrationHttpParser extends BaseHttpParser {
 
   implicit object DisplayRegistrationReads extends HttpReads[DisplayRegistrationResponse] {
     override def read(method: String, url: String, response: HttpResponse): DisplayRegistrationResponse =
-      parseResponse[DisplayRegistration](response)
+      response.status match {
+        case OK => response.json.validate[DisplayRegistration] match {
+          case JsSuccess(displayRegistrationResponse, _) => Right(displayRegistrationResponse)
+          case JsError(errors) =>
+            logger.error(s"Failed trying to parse display registration response JSON with status ${response.status}", errors)
+            logger.error(s"Body was [${response.body}]") // TODO remove
+            Left(InvalidJson)
+        }
+        case UNPROCESSABLE_ENTITY =>
+          logger.debug("Unprocessable entity, attempting to parse error")
+
+          response.json.validate[EisDisplayErrorResponse] match {
+            case JsSuccess(eisDisplayErrorResponse, _) =>
+              Left(EisDisplayRegistrationError(eisDisplayErrorResponse))
+            case JsError(errors) =>
+              logger.error(s"Failed trying to parse display error registration response JSON with status ${response.status} and body ${response.body}", errors)
+              Left(ServerError)
+
+          }
+
+        case NOT_FOUND =>
+          logger.warn(s"Url not reachable")
+          Left(NotFound)
+        case status =>
+          logger.error(s"Unknown error happened on display registration $status with body ${response.body}")
+          Left(ServerError)
+      }
   }
 
   implicit object CreateAmendRegistrationResponseReads extends HttpReads[CreateAmendRegistrationResponse] {

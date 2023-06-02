@@ -24,6 +24,7 @@ import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnect
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import metrics.ServiceMetrics
 import models._
+import models.core.{EisDisplayErrorDetail, EisDisplayErrorResponse}
 import models.enrolments.EtmpEnrolmentResponse
 import models.etmp.{AmendRegistrationResponse, EtmpRegistrationStatus}
 import models.exclusions.ExcludedTrader
@@ -266,8 +267,8 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
     }
 
-    "must return a None when the connector returns Left(NotFound)" in {
-      when(registrationConnector.get(any())) thenReturn Future.successful(Left(NotFound))
+    "must return a None when the connector returns Left Eis display error with code 098" in {
+      when(registrationConnector.get(any())) thenReturn Future.successful(Left(EisDisplayRegistrationError(EisDisplayErrorResponse(EisDisplayErrorDetail("correlationId1", "089", "error message", "timestamp")))))
       registrationService.get(Vrn("123456789")).futureValue mustBe None
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
     }

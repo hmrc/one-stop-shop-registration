@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.RegistrationHttpParser.serviceName
 import generators.Generators
 import models._
+import models.core.{EisDisplayErrorDetail, EisDisplayErrorResponse}
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse, EtmpErrorDetail}
 import models.etmp.AmendRegistrationResponse
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -312,7 +313,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
 
     val body = ""
 
-    Seq((NOT_FOUND, NotFound), (CONFLICT, Conflict), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, InvalidVrn), (SERVICE_UNAVAILABLE, ServiceUnavailable), (123, UnexpectedResponseStatus(123, s"Unexpected response from ${serviceName}, received status 123 with body $body")))
+    Seq((NOT_FOUND, NotFound), (CONFLICT, ServerError), (INTERNAL_SERVER_ERROR, ServerError), (BAD_REQUEST, ServerError), (SERVICE_UNAVAILABLE, ServerError), (123, ServerError))
       .foreach { error =>
         s"should return correct error response when server responds with ${error._1}" in {
 
@@ -332,6 +333,68 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
           }
         }
       }
+
+    "422 errors" - {
+      "should parse error when 422 is returned" in {
+        val app = application
+
+        val body =
+          """{
+            |"errorDetail": {
+            |"timestamp": "2022-12-30T13:43:13Z",
+            |"correlationId": "56523dfe-312d-4bbb-811d-8322c3d36abe",
+            |"errorCode": "003",
+            |"errorMessage": "Duplicate Acknowledgment Reference",
+            |"source": "BACKEND",
+            |"sourceFaultDetail": {
+            |"detail": ["processingDate:2022-01-31T09:26:17Z"]
+            |}
+            |}
+            |}""".stripMargin
+
+        server.stubFor(
+          get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
+            .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+            .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+            .willReturn(aResponse()
+              .withStatus(UNPROCESSABLE_ENTITY)
+              .withBody(body))
+        )
+
+        running(app) {
+
+          val connector = app.injector.instanceOf[RegistrationConnector]
+          val result = connector.get(vrn).futureValue
+
+          val expectedErrorResponse = EisDisplayRegistrationError(EisDisplayErrorResponse(EisDisplayErrorDetail("56523dfe-312d-4bbb-811d-8322c3d36abe", "003", "Duplicate Acknowledgment Reference", "2022-12-30T13:43:13Z")))
+
+          result mustBe Left(expectedErrorResponse)
+        }
+      }
+
+      "should return server error when error response is not processable" in {
+        val app = application
+
+        val body = "{}"
+
+        server.stubFor(
+          get(urlEqualTo(getDisplayRegistrationUrl(vrn)))
+            .withHeader(AUTHORIZATION, equalTo("Bearer auth-token"))
+            .withHeader(CONTENT_TYPE, equalTo(MimeTypes.JSON))
+            .willReturn(aResponse()
+              .withStatus(UNPROCESSABLE_ENTITY)
+              .withBody(body))
+        )
+
+        running(app) {
+
+          val connector = app.injector.instanceOf[RegistrationConnector]
+          val result = connector.get(vrn).futureValue
+
+          result mustBe Left(ServerError)
+        }
+      }
+    }
 
     "should return Error Response when server responds with Http Exception" in {
 
