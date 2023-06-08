@@ -24,7 +24,7 @@ import models.enrolments.EtmpEnrolmentErrorResponse
 import models.etmp.{AmendRegistrationResponse, EtmpMessageType, EtmpRegistrationRequest, EtmpRegistrationStatus}
 import models.requests.RegistrationRequest
 import models._
-import models.audit.{EtmpRegistrationAuditModel, EtmpRegistrationAuditType, SubmissionResult}
+import models.audit.{EtmpDisplayRegistrationAuditModel, EtmpRegistrationAuditModel, EtmpRegistrationAuditType, SubmissionResult}
 import models.core.EisDisplayErrorResponse
 import models.repository.{AmendResult, InsertResult}
 import models.repository.AmendResult.AmendSucceeded
@@ -95,7 +95,7 @@ class RegistrationServiceEtmpImpl @Inject()(
     }
   }
 
-  def get(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[Option[Registration]] = {
+  def get(vrn: Vrn)(implicit headerCarrier: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[Option[Registration]] = {
     registrationConnector.get(vrn).flatMap {
       case Right(etmpRegistration) =>
         getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
@@ -111,9 +111,12 @@ class RegistrationServiceEtmpImpl @Inject()(
 
             if (appConfig.exclusionsEnabled) {
               exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
-                Some(registration.copy(excludedTrader = maybeExcludedTrader))
+                val registrationWithExcludedTrader = registration.copy(excludedTrader = maybeExcludedTrader)
+                auditService.audit(EtmpDisplayRegistrationAuditModel.build(EtmpRegistrationAuditType.DisplayRegistration, etmpRegistration, registrationWithExcludedTrader))
+                Some(registrationWithExcludedTrader)
               }
             } else {
+              auditService.audit(EtmpDisplayRegistrationAuditModel.build(EtmpRegistrationAuditType.DisplayRegistration, etmpRegistration, registration))
               Future.successful(Some(registration))
             }
           case Left(error) =>
@@ -134,23 +137,31 @@ class RegistrationServiceEtmpImpl @Inject()(
     val auditBlock = (etmpRegistrationRequest: EtmpRegistrationRequest, amendRegistrationResponse: AmendRegistrationResponse) =>
       auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.AmendRegistration, etmpRegistrationRequest, None, Some(amendRegistrationResponse), None, SubmissionResult.Success))
 
+    val errorAuditBlock = (etmpRegistrationRequest: EtmpRegistrationRequest) =>
+      auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.AmendRegistration, etmpRegistrationRequest, None, None, None, SubmissionResult.Failure))
+
     amendRegistration(
       registrationRequest,
-      auditBlock
+      auditBlock,
+      errorAuditBlock
     )
   }
 
   def amendWithoutAudit(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] = {
 
     val emptyAuditBlock = (_: EtmpRegistrationRequest, _: AmendRegistrationResponse) => ()
+    val emptyFailureAuditBlock = (_: EtmpRegistrationRequest) => ()
 
     amendRegistration(
       registrationRequest,
-      emptyAuditBlock
+      emptyAuditBlock,
+      emptyFailureAuditBlock
     )
   }
 
-  private def amendRegistration(registrationRequest: RegistrationRequest, auditBlock: (EtmpRegistrationRequest, AmendRegistrationResponse) => Unit): Future[AmendResult] = {
+  private def amendRegistration(registrationRequest: RegistrationRequest,
+                                auditBlock: (EtmpRegistrationRequest, AmendRegistrationResponse) => Unit,
+                                failureAuditBlock: EtmpRegistrationRequest => Unit): Future[AmendResult] = {
     val etmpRegistrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionAmend)
     registrationConnector.amendRegistration(etmpRegistrationRequest).flatMap {
       case Right(amendRegistrationResponse) =>
@@ -164,6 +175,7 @@ class RegistrationServiceEtmpImpl @Inject()(
         }
       case Left(e) =>
         logger.error(s"An error occurred while amending registration ${e.getClass} ${e.body}")
+        failureAuditBlock(etmpRegistrationRequest)
         throw EtmpException(s"There was an error amending Registration from ETMP: ${e.getClass} ${e.body}")
     }
   }
