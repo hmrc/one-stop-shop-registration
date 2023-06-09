@@ -102,7 +102,7 @@ class RegistrationControllerSpec extends BaseSpec {
     "must return OK and a registration when one is found" in {
 
       val mockService = mock[RegistrationServiceRepositoryImpl]
-      when(mockService.get(any())(any())) thenReturn Future.successful(Some(RegistrationData.registration))
+      when(mockService.get(any())(any(), any())) thenReturn Future.successful(Some(RegistrationData.registration))
 
       val app =
         applicationBuilder
@@ -121,7 +121,7 @@ class RegistrationControllerSpec extends BaseSpec {
     "must return NOT_FOUND when a registration is not found" - {
 
       val mockService = mock[RegistrationServiceRepositoryImpl]
-      when(mockService.get(any())(any())) thenReturn Future.successful(None)
+      when(mockService.get(any())(any(), any())) thenReturn Future.successful(None)
 
       val app =
         applicationBuilder
@@ -141,7 +141,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
     "must return OK and a registration when one is found" in {
       val mockService = mock[RegistrationService]
-      when(mockService.get(any())(any())) thenReturn Future.successful(Some(RegistrationData.registration))
+      when(mockService.get(any())(any(), any())) thenReturn Future.successful(Some(RegistrationData.registration))
 
       val app =
         applicationBuilder
@@ -160,7 +160,7 @@ class RegistrationControllerSpec extends BaseSpec {
     "must return NOT_FOUND when a registration is not found" - {
 
       val mockService = mock[RegistrationService]
-      when(mockService.get(any())(any())) thenReturn Future.successful(None)
+      when(mockService.get(any())(any(), any())) thenReturn Future.successful(None)
 
       val app =
         applicationBuilder

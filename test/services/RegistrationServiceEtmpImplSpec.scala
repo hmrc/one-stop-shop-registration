@@ -310,7 +310,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           exp => exp mustBe EtmpException(s"There was an error amending Registration from ETMP: ${ServiceUnavailable.getClass} ${ServiceUnavailable.body}")
         }
         verify(registrationRepository, times(0)).insert(any())
-        verifyNoInteractions(auditService)
+        verify(auditService, times(1)).audit(any())(any(), any())
       }
     }
 
@@ -339,7 +339,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           exp => exp mustBe EtmpException(s"There was an error amending Registration from ETMP: ${ServiceUnavailable.getClass} ${ServiceUnavailable.body}")
         }
         verifyNoInteractions(registrationRepository)
-        verifyNoInteractions(auditService)
+        verify(auditService, times(1)).audit(any())(any(), any())
       }
 
     }

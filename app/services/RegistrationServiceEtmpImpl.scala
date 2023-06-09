@@ -21,7 +21,7 @@ import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnect
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.enrolments.EtmpEnrolmentErrorResponse
-import models.etmp.{AmendRegistrationResponse, EtmpMessageType, EtmpRegistrationRequest, EtmpRegistrationStatus}
+import models.etmp.{AmendRegistrationResponse, DisplayRegistration, EtmpMessageType, EtmpRegistrationRequest, EtmpRegistrationStatus}
 import models.requests.RegistrationRequest
 import models._
 import models.audit.{EtmpDisplayRegistrationAuditModel, EtmpRegistrationAuditModel, EtmpRegistrationAuditType, SubmissionResult}
@@ -96,6 +96,20 @@ class RegistrationServiceEtmpImpl @Inject()(
   }
 
   def get(vrn: Vrn)(implicit headerCarrier: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[Option[Registration]] = {
+    val auditBlock = (etmpRegistration: DisplayRegistration, registration: Registration) =>
+      auditService.audit(EtmpDisplayRegistrationAuditModel.build(EtmpRegistrationAuditType.DisplayRegistration, etmpRegistration, registration))
+
+    getRegistration(vrn, auditBlock)
+  }
+
+  def getWithoutAudit(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[Option[Registration]] = {
+    val emptyAuditBlock = (_: DisplayRegistration, _: Registration) => ()
+
+    getRegistration(vrn, emptyAuditBlock)
+  }
+
+  private def getRegistration(vrn: Vrn,
+                              auditBlock: (DisplayRegistration, Registration) => Unit)(implicit hc: HeaderCarrier): Future[Option[Registration]] = {
     registrationConnector.get(vrn).flatMap {
       case Right(etmpRegistration) =>
         getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
@@ -112,11 +126,11 @@ class RegistrationServiceEtmpImpl @Inject()(
             if (appConfig.exclusionsEnabled) {
               exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
                 val registrationWithExcludedTrader = registration.copy(excludedTrader = maybeExcludedTrader)
-                auditService.audit(EtmpDisplayRegistrationAuditModel.build(EtmpRegistrationAuditType.DisplayRegistration, etmpRegistration, registrationWithExcludedTrader))
+                auditBlock(etmpRegistration, registrationWithExcludedTrader)
                 Some(registrationWithExcludedTrader)
               }
             } else {
-              auditService.audit(EtmpDisplayRegistrationAuditModel.build(EtmpRegistrationAuditType.DisplayRegistration, etmpRegistration, registration))
+              auditBlock(etmpRegistration, registration)
               Future.successful(Some(registration))
             }
           case Left(error) =>

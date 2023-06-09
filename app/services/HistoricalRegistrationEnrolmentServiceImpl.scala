@@ -66,7 +66,7 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
 
   private def getRegAndTriggerEs8(traderToEnrol: HistoricTraderForEnrolment, otherTraders: Seq[HistoricTraderForEnrolment]) = {
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    registrationService.get(traderToEnrol.vrn).flatMap {
+    registrationService.getWithoutAudit(traderToEnrol.vrn).flatMap {
       case Some(registration) =>
         enrolmentsConnector.es8(traderToEnrol.groupId, traderToEnrol.vrn, traderToEnrol.userId, registration.submissionReceived.getOrElse{
           val exception = new IllegalStateException(s"Registration for user ${traderToEnrol.vrn} did not have a submission received date")
