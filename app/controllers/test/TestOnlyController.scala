@@ -73,7 +73,7 @@ class TestOnlyController @Inject()(
   def getRegistration(vrn: String): Action[AnyContent] = Action.async {
     implicit request =>
       logger.warn(s"Hit test-only endpoint for getting registration for ${vrn}")
-      registrationService.get(Vrn(vrn)) map {
+      registrationService.getWithoutAudit(Vrn(vrn)) map {
         case Some(registration) =>
           Ok(Json.toJson(registration))
         case None => NotFound
