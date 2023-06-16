@@ -110,39 +110,54 @@ class RegistrationServiceEtmpImpl @Inject()(
 
   private def getRegistration(vrn: Vrn,
                               auditBlock: (DisplayRegistration, Registration) => Unit)(implicit hc: HeaderCarrier): Future[Option[Registration]] = {
-    registrationConnector.get(vrn).flatMap {
-      case Right(etmpRegistration) =>
-        getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
-          case Right(vatDetails) =>
+    if (appConfig.displayRegistrationEndpointEnabled) {
+      registrationConnector.get(vrn).flatMap {
+        case Right(etmpRegistration) =>
+          getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
+            case Right(vatDetails) =>
 
-            val registration = Registration.fromEtmpRegistration(
-              vrn,
-              vatDetails,
-              etmpRegistration.tradingNames,
-              etmpRegistration.schemeDetails,
-              etmpRegistration.bankDetails
-            )
+              val registration = Registration.fromEtmpRegistration(
+                vrn,
+                vatDetails,
+                etmpRegistration.tradingNames,
+                etmpRegistration.schemeDetails,
+                etmpRegistration.bankDetails
+              )
 
-            if (appConfig.exclusionsEnabled) {
-              exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
-                val registrationWithExcludedTrader = registration.copy(excludedTrader = maybeExcludedTrader)
-                auditBlock(etmpRegistration, registrationWithExcludedTrader)
-                Some(registrationWithExcludedTrader)
+              if (appConfig.exclusionsEnabled) {
+                exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
+                  val registrationWithExcludedTrader = registration.copy(excludedTrader = maybeExcludedTrader)
+                  auditBlock(etmpRegistration, registrationWithExcludedTrader)
+                  Some(registrationWithExcludedTrader)
+                }
+              } else {
+                auditBlock(etmpRegistration, registration)
+                Future.successful(Some(registration))
               }
-            } else {
-              auditBlock(etmpRegistration, registration)
-              Future.successful(Some(registration))
-            }
-          case Left(error) =>
-            logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
-            Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
+            case Left(error) =>
+              logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
+              Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
+          }
+        case Left(EisDisplayRegistrationError(eisDisplayErrorResponse)) if eisDisplayErrorResponse.errorDetail.errorCode == EisDisplayErrorResponse.displayErrorCodeNoRegistration =>
+          logger.info(s"There was no Registration from ETMP found")
+          Future.successful(None)
+        case Left(error) =>
+          logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
+          throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
+      }
+    } else {
+      for {
+        maybeRegistration <- registrationRepository.get(vrn)
+        maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
+      } yield {
+        maybeRegistration.map { registration =>
+          if (appConfig.exclusionsEnabled) {
+            registration.copy(excludedTrader = maybeExcludedTrader)
+          } else {
+            registration
+          }
         }
-      case Left(EisDisplayRegistrationError(eisDisplayErrorResponse)) if eisDisplayErrorResponse.errorDetail.errorCode == EisDisplayErrorResponse.displayErrorCodeNoRegistration =>
-        logger.info(s"There was no Registration from ETMP found")
-        Future.successful(None)
-      case Left(error) =>
-        logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
-        throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
+      }
     }
   }
 
