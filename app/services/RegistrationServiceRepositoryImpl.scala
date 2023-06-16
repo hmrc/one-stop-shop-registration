@@ -18,7 +18,8 @@ package services
 
 import config.AppConfig
 import controllers.actions.AuthorisedMandatoryVrnRequest
-import models.{InsertResult, Registration}
+import models.Registration
+import models.repository.{AmendResult, InsertResult}
 import models.requests.RegistrationRequest
 import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
@@ -41,7 +42,15 @@ class RegistrationServiceRepositoryImpl @Inject()(
                         (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult] =
     registrationRepository.insert(buildRegistration(registrationRequest, clock))
 
-  def get(vrn: Vrn): Future[Option[Registration]] = {
+  def get(vrn: Vrn)(implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[Option[Registration]] = {
+    getRegistration(vrn)
+  }
+
+  def getWithoutAudit(vrn: Vrn)(implicit hc: HeaderCarrier): Future[Option[Registration]] = {
+    getRegistration(vrn)
+  }
+
+  private def getRegistration(vrn: Vrn): Future[Option[Registration]] = {
     for {
       maybeRegistration <- registrationRepository.get(vrn)
       maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
@@ -55,4 +64,10 @@ class RegistrationServiceRepositoryImpl @Inject()(
       }
     }
   }
+
+  def amend(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[AmendResult] =
+    registrationRepository.set(buildRegistration(registrationRequest, clock))
+
+  def amendWithoutAudit(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] =
+    registrationRepository.set(buildRegistration(registrationRequest, clock))
 }

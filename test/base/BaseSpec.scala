@@ -1,8 +1,10 @@
 package base
 
 import controllers.actions.{AuthAction, FakeAuthAction}
-import models.{BankDetails, Bic, Iban, Period}
+import generators.Generators
+import models._
 import models.Quarter.Q3
+import models.des.VatCustomerInfo
 import models.etmp._
 import org.scalatest.{OptionValues, TryValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -25,7 +27,8 @@ trait BaseSpec
     with OptionValues
     with ScalaFutures
     with IntegrationPatience
-    with MockitoSugar {
+    with MockitoSugar
+    with Generators {
 
   protected val vrn: Vrn = Vrn("123456789")
 
@@ -42,12 +45,23 @@ trait BaseSpec
 
   val userId: String = "12345-userId"
 
+
+  val vatCustomerInfo: VatCustomerInfo =
+    VatCustomerInfo(
+      registrationDate = Some(LocalDate.now(stubClock)),
+      address = DesAddress("Line 1", None, None, None, None, Some("AA11 1AA"), "GB"),
+      partOfVatGroup = false,
+      organisationName = Some("Company name"),
+      singleMarketIndicator = Some(true),
+      individualName = None
+    )
+
   val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     .withLocale(Locale.UK)
     .withZone(ZoneId.of("GMT"))
 
   val etmpRegistrationRequest: EtmpRegistrationRequest = EtmpRegistrationRequest(
-    administration = EtmpAdministration(),
+    administration = EtmpAdministration(EtmpMessageType.OSSSubscriptionCreate),
     customerIdentification = EtmpCustomerIdentification(vrn),
     tradingNames = Seq(EtmpTradingNames("Foo")),
     schemeDetails = EtmpSchemeDetails(
@@ -119,6 +133,8 @@ trait BaseSpec
     ),
     BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get)
   )
+
+  val etmpAmendRegistrationRequest: EtmpRegistrationRequest = etmpRegistrationRequest.copy(administration = EtmpAdministration(EtmpMessageType.OSSSubscriptionAmend))
 
 }
 

@@ -25,6 +25,38 @@ case class Country(code: String, name: String)
 object Country {
 
   implicit val format: OFormat[Country] = Json.format[Country]
+
+
+  lazy val euCountries: Seq[Country] = Seq(
+    Country("AT", "Austria"),
+    Country("BE", "Belgium"),
+    Country("BG", "Bulgaria"),
+    Country("HR", "Croatia"),
+    Country("CY", "Republic of Cyprus"),
+    Country("CZ", "Czech Republic"),
+    Country("DK", "Denmark"),
+    Country("EE", "Estonia"),
+    Country("FI", "Finland"),
+    Country("FR", "France"),
+    Country("DE", "Germany"),
+    Country("EL", "Greece"),
+    Country("HU", "Hungary"),
+    Country("IE", "Ireland"),
+    Country("IT", "Italy"),
+    Country("LV", "Latvia"),
+    Country("LT", "Lithuania"),
+    Country("LU", "Luxembourg"),
+    Country("MT", "Malta"),
+    Country("NL", "Netherlands"),
+    Country("PL", "Poland"),
+    Country("PT", "Portugal"),
+    Country("RO", "Romania"),
+    Country("SK", "Slovakia"),
+    Country("SI", "Slovenia"),
+    Country("ES", "Spain"),
+    Country("SE", "Sweden")
+  )
+
 }
 
 case class EncryptedCountry(code: EncryptedValue, name: EncryptedValue)

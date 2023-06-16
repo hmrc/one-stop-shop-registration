@@ -17,22 +17,20 @@
 package config
 
 import play.api.Configuration
-import play.api.http.HeaderNames._
+import play.api.http.HeaderNames.AUTHORIZATION
 
-import java.time.Clock
 import javax.inject.Inject
 
-class IfConfig @Inject()(
-                          config: Configuration,
-                          genericConfig: EisGenericConfig,
-                          clock: Clock
-                        ) {
+class AmendRegistrationConfig @Inject()(
+                                         config: Configuration,
+                                         genericConfig: EisGenericConfig,
+                                       ) {
 
-  val baseUrl: Service = config.get[Service]("microservice.services.if")
-  private val authorizationToken: String = config.get[String]("microservice.services.if.authorizationToken")
-  private val environment: String = config.get[String]("microservice.services.if.environment")
+  val baseUrl: Service = config.get[Service]("microservice.services.amend-registration")
 
-  def eisEtmpCreateHeaders(correlationId: String): Seq[(String, String)] = genericConfig.eisEtmpGenericHeaders(correlationId) ++ Seq(
+  private val authorizationToken: String = config.get[String]("microservice.services.amend-registration.authorizationToken")
+
+  def eisEtmpAmendHeaders(correlationId: String): Seq[(String, String)] = genericConfig.eisEtmpGenericHeaders(correlationId) ++ Seq(
     AUTHORIZATION -> s"Bearer $authorizationToken"
   )
 

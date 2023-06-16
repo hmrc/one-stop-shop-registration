@@ -6,6 +6,8 @@ GET         /registration                                     controllers.Regist
 
 GET         /registration/:vrn                                controllers.RegistrationController.getByVrn(vrn: String)
 
+POST        /amend                                            controllers.RegistrationController.amend()
+
 GET         /vat-information                                  controllers.VatInfoController.get()
 
 POST        /authorised/accept/confirm/:subscriptionId        controllers.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId: String)

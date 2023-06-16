@@ -16,7 +16,7 @@
 
 package connectors
 
-import config.IfConfig
+import config.{AmendRegistrationConfig, DisplayRegistrationConfig, IfConfig}
 import connectors.RegistrationHttpParser._
 import logging.Logging
 import models.UnexpectedResponseStatus
@@ -33,42 +33,44 @@ import metrics.{MetricsEnum, ServiceMetrics}
 class RegistrationConnector @Inject()(
                                         httpClient: HttpClient,
                                         ifConfig: IfConfig,
+                                        amendRegistrationConfig: AmendRegistrationConfig,
+                                        displayRegistrationConfig: DisplayRegistrationConfig,
                                         metrics: ServiceMetrics
                                       )(implicit ec: ExecutionContext) extends Logging {
 
   private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
-  private def headers(correlationId: String): Seq[(String, String)] = ifConfig.ifHeaders(correlationId)
+  private def getHeaders(correlationId: String): Seq[(String, String)] = displayRegistrationConfig.eisEtmpGetHeaders(correlationId)
+  private def createHeaders(correlationId: String): Seq[(String, String)] = ifConfig.eisEtmpCreateHeaders(correlationId)
 
-  def get(vrn: Vrn): Future[GetRegistrationResponse] = {
+  private def amendHeaders(correlationId: String): Seq[(String, String)] = amendRegistrationConfig.eisEtmpAmendHeaders(correlationId)
+
+  def get(vrn: Vrn): Future[DisplayRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString
-    val headersWithCorrelationId = headers(correlationId)
+    val headersWithCorrelationId = getHeaders(correlationId)
     val timerContext = metrics.startTimer(MetricsEnum.GetRegistration)
-    httpClient.GET[GetRegistrationResponse](
-      s"${ifConfig.baseUrl}getRegistration/${vrn.value}",
-      headers = headersWithCorrelationId
-    ).map { result =>
+    val url = s"${displayRegistrationConfig.baseUrl}vec/ossregistration/viewreg/v1/${vrn.value}"
+    httpClient.GET[DisplayRegistrationResponse](url = url, headers = headersWithCorrelationId).map { result =>
       timerContext.stop()
       result
     }.recover {
       case e: HttpException =>
         timerContext.stop()
-        logger.error(s"Unexpected response from etmp registration, received status ${e.responseCode}", e)
+        logger.error(s"Unexpected response from etmp registration ${e.getMessage}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
-
   }
 
   def create(registration: EtmpRegistrationRequest): Future[CreateEtmpRegistrationResponse] = {
 
     val correlationId = UUID.randomUUID().toString
-    val headersWithCorrelationId = headers(correlationId)
+    val headersWithCorrelationId = createHeaders(correlationId)
     val timerContext = metrics.startTimer(MetricsEnum.CreateEtmpRegistration)
     val headersWithoutAuth = headersWithCorrelationId.filterNot{
       case (key, _) => key.matches(AUTHORIZATION)
     }
 
-    logger.info(s"Sending request to etmp with headers $headersWithoutAuth")
+    logger.info(s"Sending create request to etmp with headers $headersWithoutAuth")
 
     httpClient.POST[EtmpRegistrationRequest, CreateEtmpRegistrationResponse](
       s"${ifConfig.baseUrl}vec/ossregistration/regdatatransfer/v1",
@@ -80,6 +82,27 @@ class RegistrationConnector @Inject()(
     }.recover {
       case e: HttpException =>
         timerContext.stop()
+        logger.error(s"Unexpected response from etmp registration ${e.getMessage}", e)
+        Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
+    }
+  }
+
+  def amendRegistration(registration: EtmpRegistrationRequest): Future[CreateAmendRegistrationResponse] = {
+
+    val correlationId: String = UUID.randomUUID().toString
+    val headersWithCorrelationId = amendHeaders(correlationId)
+    val headersWithoutAuth = headersWithCorrelationId.filterNot {
+      case (key, _) => key.matches(AUTHORIZATION)
+    }
+
+    logger.info(s"Sending amend request to etmp with headers $headersWithoutAuth")
+
+    httpClient.PUT[EtmpRegistrationRequest, CreateAmendRegistrationResponse](
+      s"${amendRegistrationConfig.baseUrl}vec/ossregistration/amendreg/v1",
+      registration,
+      headers = headersWithCorrelationId
+    ).recover {
+      case e: HttpException =>
         logger.error(s"Unexpected response from etmp registration ${e.getMessage}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }

@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-package models
+package models.etmp
 
-sealed trait InsertResult
+import models.{Enumerable, WithName}
 
-object InsertResult {
-  case object InsertSucceeded extends InsertResult
-  case object AlreadyExists extends InsertResult
+sealed trait EtmpMessageType
+
+object EtmpMessageType extends Enumerable.Implicits {
+  case object OSSSubscriptionCreate extends WithName("OSSSubscriptionCreate") with EtmpMessageType
+  case object OSSSubscriptionAmend extends WithName("OSSSubscriptionAmend") with EtmpMessageType
+
+  val values: Seq[EtmpMessageType] = Seq(
+    OSSSubscriptionCreate,
+    OSSSubscriptionAmend
+  )
+
+  implicit val enumerable: Enumerable[EtmpMessageType] =
+    Enumerable(values.map(v => v.toString -> v): _*)
 }

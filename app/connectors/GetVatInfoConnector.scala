@@ -49,7 +49,7 @@ class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClie
     }.recover{
       case e: GatewayTimeoutException =>
         timerContext.stop()
-        logger.warn(s"Request timeout from Get vat info: $e")
+        logger.error(s"Request timeout from Get vat info: $e", e)
         Left(GatewayTimeout)
     }
   }

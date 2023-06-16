@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package models.etmp
+package models.repository
 
-import play.api.libs.json.{Json, OFormat}
+sealed trait InsertResult
 
-case class EtmpAdministration(messageType: EtmpMessageType, regimeID: String = "OSS")
-
-object EtmpAdministration {
-  implicit val format: OFormat[EtmpAdministration] = Json.format[EtmpAdministration]
+object InsertResult {
+  case object InsertSucceeded extends InsertResult
+  case object AlreadyExists extends InsertResult
 }

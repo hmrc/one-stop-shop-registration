@@ -16,8 +16,10 @@
 
 package connectors
 
+import models._
+import models.core.EisDisplayErrorResponse
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
-import models.{Conflict, ErrorResponse, EtmpEnrolmentError, InvalidJson, InvalidVrn, NotFound, Registration, ServerError, ServiceUnavailable, UnexpectedResponseStatus}
+import models.etmp.{AmendRegistrationResponse, DisplayRegistration}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -30,7 +32,9 @@ object RegistrationHttpParser extends BaseHttpParser {
 
   type CreateEtmpRegistrationResponse = Either[ErrorResponse, EtmpEnrolmentResponse]
 
-  type GetRegistrationResponse = Either[ErrorResponse, Registration]
+  type DisplayRegistrationResponse = Either[ErrorResponse, DisplayRegistration]
+
+  type CreateAmendRegistrationResponse = Either[ErrorResponse, AmendRegistrationResponse]
 
   implicit object CreateRegistrationResponseReads extends HttpReads[CreateRegistrationResponse]  {
     override def read(method: String, url: String, response: HttpResponse): CreateRegistrationResponse =
@@ -84,9 +88,53 @@ object RegistrationHttpParser extends BaseHttpParser {
       }
   }
 
-  implicit object GetRegistrationResponseReads extends HttpReads[GetRegistrationResponse]  {
-    override def read(method: String, url: String, response: HttpResponse): GetRegistrationResponse =
-      parseResponse[Registration](response)
+  implicit object DisplayRegistrationReads extends HttpReads[DisplayRegistrationResponse] {
+    override def read(method: String, url: String, response: HttpResponse): DisplayRegistrationResponse =
+      response.status match {
+        case OK => response.json.validate[DisplayRegistration] match {
+          case JsSuccess(displayRegistrationResponse, _) => Right(displayRegistrationResponse)
+          case JsError(errors) =>
+            logger.error(s"Failed trying to parse display registration response JSON with status ${response.status} with errors: $errors")
+            logger.error(s"Body was [${response.body}]") // TODO remove
+            Left(InvalidJson)
+        }
+        case UNPROCESSABLE_ENTITY =>
+          logger.debug("Unprocessable entity, attempting to parse error")
+
+          response.json.validate[EisDisplayErrorResponse] match {
+            case JsSuccess(eisDisplayErrorResponse, _) =>
+              Left(EisDisplayRegistrationError(eisDisplayErrorResponse))
+            case JsError(errors) =>
+              logger.error(s"Failed trying to parse display error registration response JSON with status ${response.status} and body ${response.body}", errors)
+              Left(ServerError)
+
+          }
+
+        case NOT_FOUND =>
+          logger.warn(s"Url not reachable")
+          Left(NotFound)
+        case status =>
+          logger.error(s"Unknown error happened on display registration $status with body ${response.body}")
+          Left(ServerError)
+      }
+  }
+
+  implicit object CreateAmendRegistrationResponseReads extends HttpReads[CreateAmendRegistrationResponse] {
+    override def read(method: String, url: String, response: HttpResponse): CreateAmendRegistrationResponse =
+      response.status match {
+        case OK => response.json.validate[AmendRegistrationResponse] match {
+          case JsSuccess(amendRegistrationResponse, _) => Right(amendRegistrationResponse)
+          case JsError(errors) =>
+            logger.error(s"Failed trying to parse JSON with status ${response.status} and body ${response.body}", errors)
+            Left(InvalidJson)
+        }
+        case NOT_FOUND =>
+          logger.warn(s"url not reachable")
+          Left(NotFound)
+        case status =>
+          logger.error(s"Unknown error happened on amend registration $status with body ${response.body}")
+          Left(ServerError)
+      }
   }
 
 }

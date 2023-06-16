@@ -16,7 +16,7 @@
 
 package models
 
-import models.core.EisErrorResponse
+import models.core.{EisDisplayErrorResponse, EisErrorResponse}
 import play.api.libs.json.{Json, OFormat}
 
 sealed trait ErrorResponse {
@@ -69,3 +69,12 @@ case class EisError(eisErrorResponse: EisErrorResponse) extends ErrorResponse {
       s"${eisErrorResponse.error} " +
       s"${eisErrorResponse.errorMessage} "
 }
+
+case class EisDisplayRegistrationError(eisDisplayErrorResponse: EisDisplayErrorResponse) extends ErrorResponse {
+  override val body: String =
+    s"${eisDisplayErrorResponse.errorDetail.timestamp} " +
+      s"${eisDisplayErrorResponse.errorDetail.errorCode} " +
+      s"${eisDisplayErrorResponse.errorDetail.errorMessage} "
+}
+
+case class DisplayRegistrationNotFound(code: String, body: String) extends ErrorResponse

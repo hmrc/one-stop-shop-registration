@@ -11,7 +11,7 @@ import org.scalatest.concurrent.IntegrationPatience
 import play.api.http.Status.CREATED
 import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -25,6 +25,8 @@ class HistoricalRegistrationEnrolmentSpec extends BaseSpec with BeforeAndAfterEa
   // TODO generators
   private val historicTraderForEnrolment1 = HistoricTraderForEnrolment(Vrn("123456789"), "groupId1", "userId1")
   private val historicTraderForEnrolment2 = HistoricTraderForEnrolment(Vrn("987654321"), "groupId2", "userId2")
+
+  private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
 
   override def beforeEach(): Unit = {
     reset(mockEnrolmentsConnector)
@@ -44,7 +46,7 @@ class HistoricalRegistrationEnrolmentSpec extends BaseSpec with BeforeAndAfterEa
       "must submit enrolments for multiple users" in {
         when(mockAppConfig.historicTradersForEnrolmentEnabled) thenReturn true
         when(mockAppConfig.historicTradersForEnrolment) thenReturn Seq(historicTraderForEnrolment1, historicTraderForEnrolment2)
-        when(mockRegistrationService.get(any())) thenReturn Future.successful(Some(registration))
+        when(mockRegistrationService.getWithoutAudit(any())(any())) thenReturn Future.successful(Some(registration))
         when(mockEnrolmentsConnector.es8(any(), any(), any(), any())) thenReturn Future(HttpResponse(CREATED, ""))
 
         service.sendEnrolmentForUsers().futureValue mustBe true
@@ -55,7 +57,7 @@ class HistoricalRegistrationEnrolmentSpec extends BaseSpec with BeforeAndAfterEa
       "must not stop upon failure" in {
         when(mockAppConfig.historicTradersForEnrolmentEnabled) thenReturn true
         when(mockAppConfig.historicTradersForEnrolment) thenReturn Seq(historicTraderForEnrolment1, historicTraderForEnrolment2)
-        when(mockRegistrationService.get(any())) thenReturn Future.successful(Some(registration))
+        when(mockRegistrationService.getWithoutAudit(any())(any())) thenReturn Future.successful(Some(registration))
         when(mockEnrolmentsConnector.es8(any(), any(), any(), any())) thenReturn Future(HttpResponse(500, "error"))
 
         service.sendEnrolmentForUsers().futureValue mustBe true

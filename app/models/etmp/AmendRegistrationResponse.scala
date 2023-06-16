@@ -18,8 +18,16 @@ package models.etmp
 
 import play.api.libs.json.{Json, OFormat}
 
-case class EtmpAdministration(messageType: EtmpMessageType, regimeID: String = "OSS")
+import java.time.LocalDateTime
 
-object EtmpAdministration {
-  implicit val format: OFormat[EtmpAdministration] = Json.format[EtmpAdministration]
+case class AmendRegistrationResponse(
+                                      processingDateTime: LocalDateTime,
+                                      formBundleNumber: String,
+                                      vrn: String,
+                                      businessPartner: String
+                                    )
+
+object AmendRegistrationResponse {
+
+  implicit val format: OFormat[AmendRegistrationResponse] = Json.format[AmendRegistrationResponse]
 }

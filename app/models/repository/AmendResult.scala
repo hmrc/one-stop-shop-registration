@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package models.etmp
+package models.repository
 
-import play.api.libs.json.{Json, OFormat}
+sealed trait AmendResult
 
-case class EtmpAdministration(messageType: EtmpMessageType, regimeID: String = "OSS")
+object AmendResult {
+  case object AmendSucceeded extends AmendResult
 
-object EtmpAdministration {
-  implicit val format: OFormat[EtmpAdministration] = Json.format[EtmpAdministration]
 }

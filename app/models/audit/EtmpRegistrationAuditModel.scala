@@ -18,26 +18,35 @@ package models.audit
 
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import models.enrolments.EtmpEnrolmentResponse
-import models.etmp.EtmpRegistrationRequest
+import models.etmp.{AmendRegistrationResponse, EtmpRegistrationRequest}
 import play.api.libs.json.{JsObject, Json, JsValue}
 
 case class EtmpRegistrationAuditModel(
+                                       etmpRegistrationAuditType: EtmpRegistrationAuditType,
                                        userId: String,
                                        userAgent: String,
                                        vrn: String,
                                        etmpRegistrationRequest: EtmpRegistrationRequest,
                                        etmpEnrolmentResponse: Option[EtmpEnrolmentResponse],
+                                       etmpAmendResponse: Option[AmendRegistrationResponse],
                                        errorResponse: Option[String],
                                        result: SubmissionResult
                                      ) extends JsonAuditModel {
 
-  override val auditType: String = "EtmpRegistration"
+  override val auditType: String = etmpRegistrationAuditType.auditType
 
-  override val transactionName: String = "etmp-registration"
+  override val transactionName: String = etmpRegistrationAuditType.transactionName
 
   private val etmpEnrolmentResponseObj: JsObject =
     if (etmpEnrolmentResponse.isDefined) {
       Json.obj("etmpEnrolmentResponse" -> etmpEnrolmentResponse)
+    } else {
+      Json.obj()
+    }
+
+  private val etmpAmendResponseObj: JsObject =
+    if (etmpAmendResponse.isDefined) {
+      Json.obj("etmpAmendResponse" -> etmpAmendResponse)
     } else {
       Json.obj()
     }
@@ -56,23 +65,28 @@ case class EtmpRegistrationAuditModel(
     "etmpRegistrationRequest" -> Json.toJson(etmpRegistrationRequest),
     "submissionResult" -> Json.toJson(result)
   ) ++ etmpEnrolmentResponseObj ++
-     errorResponseObj
+    etmpAmendResponseObj ++
+    errorResponseObj
 }
 
 object EtmpRegistrationAuditModel {
   def build(
+             etmpRegistrationAuditType: EtmpRegistrationAuditType,
              etmpRegistrationRequest: EtmpRegistrationRequest,
              etmpEnrolmentResponse: Option[EtmpEnrolmentResponse],
+             etmpAmendResponse: Option[AmendRegistrationResponse],
              errorResponse: Option[String],
              result: SubmissionResult
            )(implicit request: AuthorisedMandatoryVrnRequest[_]): EtmpRegistrationAuditModel =
     EtmpRegistrationAuditModel(
+      etmpRegistrationAuditType = etmpRegistrationAuditType,
       userId = request.userId,
       userAgent = request.headers.get("user-agent").getOrElse(""),
       vrn = request.vrn.vrn,
-      etmpRegistrationRequest: EtmpRegistrationRequest,
-      etmpEnrolmentResponse: Option[EtmpEnrolmentResponse],
-      errorResponse: Option[String],
-      result: SubmissionResult
+      etmpRegistrationRequest = etmpRegistrationRequest,
+      etmpEnrolmentResponse = etmpEnrolmentResponse,
+      etmpAmendResponse = etmpAmendResponse,
+      errorResponse = errorResponse,
+      result = result
     )
 }

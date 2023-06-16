@@ -18,14 +18,16 @@ package repositories
 
 import config.AppConfig
 import crypto.RegistrationEncrypter
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes}
+import org.mongodb.scala.model.{Filters, Indexes, IndexModel, IndexOptions, ReplaceOptions}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import models.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.{EncryptedRegistration, InsertResult, Registration}
+import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.{EncryptedRegistration, Registration}
 import repositories.MongoErrors.Duplicate
 import logging.Logging
+import models.repository.AmendResult.AmendSucceeded
+import models.repository.{AmendResult, InsertResult}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,12 +38,12 @@ class RegistrationRepository @Inject()(
                                         encrypter: RegistrationEncrypter,
                                         appConfig: AppConfig
                                       )(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[EncryptedRegistration] (
+  extends PlayMongoRepository[EncryptedRegistration](
     collectionName = "registrations",
     mongoComponent = mongoComponent,
-    domainFormat   = EncryptedRegistration.format,
+    domainFormat = EncryptedRegistration.format,
     replaceIndexes = true,
-    indexes        = Seq(
+    indexes = Seq(
       IndexModel(
         Indexes.ascending("vrn"),
         IndexOptions()
@@ -89,6 +91,19 @@ class RegistrationRepository @Inject()(
       .recover {
         case Duplicate(_) => AlreadyExists
       }
+  }
+
+  def set(registration: Registration): Future[AmendResult] = {
+    val encryptedRegistration = encrypter.encryptRegistration(registration, registration.vrn, encryptionKey)
+
+    collection
+      .replaceOne(
+        filter = Filters.equal("vrn", toBson(registration.vrn)),
+        replacement = encryptedRegistration,
+        options = ReplaceOptions().upsert(true)
+      )
+      .toFuture()
+      .map(_ => AmendSucceeded)
   }
 }
 

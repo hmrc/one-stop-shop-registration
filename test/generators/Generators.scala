@@ -3,6 +3,7 @@ package generators
 import crypto.EncryptedValue
 import models.requests.SaveForLaterRequest
 import models._
+import models.etmp.{EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
@@ -282,7 +283,7 @@ trait Generators {
         vrn, data, None, now)
     }
 
-  implicit val arbitrarySaveForLaterRequest: Arbitrary[SaveForLaterRequest] =
+  implicit val arbitrarySaveForLaterRequest: Arbitrary[SaveForLaterRequest] = {
     Arbitrary {
       for {
         vrn <- arbitrary[Vrn]
@@ -291,4 +292,94 @@ trait Generators {
         ))
       } yield SaveForLaterRequest(vrn, data, None)
     }
+  }
+
+  implicit val arbitraryEtmpTradingNames: Arbitrary[EtmpTradingNames] = {
+    Arbitrary {
+      for {
+        tradingName <- arbitrary[String]
+      } yield EtmpTradingNames(tradingName)
+    }
+  }
+
+  implicit val arbitraryEtmpEuRegistrationDetails: Arbitrary[EtmpEuRegistrationDetails] = {
+    Arbitrary {
+      for {
+        countryOfRegistration <- Gen.listOfN(2, Gen.alphaChar).map(_.mkString.toUpperCase)
+        vatNumber <- Gen.option(arbitraryVrn.arbitrary.toString)
+        taxIdentificationNumber <- Gen.option(arbitrary[String])
+        fixedEstablishment <- Gen.option(arbitrary[Boolean])
+        tradingName <- Gen.option(arbitrary[String])
+        fixedEstablishmentAddressLine1 <- Gen.option(arbitrary[String])
+        fixedEstablishmentAddressLine2 <- Gen.option(arbitrary[String])
+        townOrCity <- Gen.option(arbitrary[String])
+        regionOrState <- Gen.option(arbitrary[String])
+        postcode <- Gen.option(arbitrary[String])
+      } yield
+        EtmpEuRegistrationDetails(
+          countryOfRegistration,
+          vatNumber,
+          taxIdentificationNumber,
+          fixedEstablishment,
+          tradingName,
+          fixedEstablishmentAddressLine1,
+          fixedEstablishmentAddressLine2,
+          townOrCity,
+          regionOrState,
+          postcode
+      )
+    }
+  }
+
+  implicit val arbitraryEtmpPreviousEURegistrationDetails: Arbitrary[EtmpPreviousEURegistrationDetails] = {
+    Arbitrary {
+      for {
+        issuedBy <- arbitrary[String]
+        registrationNumber <- arbitrary[String]
+        schemeType <- Gen.oneOf(SchemeType.values)
+        intermediaryNumber <- Gen.option(arbitrary[String])
+      } yield EtmpPreviousEURegistrationDetails(issuedBy, registrationNumber, schemeType, intermediaryNumber)
+    }
+  }
+
+  implicit val arbitraryWebsite: Arbitrary[Website] = {
+    Arbitrary {
+      for {
+        websiteAddress <- arbitrary[String]
+      } yield Website(websiteAddress)
+    }
+  }
+
+  implicit val arbitraryEtmpSchemeDetails: Arbitrary[EtmpSchemeDetails] = {
+    Arbitrary {
+      for {
+        commencementDate <- arbitrary[String]
+        firstSaleDate <- Gen.option(arbitrary[String])
+        euRegistrationDetails <- Gen.listOfN(5, arbitraryEtmpEuRegistrationDetails.arbitrary)
+        previousEURegistrationDetails <- Gen.listOfN(5, arbitraryEtmpPreviousEURegistrationDetails.arbitrary)
+        onlineMarketPlace <- arbitrary[Boolean]
+        websites <- Gen.listOfN(10, arbitraryWebsite.arbitrary)
+        contactName <- arbitrary[String]
+        businessTelephoneNumber <- arbitrary[String]
+        businessEmailId <- arbitrary[String]
+        nonCompliantReturns <- Gen.option(arbitrary[Int])
+        nonCompliantPayments <- Gen.option(arbitrary[Int])
+      } yield
+        EtmpSchemeDetails(
+          commencementDate,
+          firstSaleDate,
+          None,
+          None,
+          euRegistrationDetails,
+          previousEURegistrationDetails,
+          onlineMarketPlace,
+          websites,
+          contactName,
+          businessTelephoneNumber,
+          businessEmailId,
+          nonCompliantReturns,
+          nonCompliantPayments
+        )
+    }
+  }
 }
