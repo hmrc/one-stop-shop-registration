@@ -46,4 +46,6 @@ class AppConfig @Inject()(config: Configuration) {
 
   val historicTradersForEnrolmentEnabled: Boolean = config.get[Boolean]("features.enroll-historic-registration.enabled")
   val historicTradersForEnrolment: Seq[HistoricTraderForEnrolment] = config.get[Seq[HistoricTraderForEnrolment]]("features.enroll-historic-registration.historic-traders")
+
+  val displayRegistrationEndpointEnabled: Boolean = config.get[Boolean]("features.displayRegistrationEndpointEnabled")
 }
