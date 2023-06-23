@@ -95,7 +95,6 @@ object RegistrationHttpParser extends BaseHttpParser {
           case JsSuccess(displayRegistrationResponse, _) => Right(displayRegistrationResponse)
           case JsError(errors) =>
             logger.error(s"Failed trying to parse display registration response JSON with status ${response.status} with errors: $errors")
-            logger.error(s"Body was [${response.body}]") // TODO remove
             Left(InvalidJson)
         }
         case UNPROCESSABLE_ENTITY =>
