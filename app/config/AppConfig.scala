@@ -48,4 +48,7 @@ class AppConfig @Inject()(config: Configuration) {
   val historicTradersForEnrolment: Seq[HistoricTraderForEnrolment] = config.get[Seq[HistoricTraderForEnrolment]]("features.enroll-historic-registration.historic-traders")
 
   val displayRegistrationEndpointEnabled: Boolean = config.get[Boolean]("features.displayRegistrationEndpointEnabled")
+
+  val registrationCacheEnabled: Boolean = config.get[Boolean]("features.registrationCache.enabled")
+  val registrationCacheTtl: Int = config.get[Int]("features.registrationCache.ttlInMins")
 }

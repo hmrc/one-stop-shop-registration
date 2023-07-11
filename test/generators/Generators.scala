@@ -9,7 +9,7 @@ import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate}
+import java.time.{Instant, LocalDate, ZoneOffset}
 
 trait Generators {
 
@@ -36,7 +36,7 @@ trait Generators {
     Arbitrary {
       for {
         firstChars <- Gen.listOfN(6, Gen.alphaUpperChar).map(_.mkString)
-        char7      <- Gen.oneOf(Gen.alphaUpperChar, Gen.choose(2, 9))
+        char7 <- Gen.oneOf(Gen.alphaUpperChar, Gen.choose(2, 9))
         char8 <- Gen.oneOf(
           Gen.choose(asciiCodeForA, asciiCodeForN).map(_.toChar),
           Gen.choose(asciiCodeForP, asciiCodeForZ).map(_.toChar),
@@ -90,9 +90,9 @@ trait Generators {
     Arbitrary {
       for {
         registrationDate <- arbitrary[Int].map(n => LocalDate.ofEpochDay(n))
-        address          <- arbitrary[Address]
-        partOfVatGroup   <- arbitrary[Boolean]
-        source           <- arbitrary[VatDetailSource]
+        address <- arbitrary[Address]
+        partOfVatGroup <- arbitrary[Boolean]
+        source <- arbitrary[VatDetailSource]
       } yield VatDetails(registrationDate, address, partOfVatGroup, source)
     }
 
@@ -117,7 +117,7 @@ trait Generators {
   implicit lazy val arbitraryPreviousRegistrationNew: Arbitrary[PreviousRegistrationNew] =
     Arbitrary {
       for {
-        country   <- arbitrary[Country]
+        country <- arbitrary[Country]
         previousSchemeDetails <- Gen.listOfN(2, arbitrary[PreviousSchemeDetails])
       } yield PreviousRegistrationNew(country, previousSchemeDetails)
     }
@@ -138,7 +138,7 @@ trait Generators {
   implicit lazy val arbitraryEuVatRegistration: Arbitrary[EuVatRegistration] =
     Arbitrary {
       for {
-        country   <- arbitrary[Country]
+        country <- arbitrary[Country]
         vatNumber <- arbitrary[String]
       } yield EuVatRegistration(country, vatNumber)
     }
@@ -146,23 +146,23 @@ trait Generators {
   implicit lazy val arbitraryRegistrationWithoutFixedEstablishmentWithTradeDetails: Arbitrary[RegistrationWithoutFixedEstablishmentWithTradeDetails] =
     Arbitrary {
       for {
-        country   <- arbitrary[Country]
-        taxIdentifier      <- arbitrary[EuTaxIdentifier]
+        country <- arbitrary[Country]
+        taxIdentifier <- arbitrary[EuTaxIdentifier]
         tradingName <- arbitrary[String]
         address <- arbitraryInternationalAddress.arbitrary
       } yield RegistrationWithoutFixedEstablishmentWithTradeDetails(country,
         taxIdentifier,
         TradeDetails(
-        tradingName,
-        address)
+          tradingName,
+          address)
       )
     }
 
   implicit lazy val arbitraryRegistrationWithFixedEstablishment: Arbitrary[RegistrationWithFixedEstablishment] =
     Arbitrary {
       for {
-        country            <- arbitrary[Country]
-        taxIdentifier      <- arbitrary[EuTaxIdentifier]
+        country <- arbitrary[Country]
+        taxIdentifier <- arbitrary[EuTaxIdentifier]
         fixedEstablishment <- arbitrary[TradeDetails]
       } yield RegistrationWithFixedEstablishment(country, taxIdentifier, fixedEstablishment)
     }
@@ -175,11 +175,11 @@ trait Generators {
   implicit lazy val arbitraryUkAddress: Arbitrary[UkAddress] =
     Arbitrary {
       for {
-        line1      <- arbitrary[String]
-        line2      <- Gen.option(arbitrary[String])
+        line1 <- arbitrary[String]
+        line2 <- Gen.option(arbitrary[String])
         townOrCity <- arbitrary[String]
-        county     <- Gen.option(arbitrary[String])
-        postCode   <- arbitrary[String]
+        county <- Gen.option(arbitrary[String])
+        postCode <- arbitrary[String]
       } yield UkAddress(line1, line2, townOrCity, county, postCode)
     }
 
@@ -195,24 +195,24 @@ trait Generators {
   implicit lazy val arbitraryInternationalAddress: Arbitrary[InternationalAddress] =
     Arbitrary {
       for {
-        line1         <- arbitrary[String]
-        line2         <- Gen.option(arbitrary[String])
-        townOrCity    <- arbitrary[String]
+        line1 <- arbitrary[String]
+        line2 <- Gen.option(arbitrary[String])
+        townOrCity <- arbitrary[String]
         stateOrRegion <- Gen.option(arbitrary[String])
-        postCode      <- Gen.option(arbitrary[String])
-        country       <- arbitrary[Country]
+        postCode <- Gen.option(arbitrary[String])
+        country <- arbitrary[Country]
       } yield InternationalAddress(line1, line2, townOrCity, stateOrRegion, postCode, country)
     }
 
   implicit lazy val arbitraryDesAddress: Arbitrary[DesAddress] =
     Arbitrary {
       for {
-        line1       <- arbitrary[String]
-        line2       <- Gen.option(arbitrary[String])
-        line3       <- Gen.option(arbitrary[String])
-        line4       <- Gen.option(arbitrary[String])
-        line5       <- Gen.option(arbitrary[String])
-        postCode    <- Gen.option(arbitrary[String])
+        line1 <- arbitrary[String]
+        line2 <- Gen.option(arbitrary[String])
+        line3 <- Gen.option(arbitrary[String])
+        line4 <- Gen.option(arbitrary[String])
+        line5 <- Gen.option(arbitrary[String])
+        postCode <- Gen.option(arbitrary[String])
         countryCode <- Gen.listOfN(2, Gen.alphaChar).map(_.mkString)
       } yield DesAddress(line1, line2, line3, line4, line5, postCode, countryCode)
     }
@@ -221,8 +221,8 @@ trait Generators {
     Arbitrary {
       for {
         accountName <- arbitrary[String]
-        bic         <- Gen.option(arbitrary[Bic])
-        iban        <- arbitrary[Iban]
+        bic <- Gen.option(arbitrary[Bic])
+        iban <- arbitrary[Iban]
       } yield BankDetails(accountName, bic, iban)
     }
 
@@ -235,7 +235,7 @@ trait Generators {
     Arbitrary {
       for {
         identifierType <- arbitrary[EuTaxIdentifierType]
-        value          <- arbitrary[Int].map(_.toString)
+        value <- arbitrary[Int].map(_.toString)
       } yield EuTaxIdentifier(identifierType, value)
     }
 
@@ -243,26 +243,26 @@ trait Generators {
     Arbitrary {
       for {
         tradingName <- arbitrary[String]
-        address     <- arbitrary[InternationalAddress]
+        address <- arbitrary[InternationalAddress]
       } yield TradeDetails(tradingName, address)
     }
 
 
   implicit lazy val arbitraryCountry: Arbitrary[Country] =
     Arbitrary {
-     for {
-       char1 <- Gen.alphaUpperChar
-       char2 <- Gen.alphaUpperChar
-       name  <- arbitrary[String]
-     } yield Country(s"$char1$char2", name)
+      for {
+        char1 <- Gen.alphaUpperChar
+        char2 <- Gen.alphaUpperChar
+        name <- arbitrary[String]
+      } yield Country(s"$char1$char2", name)
     }
 
   implicit lazy val arbitraryBusinessContactDetails: Arbitrary[ContactDetails] =
     Arbitrary {
       for {
-        fullName        <- arbitrary[String]
+        fullName <- arbitrary[String]
         telephoneNumber <- arbitrary[String]
-        emailAddress    <- arbitrary[String]
+        emailAddress <- arbitrary[String]
       } yield ContactDetails(fullName, telephoneNumber, emailAddress)
     }
 
@@ -327,7 +327,7 @@ trait Generators {
           townOrCity,
           regionOrState,
           postcode
-      )
+        )
     }
   }
 
@@ -382,4 +382,28 @@ trait Generators {
         )
     }
   }
+
+  private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
+
+    def toMillis(date: LocalDate): Long =
+      date.atStartOfDay.atZone(ZoneOffset.UTC).toInstant.toEpochMilli
+
+    Gen.choose(toMillis(min), toMillis(max)).map {
+      millis =>
+        Instant.ofEpochMilli(millis).atOffset(ZoneOffset.UTC).toLocalDate
+    }
+  }
+
+  implicit val arbitraryRegistration: Arbitrary[Registration] =
+    Arbitrary {
+      for {
+        vrn <- arbitrary[Vrn]
+        name <- arbitrary[String]
+        vatDetails <- arbitrary[VatDetails]
+        contactDetails <- arbitrary[ContactDetails]
+        bankDetails <- arbitrary[BankDetails]
+        commencementDate <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
+        isOnlineMarketplace <- arbitrary[Boolean]
+      } yield Registration(vrn, name, Nil, vatDetails, Nil, contactDetails, Nil, commencementDate, Nil, bankDetails, isOnlineMarketplace, None, None, None, None, None, None, None)
+    }
 }
