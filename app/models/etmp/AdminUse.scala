@@ -20,7 +20,7 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDateTime
 
-case class AdminUse(changeDate: LocalDateTime)
+case class AdminUse(changeDate: Option[LocalDateTime])
 
 object AdminUse {
 

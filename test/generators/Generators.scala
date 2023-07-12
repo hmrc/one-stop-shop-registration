@@ -229,7 +229,7 @@ trait Generators {
   implicit lazy val arbitraryAdminUse: Arbitrary[AdminUse] =
     Arbitrary {
       for {
-        changeDate <- arbitrary[LocalDateTime]
+        changeDate <- Gen.option(arbitrary[LocalDateTime])
       } yield AdminUse(changeDate)
     }
 

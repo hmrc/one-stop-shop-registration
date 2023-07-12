@@ -109,7 +109,7 @@ object RegistrationData {
       lastUpdated = Some(Instant.now(stubClock)),
       nonCompliantReturns = Some(1),
       nonCompliantPayments = Some(2),
-      adminUse = AdminUse(LocalDateTime.now(stubClock))
+      adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
   val fromEtmpRegistration: Registration =
@@ -217,7 +217,7 @@ object RegistrationData {
       lastUpdated = None,
       nonCompliantReturns = Some(1),
       nonCompliantPayments = Some(2),
-      adminUse = AdminUse(LocalDateTime.now(stubClock))
+      adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
   val displayRegistration: DisplayRegistration =
@@ -303,7 +303,7 @@ object RegistrationData {
         nonCompliantPayments = Some(2)
       ),
       bankDetails = BankDetails("Account name", Some(bic), iban),
-      adminUse = AdminUse(LocalDateTime.now(stubClock))
+      adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
   val optionalDisplayRegistration: DisplayRegistration =
@@ -329,7 +329,7 @@ object RegistrationData {
         None,
         iban
       ),
-      adminUse = AdminUse(LocalDateTime.now(stubClock))
+      adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""

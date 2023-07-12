@@ -146,7 +146,7 @@ class TestOnlyController @Inject()(
       lastUpdated = Some(Instant.now(clock)),
       nonCompliantReturns =  Some(1),
       nonCompliantPayments = Some(2),
-      adminUse = AdminUse(LocalDateTime.now(clock))
+      adminUse = AdminUse(Some(LocalDateTime.now(clock)))
     )
 
 }
