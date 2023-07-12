@@ -6,6 +6,7 @@ import models._
 import models.etmp.EtmpSchemeDetails.dateFormatter
 import models.etmp.{AdminUse, DisplayRegistration, EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
 import models.requests.RegistrationRequest
+import repositories.RegistrationWrapper
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Clock, Instant, LocalDate, LocalDateTime, ZoneId}
@@ -15,6 +16,7 @@ object RegistrationData {
   val stubClock: Clock = Clock.fixed(LocalDate.now.atStartOfDay(ZoneId.systemDefault).toInstant, ZoneId.systemDefault)
   val iban: Iban = Iban("GB33BUKB20201555555555").toOption.get
   val bic: Bic = Bic("ABCDGB2A").get
+  private val userId  = "id-123"
 
   val registration: Registration =
     Registration(
@@ -219,6 +221,8 @@ object RegistrationData {
       nonCompliantPayments = Some(2),
       adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
+
+  val wrappedCachedRegistration: RegistrationWrapper = RegistrationWrapper(userId, Some(fromEtmpRegistration), Instant.now(stubClock))
 
   val displayRegistration: DisplayRegistration =
     DisplayRegistration(
