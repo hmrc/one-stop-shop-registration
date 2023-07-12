@@ -4,11 +4,11 @@ import models.EuTaxIdentifierType.{Other, Vat}
 import models.VatDetailSource.{Etmp, UserEntered}
 import models._
 import models.etmp.EtmpSchemeDetails.dateFormatter
-import models.etmp.{DisplayRegistration, EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
+import models.etmp.{AdminUse, DisplayRegistration, EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
 import models.requests.RegistrationRequest
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Clock, Instant, LocalDate, ZoneId}
+import java.time.{Clock, Instant, LocalDate, LocalDateTime, ZoneId}
 
 object RegistrationData {
 
@@ -108,7 +108,8 @@ object RegistrationData {
       submissionReceived = Some(Instant.now(stubClock)),
       lastUpdated = Some(Instant.now(stubClock)),
       nonCompliantReturns = Some(1),
-      nonCompliantPayments = Some(2)
+      nonCompliantPayments = Some(2),
+      adminUse = AdminUse(LocalDateTime.now(stubClock))
     )
 
   val fromEtmpRegistration: Registration =
@@ -215,7 +216,8 @@ object RegistrationData {
       submissionReceived = None,
       lastUpdated = None,
       nonCompliantReturns = Some(1),
-      nonCompliantPayments = Some(2)
+      nonCompliantPayments = Some(2),
+      adminUse = AdminUse(LocalDateTime.now(stubClock))
     )
 
   val displayRegistration: DisplayRegistration =
@@ -300,7 +302,8 @@ object RegistrationData {
         nonCompliantReturns = Some(1),
         nonCompliantPayments = Some(2)
       ),
-      bankDetails = BankDetails("Account name", Some(bic), iban)
+      bankDetails = BankDetails("Account name", Some(bic), iban),
+      adminUse = AdminUse(LocalDateTime.now(stubClock))
     )
 
   val optionalDisplayRegistration: DisplayRegistration =
@@ -325,7 +328,8 @@ object RegistrationData {
         accountName = "Bank Account Name",
         None,
         iban
-      )
+      ),
+      adminUse = AdminUse(LocalDateTime.now(stubClock))
     )
 
   val invalidRegistration = """{"invalidName":"invalid"}"""
@@ -347,7 +351,8 @@ object RegistrationData {
       registration.dateOfFirstSale,
       registration.nonCompliantReturns,
       registration.nonCompliantPayments,
-      registration.submissionReceived
+      registration.submissionReceived,
+      registration.adminUse
     )
   }
 

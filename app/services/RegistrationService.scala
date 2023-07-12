@@ -47,7 +47,8 @@ trait RegistrationService extends Logging {
       submissionReceived = Some(request.submissionReceived.getOrElse(Instant.now(clock))),
       lastUpdated = Some(Instant.now(clock)),
       nonCompliantReturns = request.nonCompliantReturns,
-      nonCompliantPayments = request.nonCompliantPayments
+      nonCompliantPayments = request.nonCompliantPayments,
+      adminUse = request.adminUse
     )
   }
 

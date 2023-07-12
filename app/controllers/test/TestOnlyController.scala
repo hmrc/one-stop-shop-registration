@@ -21,6 +21,7 @@ import logging.Logging
 import models.EuTaxIdentifierType.Vat
 import models.VatDetailSource.UserEntered
 import models._
+import models.etmp.AdminUse
 import models.repository.AmendResult.AmendSucceeded
 import models.requests.RegistrationRequest
 import org.mongodb.scala.model.Filters
@@ -31,7 +32,7 @@ import services.RegistrationServiceRepositoryImpl
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import java.time.{Clock, Instant, LocalDate}
+import java.time.{Clock, Instant, LocalDate, LocalDateTime}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
@@ -144,7 +145,8 @@ class TestOnlyController @Inject()(
       submissionReceived = Some(Instant.now(clock)),
       lastUpdated = Some(Instant.now(clock)),
       nonCompliantReturns =  Some(1),
-      nonCompliantPayments = Some(2)
+      nonCompliantPayments = Some(2),
+      adminUse = AdminUse(LocalDateTime.now)
     )
 
 }

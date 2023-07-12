@@ -226,7 +226,8 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
         s"""{
            | "tradingNames" : ${Json.toJson(etmpRegistration.tradingNames)},
            | "schemeDetails" :${Json.toJson(etmpRegistration.schemeDetails)(writesEtmpSchemeDetails)},
-           | "bankDetails" : ${Json.toJson(etmpRegistration.bankDetails)}
+           | "bankDetails" : ${Json.toJson(etmpRegistration.bankDetails)},
+           | "adminUse" : ${Json.toJson(etmpRegistration.adminUse)}
            |}""".stripMargin
 
       server.stubFor(
@@ -270,7 +271,8 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
           | "bankDetails" : {
           |   "accountName" : "Bank Account Name",
           |   "iban" : "GB33BUKB20201555555555"
-          | }
+          | },
+          | "adminUse" : ""
           |}""".stripMargin
 
       server.stubFor(

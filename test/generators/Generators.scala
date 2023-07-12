@@ -3,13 +3,13 @@ package generators
 import crypto.EncryptedValue
 import models.requests.SaveForLaterRequest
 import models._
-import models.etmp.{EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
+import models.etmp.{AdminUse, EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate}
+import java.time.{Instant, LocalDate, LocalDateTime}
 
 trait Generators {
 
@@ -224,6 +224,13 @@ trait Generators {
         bic         <- Gen.option(arbitrary[Bic])
         iban        <- arbitrary[Iban]
       } yield BankDetails(accountName, bic, iban)
+    }
+
+  implicit lazy val arbitraryAdminUse: Arbitrary[AdminUse] =
+    Arbitrary {
+      for {
+        changeDate <- arbitrary[LocalDateTime]
+      } yield AdminUse(changeDate)
     }
 
   implicit val arbitraryEuTaxIdentifierType: Arbitrary[EuTaxIdentifierType] =

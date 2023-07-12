@@ -24,7 +24,8 @@ import play.api.libs.json.{__, Json, OWrites, Reads}
 case class DisplayRegistration(
                               tradingNames: Seq[EtmpTradingNames],
                               schemeDetails: EtmpSchemeDetails,
-                              bankDetails: BankDetails
+                              bankDetails: BankDetails,
+                              adminUse: AdminUse
                               )
 
 
@@ -33,19 +34,22 @@ object DisplayRegistration {
   private def fromDisplayRegistrationPayload(
                                               tradingNames: Option[Seq[EtmpTradingNames]],
                                               schemeDetails: EtmpSchemeDetails,
-                                              bankDetails: BankDetails
+                                              bankDetails: BankDetails,
+                                              adminUse: AdminUse
                                             ): DisplayRegistration =
     DisplayRegistration(
       tradingNames = tradingNames.fold(Seq.empty[EtmpTradingNames])(a => a),
       schemeDetails = schemeDetails,
-      bankDetails = bankDetails
+      bankDetails = bankDetails,
+      adminUse = adminUse
     )
 
   implicit val reads: Reads[DisplayRegistration] =
     (
       (__ \ "tradingNames").readNullable[Seq[EtmpTradingNames]] and
         (__ \ "schemeDetails").read[EtmpSchemeDetails] and
-        (__ \ "bankDetails").read[BankDetails]
+        (__ \ "bankDetails").read[BankDetails] and
+        (__ \ "adminUse").read[AdminUse]
       )(DisplayRegistration.fromDisplayRegistrationPayload _)
 
   implicit val writes: OWrites[DisplayRegistration] =

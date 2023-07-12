@@ -4,7 +4,7 @@ import base.BaseSpec
 import models.BankDetails
 import play.api.libs.json.{JsSuccess, Json}
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 
 class DisplayRegistrationSpec extends BaseSpec {
 
@@ -63,7 +63,8 @@ class DisplayRegistrationSpec extends BaseSpec {
             "accountName" -> "Bank Account Name",
             "bic" -> "ABCDGB2A",
             "iban" -> "GB33BUKB20201555555555"
-          )
+          ),
+          "adminUse" -> LocalDateTime.now
         )
 
         val expectedResult = DisplayRegistration(
@@ -113,7 +114,8 @@ class DisplayRegistrationSpec extends BaseSpec {
             accountName = "Bank Account Name",
             Some(bic),
             iban
-          )
+          ),
+          adminUse = AdminUse(LocalDateTime.now)
         )
 
         json.validate[DisplayRegistration] mustEqual JsSuccess(expectedResult)
@@ -138,7 +140,8 @@ class DisplayRegistrationSpec extends BaseSpec {
           "bankDetails" -> Json.obj(
             "accountName" -> "Bank Account Name",
             "iban" -> "GB33BUKB20201555555555"
-          )
+          ),
+          "adminUse" -> LocalDateTime.now
         )
 
         val expectedResult = DisplayRegistration(
@@ -162,7 +165,8 @@ class DisplayRegistrationSpec extends BaseSpec {
             accountName = "Bank Account Name",
             None,
             iban
-          )
+          ),
+          adminUse = AdminUse(LocalDateTime.now)
         )
 
         json.validate[DisplayRegistration] mustEqual JsSuccess(expectedResult)

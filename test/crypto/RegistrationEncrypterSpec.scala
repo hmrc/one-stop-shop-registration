@@ -3,6 +3,7 @@ package crypto
 import base.BaseSpec
 import generators.Generators
 import models._
+import models.etmp.AdminUse
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -219,7 +220,8 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         submissionReceived    = Some(Instant.now(stubClock)),
         lastUpdated           = Some(Instant.now(stubClock)),
         nonCompliantReturns   = Some(1),
-        nonCompliantPayments  = Some(2)
+        nonCompliantPayments  = Some(2),
+        adminUse              = arbitrary[AdminUse].sample.value
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)
@@ -247,7 +249,8 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         submissionReceived    = Some(Instant.now(stubClock)),
         lastUpdated           = Some(Instant.now(stubClock)),
         nonCompliantReturns   = Some(1),
-        nonCompliantPayments  = Some(2)
+        nonCompliantPayments  = Some(2),
+        adminUse              = arbitrary[AdminUse].sample.value
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)
