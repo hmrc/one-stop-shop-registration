@@ -270,7 +270,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
           | },
           | "bankDetails" : {
           |   "accountName" : "Bank Account Name",
-          |   "iban" : "GB33BUKB2020155555555"
+          |   "iban" : "GB33BUKB20201555555555"
           | },
           | "adminUse" : {
           |   "changeDate" : "2023-07-12T00:00"
