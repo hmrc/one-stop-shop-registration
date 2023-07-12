@@ -36,9 +36,9 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
 import play.api.test.Helpers.running
-import repositories.{RegistrationRepository, RegistrationStatusRepository}
+import repositories.{CachedRegistrationRepository, RegistrationRepository, RegistrationStatusRepository}
 import services.exclusions.ExclusionService
-import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration}
+import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration, wrappedCachedRegistration}
 import testutils.RegistrationData
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -57,6 +57,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   private val getVatInfoConnector = mock[GetVatInfoConnector]
   private val registrationRepository = mock[RegistrationRepository]
   private val registrationStatusRepository = mock[RegistrationStatusRepository]
+  private val cachedRegistrationRepository = mock[CachedRegistrationRepository]
   private val retryService = mock[RetryService]
   private val appConfig = mock[AppConfig]
   private val serviceMetrics: ServiceMetrics = mock[ServiceMetrics]
@@ -65,7 +66,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val auditService = mock[AuditService]
 
-  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, getVatInfoConnector, registrationRepository, registrationStatusRepository, retryService, appConfig, exclusionService, auditService, stubClock)
+  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, getVatInfoConnector, registrationRepository, registrationStatusRepository, cachedRegistrationRepository, retryService, appConfig, exclusionService, auditService, stubClock)
 
   implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
 
@@ -74,6 +75,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     reset(getVatInfoConnector)
     reset(registrationRepository)
     reset(registrationStatusRepository)
+    reset(cachedRegistrationRepository)
     reset(exclusionService)
     reset(appConfig)
     reset(serviceMetrics)
@@ -104,10 +106,30 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
       "duplicateRegistrationIntoRepository.disabled" - {
 
-        "must create a registration from the request, save it and return the result of the save operation" in {
+        "must create a registration from the request, save it and return the result of the save operation and clear cache if enabled" in {
 
           when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+          when(appConfig.registrationCacheEnabled) thenReturn true
+          doNothing().when(auditService).audit(any())(any(), any())
+          when(registrationConnector.create(any())) thenReturn Future.successful(
+            Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
+          when(registrationRepository.insert(any())) thenReturn successful(InsertSucceeded)
+          when(registrationStatusRepository.delete(any())) thenReturn Future.successful(true)
+          when(registrationStatusRepository.insert(any())) thenReturn successful(InsertSucceeded)
+          when(cachedRegistrationRepository.clear(any())) thenReturn Future.successful(true)
+
+          registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
+          verify(registrationRepository, times(0)).insert(any())
+          verify(auditService, times(1)).audit(any())(any(), any())
+          verify(cachedRegistrationRepository, times(1)).clear(any())
+        }
+
+        "must create a registration from the request, save it and return the result of the save operation and not clear cache if disabled" in {
+
+          when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
+          when(appConfig.duplicateRegistrationIntoRepository) thenReturn false
+          when(appConfig.registrationCacheEnabled) thenReturn false
           doNothing().when(auditService).audit(any())(any(), any())
           when(registrationConnector.create(any())) thenReturn Future.successful(
             Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
@@ -118,6 +140,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
           verify(registrationRepository, times(0)).insert(any())
           verify(auditService, times(1)).audit(any())(any(), any())
+          verifyNoInteractions(cachedRegistrationRepository)
         }
 
         "must return Already Exists when connector returns EtmpEnrolmentError with code 007" in {
@@ -149,10 +172,31 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
       "duplicateRegistrationIntoRepository.enabled" - {
 
-        "must create a registration from the request, save it and return the result of the save operation" in {
+        "must create a registration from the request, save it and return the result of the save operation and clear cache if enabled" in {
 
           when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
           when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          when(appConfig.registrationCacheEnabled) thenReturn true
+          doNothing().when(auditService).audit(any())(any(), any())
+          when(registrationConnector.create(any())) thenReturn Future.successful(
+            Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
+          when(registrationRepository.insert(any())) thenReturn successful(InsertSucceeded)
+          when(registrationStatusRepository.delete(any())) thenReturn Future.successful(true)
+          when(registrationStatusRepository.insert(any())) thenReturn successful(InsertSucceeded)
+          when(cachedRegistrationRepository.clear(any())) thenReturn Future.successful(true)
+          when(retryService.getEtmpRegistrationStatus(any(), any(), any())) thenReturn successful(EtmpRegistrationStatus.Success)
+
+          registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
+          verify(registrationRepository, times(1)).insert(any())
+          verify(auditService, times(1)).audit(any())(any(), any())
+          verify(cachedRegistrationRepository, times(1)).clear(any())
+        }
+
+        "must create a registration from the request, save it and return the result of the save operation and not clear cache if disabled" in {
+
+          when(enrolmentsConnector.confirmEnrolment(any())(any())) thenReturn Future.successful(HttpResponse(204, ""))
+          when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+          when(appConfig.registrationCacheEnabled) thenReturn false
           doNothing().when(auditService).audit(any())(any(), any())
           when(registrationConnector.create(any())) thenReturn Future.successful(
             Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
@@ -164,6 +208,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
           verify(registrationRepository, times(1)).insert(any())
           verify(auditService, times(1)).audit(any())(any(), any())
+          verifyNoInteractions(cachedRegistrationRepository)
         }
 
         "must return an error when repository returns an error" in {
@@ -233,13 +278,37 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   ".get" - {
 
-    "must return Some(registration) when both connectors return right" in {
+    "must return Some(registration) when both connectors return right and no cache value" in {
       when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
+      when(appConfig.registrationCacheEnabled) thenReturn true
+      when(cachedRegistrationRepository.get(any())) thenReturn Future.successful(None)
       when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
       when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
       registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
       verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))
+      verify(cachedRegistrationRepository, times(1)).get(any())
+    }
+
+    "must return cached registration value when cached" in {
+      when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
+      when(appConfig.registrationCacheEnabled) thenReturn true
+      when(cachedRegistrationRepository.get(any())) thenReturn Future.successful(Some(wrappedCachedRegistration))
+      registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
+      verifyNoInteractions(registrationConnector)
+      verifyNoInteractions(getVatInfoConnector)
+      verify(cachedRegistrationRepository, times(1)).get(any())
+    }
+
+    "must return Some(registration) when both connectors return right and doesn't call cache when not enabled" in {
+      when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
+      when(appConfig.registrationCacheEnabled) thenReturn false
+      when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
+      when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+      registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
+      verify(registrationConnector, times(1)).get(Vrn("123456789"))
+      verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))
+      verifyNoInteractions(cachedRegistrationRepository)
     }
 
     "when exclusion is enabled and trader is excluded" - {
@@ -321,9 +390,10 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
     "duplicateRegistrationIntoRepository.enabled" - {
 
-      "must create a registration from the request, save it and return the result of the save operation" in {
+      "must create a registration from the request, save it and return the result of the save operation and not touch cache when disabled" in {
 
         when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+        when(appConfig.registrationCacheEnabled) thenReturn false
         doNothing().when(auditService).audit(any())(any(), any())
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
           Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
@@ -332,6 +402,23 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
         verify(registrationRepository, times(1)).set(any())
         verify(auditService, times(1)).audit(any())(any(), any())
+        verifyNoInteractions(cachedRegistrationRepository)
+      }
+
+      "must create a registration from the request, save it and return the result of the save operation and clear cache when enabled" in {
+
+        when(appConfig.duplicateRegistrationIntoRepository) thenReturn true
+        when(appConfig.registrationCacheEnabled) thenReturn true
+        doNothing().when(auditService).audit(any())(any(), any())
+        when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
+          Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
+        when(registrationRepository.set(any())) thenReturn successful(AmendSucceeded)
+        when(cachedRegistrationRepository.clear(any())) thenReturn Future.successful(true)
+
+        registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
+        verify(registrationRepository, times(1)).set(any())
+        verify(auditService, times(1)).audit(any())(any(), any())
+        verify(cachedRegistrationRepository, times(1)).clear(any())
       }
 
       "must throw EtmpException when connector returns an error" in {

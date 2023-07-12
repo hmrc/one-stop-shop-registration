@@ -29,7 +29,7 @@ import models.core.EisDisplayErrorResponse
 import models.repository.{AmendResult, InsertResult}
 import models.repository.AmendResult.AmendSucceeded
 import play.api.http.Status.NO_CONTENT
-import repositories.{RegistrationRepository, RegistrationStatusRepository}
+import repositories.{CachedRegistrationRepository, RegistrationRepository, RegistrationStatusRepository}
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
@@ -45,6 +45,7 @@ class RegistrationServiceEtmpImpl @Inject()(
                                              getVatInfoConnector: GetVatInfoConnector,
                                              registrationRepository: RegistrationRepository,
                                              registrationStatusRepository: RegistrationStatusRepository,
+                                             cachedRegistrationRepository: CachedRegistrationRepository,
                                              retryService: RetryService,
                                              appConfig: AppConfig,
                                              exclusionService: ExclusionService,
@@ -55,7 +56,7 @@ class RegistrationServiceEtmpImpl @Inject()(
   def createRegistration(registrationRequest: RegistrationRequest)
                         (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult] = {
     val etmpRegistrationRequest = EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate)
-    registrationConnector.create(etmpRegistrationRequest).flatMap {
+    val creationResponse = registrationConnector.create(etmpRegistrationRequest).flatMap {
       case Right(response) =>
         auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.CreateRegistration, etmpRegistrationRequest, Some(response), None, None, SubmissionResult.Success))
         (for {
@@ -93,13 +94,31 @@ class RegistrationServiceEtmpImpl @Inject()(
         auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.CreateRegistration, etmpRegistrationRequest, None, None, Some(error.body), SubmissionResult.Failure))
         throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
     }
+
+    if(appConfig.registrationCacheEnabled) {
+      cachedRegistrationRepository.clear(request.userId)
+    }
+    creationResponse
   }
 
   def get(vrn: Vrn)(implicit headerCarrier: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[Option[Registration]] = {
     val auditBlock = (etmpRegistration: DisplayRegistration, registration: Registration) =>
       auditService.audit(EtmpDisplayRegistrationAuditModel.build(EtmpRegistrationAuditType.DisplayRegistration, etmpRegistration, registration))
 
-    getRegistration(vrn, auditBlock)
+    if (appConfig.registrationCacheEnabled) {
+      cachedRegistrationRepository.get(request.userId).flatMap {
+        case Some(cachedRegistration) => Future.successful(cachedRegistration.registration)
+        case _ =>
+          getRegistration(vrn, auditBlock).map { maybeRegistration =>
+            cachedRegistrationRepository.set(request.userId, maybeRegistration)
+            maybeRegistration
+          }
+      }
+    } else {
+      getRegistration(vrn, auditBlock)
+    }
+
+
   }
 
   def getWithoutAudit(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[Option[Registration]] = {
@@ -169,11 +188,16 @@ class RegistrationServiceEtmpImpl @Inject()(
     val errorAuditBlock = (etmpRegistrationRequest: EtmpRegistrationRequest) =>
       auditService.audit(EtmpRegistrationAuditModel.build(EtmpRegistrationAuditType.AmendRegistration, etmpRegistrationRequest, None, None, None, SubmissionResult.Failure))
 
-    amendRegistration(
+    val amendmentResult = amendRegistration(
       registrationRequest,
       auditBlock,
       errorAuditBlock
     )
+
+    if (appConfig.registrationCacheEnabled) {
+      cachedRegistrationRepository.clear(request.userId)
+    }
+    amendmentResult
   }
 
   def amendWithoutAudit(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] = {
