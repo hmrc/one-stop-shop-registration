@@ -64,7 +64,9 @@ class DisplayRegistrationSpec extends BaseSpec {
             "bic" -> "ABCDGB2A",
             "iban" -> "GB33BUKB20201555555555"
           ),
-          "adminUse" -> LocalDateTime.now
+          "adminUse" -> Json.obj(
+            "changeDate" ->LocalDateTime.now(stubClock)
+          )
         )
 
         val expectedResult = DisplayRegistration(
@@ -115,7 +117,7 @@ class DisplayRegistrationSpec extends BaseSpec {
             Some(bic),
             iban
           ),
-          adminUse = AdminUse(LocalDateTime.now)
+          adminUse = AdminUse(LocalDateTime.now(stubClock))
         )
 
         json.validate[DisplayRegistration] mustEqual JsSuccess(expectedResult)
@@ -141,7 +143,9 @@ class DisplayRegistrationSpec extends BaseSpec {
             "accountName" -> "Bank Account Name",
             "iban" -> "GB33BUKB20201555555555"
           ),
-          "adminUse" -> LocalDateTime.now
+          "adminUse" -> Json.obj(
+            "changeDate" -> LocalDateTime.now(stubClock)
+          )
         )
 
         val expectedResult = DisplayRegistration(
@@ -166,7 +170,7 @@ class DisplayRegistrationSpec extends BaseSpec {
             None,
             iban
           ),
-          adminUse = AdminUse(LocalDateTime.now)
+          adminUse = AdminUse(LocalDateTime.now(stubClock))
         )
 
         json.validate[DisplayRegistration] mustEqual JsSuccess(expectedResult)

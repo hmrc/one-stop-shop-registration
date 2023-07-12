@@ -109,7 +109,7 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             nonCompliantReturns = Some(1),
             nonCompliantPayments = Some(2),
             submissionReceived = None,
-            adminUse = AdminUse(LocalDateTime.now)
+            adminUse = AdminUse(LocalDateTime.now(stubClock))
           )
 
         EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate) mustBe etmpRegistrationRequest
@@ -209,7 +209,7 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             nonCompliantReturns = Some(1),
             nonCompliantPayments = Some(2),
             submissionReceived = Some(Instant.now),
-            adminUse = AdminUse(LocalDateTime.now)
+            adminUse = AdminUse(LocalDateTime.now(stubClock))
           )
 
         EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionAmend) mustBe etmpAmendRegistrationRequest
