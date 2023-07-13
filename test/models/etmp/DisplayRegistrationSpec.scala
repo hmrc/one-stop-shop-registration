@@ -144,7 +144,7 @@ class DisplayRegistrationSpec extends BaseSpec {
             "iban" -> "GB33BUKB20201555555555"
           ),
           "adminUse" -> Json.obj(
-            "changeDate" -> LocalDateTime.now(stubClock)
+
           )
         )
 
@@ -170,7 +170,7 @@ class DisplayRegistrationSpec extends BaseSpec {
             None,
             iban
           ),
-          adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
+          adminUse = AdminUse(None)
         )
 
         json.validate[DisplayRegistration] mustEqual JsSuccess(expectedResult)

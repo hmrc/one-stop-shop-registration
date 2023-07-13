@@ -254,7 +254,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
       val etmpRegistration = optionalDisplayRegistration
 
       val responseJson =
-        """{
+        s"""{
           | "tradingNames" : [],
           | "schemeDetails" : {
           |   "commencementDate" : "2023-01-01",
@@ -273,7 +273,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
           |   "iban" : "GB33BUKB20201555555555"
           | },
           | "adminUse" : {
-          |   "changeDate" : "2023-07-12T00:00"
+          |   "changeDate" : "${LocalDate.now(stubClock)}T00:00"
           | }
           |}""".stripMargin
 

@@ -229,8 +229,8 @@ trait Generators {
   implicit lazy val arbitraryAdminUse: Arbitrary[AdminUse] =
     Arbitrary {
       for {
-        changeDate <- Gen.option(arbitrary[LocalDateTime])
-      } yield AdminUse(changeDate)
+        changeDate <- arbitrary[LocalDateTime]
+      } yield AdminUse(Some(changeDate))
     }
 
   implicit val arbitraryEuTaxIdentifierType: Arbitrary[EuTaxIdentifierType] =
