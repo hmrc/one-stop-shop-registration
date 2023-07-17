@@ -17,6 +17,7 @@
 package models.requests
 
 import models._
+import models.etmp.AdminUse
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -38,7 +39,8 @@ case class RegistrationRequest(
                                 dateOfFirstSale: Option[LocalDate],
                                 nonCompliantReturns: Option[Int],
                                 nonCompliantPayments: Option[Int],
-                                submissionReceived: Option[Instant]
+                                submissionReceived: Option[Instant],
+                                adminUse: AdminUse
                               )
 
 object RegistrationRequest {

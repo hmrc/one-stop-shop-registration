@@ -7,7 +7,7 @@ import models.requests.RegistrationRequest
 import models._
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate}
+import java.time.{Instant, LocalDate, LocalDateTime}
 
 class EtmpRegistrationRequestSpec extends BaseSpec {
 
@@ -108,7 +108,8 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             dateOfFirstSale = Some(LocalDate.now),
             nonCompliantReturns = Some(1),
             nonCompliantPayments = Some(2),
-            submissionReceived = None
+            submissionReceived = None,
+            adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
           )
 
         EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate) mustBe etmpRegistrationRequest
@@ -207,7 +208,8 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             dateOfFirstSale = Some(LocalDate.now),
             nonCompliantReturns = Some(1),
             nonCompliantPayments = Some(2),
-            submissionReceived = Some(Instant.now)
+            submissionReceived = Some(Instant.now),
+            adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
           )
 
         EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionAmend) mustBe etmpAmendRegistrationRequest

@@ -12,7 +12,8 @@ object DisplayRegistrationData extends BaseSpec {
     DisplayRegistration(
       tradingNames = Gen.listOfN(3, arbitraryEtmpTradingNames.arbitrary).sample.value,
       schemeDetails = arbitraryEtmpSchemeDetails.arbitrary.sample.value,
-      bankDetails = arbitraryBankDetails.arbitrary.sample.value
+      bankDetails = arbitraryBankDetails.arbitrary.sample.value,
+      adminUse = arbitraryAdminUse.arbitrary.sample.value
     )
 
   implicit val writesEtmpEuRegistrationDetails: OWrites[EtmpEuRegistrationDetails] = {

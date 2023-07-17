@@ -3,13 +3,13 @@ package generators
 import crypto.EncryptedValue
 import models.requests.SaveForLaterRequest
 import models._
-import models.etmp.{EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
+import models.etmp.{AdminUse, EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate, ZoneOffset}
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 
 trait Generators {
 
@@ -226,6 +226,13 @@ trait Generators {
       } yield BankDetails(accountName, bic, iban)
     }
 
+  implicit lazy val arbitraryAdminUse: Arbitrary[AdminUse] =
+    Arbitrary {
+      for {
+        changeDate <- arbitrary[LocalDateTime]
+      } yield AdminUse(Some(changeDate))
+    }
+
   implicit val arbitraryEuTaxIdentifierType: Arbitrary[EuTaxIdentifierType] =
     Arbitrary {
       Gen.oneOf(EuTaxIdentifierType.values)
@@ -404,6 +411,7 @@ trait Generators {
         bankDetails <- arbitrary[BankDetails]
         commencementDate <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
         isOnlineMarketplace <- arbitrary[Boolean]
-      } yield Registration(vrn, name, Nil, vatDetails, Nil, contactDetails, Nil, commencementDate, Nil, bankDetails, isOnlineMarketplace, None, None, None, None, None, None, None)
+        adminUse <- arbitrary[AdminUse]
+      } yield Registration(vrn, name, Nil, vatDetails, Nil, contactDetails, Nil, commencementDate, Nil, bankDetails, isOnlineMarketplace, None, None, None, None, None, None, None, adminUse)
     }
 }

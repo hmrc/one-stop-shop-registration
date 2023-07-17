@@ -16,7 +16,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import services.{FakeHistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentService}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Clock, LocalDate, ZoneId}
+import java.time.{Clock, LocalDate, LocalDateTime, ZoneId}
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -131,7 +131,8 @@ trait BaseSpec
       nonCompliantReturns = Some(1),
       nonCompliantPayments = Some(2)
     ),
-    BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get)
+    BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get),
+    AdminUse(Some(LocalDateTime.now(stubClock)))
   )
 
   val etmpAmendRegistrationRequest: EtmpRegistrationRequest = etmpRegistrationRequest.copy(administration = EtmpAdministration(EtmpMessageType.OSSSubscriptionAmend))

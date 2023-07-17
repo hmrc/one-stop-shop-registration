@@ -45,7 +45,8 @@ case class Registration(
                          lastUpdated: Option[Instant],
                          excludedTrader: Option[ExcludedTrader] = None,
                          nonCompliantReturns: Option[Int] = None,
-                         nonCompliantPayments: Option[Int] = None
+                         nonCompliantPayments: Option[Int] = None,
+                         adminUse: AdminUse
                        )
 
 object Registration extends Logging {
@@ -54,7 +55,8 @@ object Registration extends Logging {
                             vatDetails: VatCustomerInfo,
                             tradingNames: Seq[EtmpTradingNames],
                             schemeDetails: EtmpSchemeDetails,
-                            bankDetails: BankDetails
+                            bankDetails: BankDetails,
+                            adminUse: AdminUse
                           ): Registration =
     Registration(
       vrn = vrn,
@@ -89,7 +91,8 @@ object Registration extends Logging {
       submissionReceived = schemeDetails.registrationDate.map(registrationDate => LocalDate.parse(registrationDate, dateFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant),
       lastUpdated = None,
       nonCompliantReturns = schemeDetails.nonCompliantReturns,
-      nonCompliantPayments = schemeDetails.nonCompliantPayments
+      nonCompliantPayments = schemeDetails.nonCompliantPayments,
+      adminUse = adminUse
     )
 
   private def convertToEuTaxRegistration(etmpEuRegistrationDetails: Seq[EtmpEuRegistrationDetails]): Seq[EuTaxRegistration] = {
@@ -236,7 +239,8 @@ case class EncryptedRegistration(
                                   lastUpdated: Option[Instant],
                                   dateOfFirstSale: Option[LocalDate],
                                   nonCompliantReturns: Option[Int],
-                                  nonCompliantPayments: Option[Int]
+                                  nonCompliantPayments: Option[Int],
+                                  adminUse: AdminUse
                                 )
 
 object EncryptedRegistration {

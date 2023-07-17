@@ -351,7 +351,8 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       submissionReceived    = registration.submissionReceived,
       lastUpdated           = registration.lastUpdated,
       nonCompliantReturns   = registration.nonCompliantReturns,
-      nonCompliantPayments  = registration.nonCompliantPayments
+      nonCompliantPayments  = registration.nonCompliantPayments,
+      adminUse              = registration.adminUse
     )
   }
 
@@ -375,7 +376,8 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       submissionReceived    = registration.submissionReceived,
       lastUpdated           = registration.lastUpdated,
       nonCompliantReturns   = registration.nonCompliantReturns,
-      nonCompliantPayments  = registration.nonCompliantPayments
+      nonCompliantPayments  = registration.nonCompliantPayments,
+      adminUse              = registration.adminUse
     )
   }
 }

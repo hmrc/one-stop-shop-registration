@@ -140,7 +140,8 @@ class RegistrationServiceEtmpImpl @Inject()(
                 vatDetails,
                 etmpRegistration.tradingNames,
                 etmpRegistration.schemeDetails,
-                etmpRegistration.bankDetails
+                etmpRegistration.bankDetails,
+                etmpRegistration.adminUse
               )
 
               if (appConfig.exclusionsEnabled) {
