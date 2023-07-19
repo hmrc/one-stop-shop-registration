@@ -25,8 +25,7 @@ case class EtmpRegistrationRequest(
                                     customerIdentification: EtmpCustomerIdentification,
                                     tradingNames: Seq[EtmpTradingNames],
                                     schemeDetails: EtmpSchemeDetails,
-                                    bankDetails: BankDetails,
-                                    adminUse: AdminUse
+                                    bankDetails: BankDetails
                                   )
 
 object EtmpRegistrationRequest {
@@ -47,9 +46,9 @@ object EtmpRegistrationRequest {
         businessTelephoneNumber = registration.contactDetails.telephoneNumber,
         businessEmailId = registration.contactDetails.emailAddress,
         nonCompliantReturns = registration.nonCompliantReturns,
-        nonCompliantPayments = registration.nonCompliantPayments),
-      bankDetails = registration.bankDetails,
-      adminUse = registration.adminUse
+        nonCompliantPayments = registration.nonCompliantPayments
+      ),
+      bankDetails = registration.bankDetails
     )
   }
 
