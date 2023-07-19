@@ -239,8 +239,7 @@ case class EncryptedRegistration(
                                   lastUpdated: Option[Instant],
                                   dateOfFirstSale: Option[LocalDate],
                                   nonCompliantReturns: Option[Int],
-                                  nonCompliantPayments: Option[Int],
-                                  adminUse: AdminUse
+                                  nonCompliantPayments: Option[Int]
                                 )
 
 object EncryptedRegistration {

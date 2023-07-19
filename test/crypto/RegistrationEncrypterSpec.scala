@@ -8,12 +8,12 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-import java.time.{Instant, LocalDate}
+import java.time.{Instant, LocalDate, LocalDateTime}
 
 class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks with Generators {
 
   private val cipher    = new SecureGCMCipher
-  private val encrypter = new RegistrationEncrypter(cipher)
+  private val encrypter = new RegistrationEncrypter(cipher, stubClock)
   private val secretKey = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
 
   "encrypt / decrypt country" - {
@@ -221,7 +221,7 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         lastUpdated           = Some(Instant.now(stubClock)),
         nonCompliantReturns   = Some(1),
         nonCompliantPayments  = Some(2),
-        adminUse              = arbitrary[AdminUse].sample.value
+        adminUse              = AdminUse(Some(LocalDateTime.now(stubClock)))
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)
@@ -250,7 +250,7 @@ class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks w
         lastUpdated           = Some(Instant.now(stubClock)),
         nonCompliantReturns   = Some(1),
         nonCompliantPayments  = Some(2),
-        adminUse              = arbitrary[AdminUse].sample.value
+        adminUse              = AdminUse(Some(LocalDateTime.now(stubClock)))
       )
 
       val e = encrypter.encryptRegistration(registration, vrn, secretKey)
