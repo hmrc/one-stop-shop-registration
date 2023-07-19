@@ -27,7 +27,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import testutils.RegistrationData
-import testutils.RegistrationData.registration
+import testutils.RegistrationData.{registration, stubClock}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, PlayMongoRepositorySupport}
 
@@ -43,7 +43,7 @@ class RegistrationRepositorySpec extends AnyFreeSpec
   with MockitoSugar {
 
   private val cipher    = new SecureGCMCipher
-  private val encrypter = new RegistrationEncrypter(cipher)
+  private val encrypter = new RegistrationEncrypter(cipher, stubClock)
   private val appConfig = mock[AppConfig]
   private val secretKey = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
 

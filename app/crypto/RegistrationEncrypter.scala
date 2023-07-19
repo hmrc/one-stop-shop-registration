@@ -17,11 +17,16 @@
 package crypto
 
 import models._
+import models.etmp.AdminUse
 import uk.gov.hmrc.domain.Vrn
 
+import java.time.{Clock, LocalDateTime, ZoneOffset}
 import javax.inject.Inject
 
-class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
+class RegistrationEncrypter @Inject()(
+                                       crypto: SecureGCMCipher,
+                                       clock: Clock
+                                     ) {
 
   def encryptCountry(country: Country, vrn: Vrn, key: String): EncryptedCountry = {
     def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
@@ -351,8 +356,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       submissionReceived    = registration.submissionReceived,
       lastUpdated           = registration.lastUpdated,
       nonCompliantReturns   = registration.nonCompliantReturns,
-      nonCompliantPayments  = registration.nonCompliantPayments,
-      adminUse              = registration.adminUse
+      nonCompliantPayments  = registration.nonCompliantPayments
     )
   }
 
@@ -377,7 +381,7 @@ class RegistrationEncrypter @Inject()(crypto: SecureGCMCipher) {
       lastUpdated           = registration.lastUpdated,
       nonCompliantReturns   = registration.nonCompliantReturns,
       nonCompliantPayments  = registration.nonCompliantPayments,
-      adminUse              = registration.adminUse
+      adminUse              = AdminUse(registration.lastUpdated.map(x => LocalDateTime.ofInstant(x, clock.getZone)))
     )
   }
 }
