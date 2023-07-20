@@ -131,8 +131,7 @@ trait BaseSpec
       nonCompliantReturns = Some(1),
       nonCompliantPayments = Some(2)
     ),
-    BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get),
-    AdminUse(Some(LocalDateTime.now(stubClock)))
+    BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get)
   )
 
   val etmpAmendRegistrationRequest: EtmpRegistrationRequest = etmpRegistrationRequest.copy(administration = EtmpAdministration(EtmpMessageType.OSSSubscriptionAmend))
