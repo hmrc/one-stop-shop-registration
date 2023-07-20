@@ -39,8 +39,7 @@ case class RegistrationRequest(
                                 dateOfFirstSale: Option[LocalDate],
                                 nonCompliantReturns: Option[Int],
                                 nonCompliantPayments: Option[Int],
-                                submissionReceived: Option[Instant],
-                                adminUse: AdminUse
+                                submissionReceived: Option[Instant]
                               )
 
 object RegistrationRequest {
