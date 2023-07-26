@@ -107,6 +107,7 @@ class RegistrationConnector @Inject()(
       result
     }.recover {
       case e: HttpException =>
+        timerContext.stop()
         logger.error(s"Unexpected response from etmp registration ${e.getMessage}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
     }
