@@ -91,6 +91,7 @@ class RegistrationConnector @Inject()(
 
     val correlationId: String = UUID.randomUUID().toString
     val headersWithCorrelationId = amendHeaders(correlationId)
+    val timerContext = metrics.startTimer(MetricsEnum.AmendRegistration)
     val headersWithoutAuth = headersWithCorrelationId.filterNot {
       case (key, _) => key.matches(AUTHORIZATION)
     }
@@ -101,7 +102,10 @@ class RegistrationConnector @Inject()(
       s"${amendRegistrationConfig.baseUrl}vec/ossregistration/amendreg/v1",
       registration,
       headers = headersWithCorrelationId
-    ).recover {
+    ).map { result =>
+      timerContext.stop()
+      result
+    }.recover {
       case e: HttpException =>
         logger.error(s"Unexpected response from etmp registration ${e.getMessage}", e)
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response from ${serviceName}, received status ${e.responseCode}"))
