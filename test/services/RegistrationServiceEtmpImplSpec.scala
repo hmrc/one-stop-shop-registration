@@ -368,6 +368,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         doNothing().when(auditService).audit(any())(any(), any())
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
           Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
+        when(serviceMetrics.startTimer(any())).thenReturn(new Timer().time)
 
         registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
         verify(registrationRepository, times(0)).insert(any())
@@ -398,6 +399,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
           Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
         when(registrationRepository.set(any())) thenReturn successful(AmendSucceeded)
+        when(serviceMetrics.startTimer(any())).thenReturn(new Timer().time)
 
         registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
         verify(registrationRepository, times(1)).set(any())
@@ -413,6 +415,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
           Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
         when(registrationRepository.set(any())) thenReturn successful(AmendSucceeded)
+        when(serviceMetrics.startTimer(any())).thenReturn(new Timer().time)
         when(cachedRegistrationRepository.clear(any())) thenReturn Future.successful(true)
 
         registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
