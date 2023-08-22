@@ -28,21 +28,27 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.http.HeaderNames
 
+import java.util.UUID
+
 
 class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClient: HttpClient, metrics: ServiceMetrics)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
-  private val headers = Seq(
+  private val XCorrelationId = "X-Correlation-Id"
+
+  private def headers(correlationId: String) = Seq(
     HeaderNames.AUTHORIZATION -> s"Bearer ${getVatInfoConfig.authorizationToken}",
-    "Environment" -> getVatInfoConfig.environment
+    "Environment" -> getVatInfoConfig.environment,
+    XCorrelationId -> correlationId
   )
 
   def getVatCustomerDetails(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[VatCustomerInfoResponse] = {
     val url = s"${getVatInfoConfig.baseUrl}vat/customer/vrn/${vrn.value}/information"
     val timerContext = metrics.startTimer(MetricsEnum.GetVatCustomerDetails)
+    val correlationId = UUID.randomUUID().toString
     httpClient.GET[VatCustomerInfoResponse](
       url = url,
-      headers = headers
+      headers = headers(correlationId)
     ).map { result =>
       timerContext.stop()
       result
