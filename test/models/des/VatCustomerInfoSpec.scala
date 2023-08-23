@@ -47,7 +47,8 @@ class VatCustomerInfoSpec extends BaseSpec {
           partOfVatGroup = true,
           organisationName = Some("Foo"),
           singleMarketIndicator = Some(false),
-          individualName = Some("A B C")
+          individualName = Some("A B C"),
+          deregistrationDecisionDate = None
         )
 
         json.validate[VatCustomerInfo](VatCustomerInfo.desReads) mustEqual JsSuccess(expectedResult)
@@ -88,7 +89,8 @@ class VatCustomerInfoSpec extends BaseSpec {
           partOfVatGroup = false,
           organisationName = Some("Foo"),
           singleMarketIndicator = Some(false),
-          individualName = Some("A B C")
+          individualName = Some("A B C"),
+          deregistrationDecisionDate = None
         )
 
         json.validate[VatCustomerInfo](VatCustomerInfo.desReads) mustEqual JsSuccess(expectedResult)
@@ -114,7 +116,8 @@ class VatCustomerInfoSpec extends BaseSpec {
           partOfVatGroup = false,
           organisationName = None,
           singleMarketIndicator = None,
-          individualName = None
+          individualName = None,
+          deregistrationDecisionDate = None
         )
 
         json.validate[VatCustomerInfo](VatCustomerInfo.desReads) mustEqual JsSuccess(expectedResult)
