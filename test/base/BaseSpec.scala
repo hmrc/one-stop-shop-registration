@@ -53,7 +53,8 @@ trait BaseSpec
       partOfVatGroup = false,
       organisationName = Some("Company name"),
       singleMarketIndicator = Some(true),
-      individualName = None
+      individualName = None,
+      deregistrationDecisionDate = Some(LocalDate.now(stubClock))
     )
 
   val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
