@@ -22,11 +22,13 @@ object MetricsEnum extends Enumeration{
 //  registrationConnector
   val GetRegistration = Value
   val CreateEtmpRegistration = Value
+  val AmendRegistration = Value
 //  validateCoreRegistrationConnector
   val ValidateCoreRegistration = Value
 //  EnrolmentsConnector
   val ConfirmEnrolment = Value
 //  GetVatInfoConnector
   val GetVatCustomerDetails = Value
+
 
 }
