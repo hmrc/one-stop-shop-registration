@@ -36,7 +36,7 @@ class ExclusionService @Inject()(
       appConfig.excludedTraders.find { e =>
         hashingUtil.verifyValue(vrn.vrn, e.hashedVrn)
       }.map { e =>
-        ExcludedTrader(vrn, e.exclusionSource, e.exclusionReason, e.effectivePeriod)
+        ExcludedTrader(vrn, e.exclusionCode, e.exclusionReason, e.effectivePeriod)
       }
     )
 
