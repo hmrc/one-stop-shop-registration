@@ -313,7 +313,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
     "when exclusion is enabled and trader is excluded" - {
 
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 2, 4, period)
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period)
 
       "must return Some(registration) when both connectors return right" in {
         when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))

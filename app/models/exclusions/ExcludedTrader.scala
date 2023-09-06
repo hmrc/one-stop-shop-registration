@@ -25,14 +25,21 @@ import uk.gov.hmrc.domain.Vrn
 
 case class ExcludedTrader(
                            vrn: Vrn,
-                           exclusionCode: Int,
                            exclusionReason: Int,
                            effectivePeriod: Period
-                         )
+                         ) {
+  val exclusionSource: String = derriveExclusionSource(exclusionReason)
+
+  private def derriveExclusionSource(code: Int) = {
+    code match {
+      case x if x == 1 || x == 2 => "HMRC"
+      case _ => "TRADER"
+    }
+  }
+}
 
 case class HashedExcludedTrader(
                                  hashedVrn: String,
-                                 exclusionCode: Int,
                                  exclusionReason: Int,
                                  effectivePeriod: Period
                                )
@@ -53,13 +60,12 @@ object HashedExcludedTrader extends Logging {
 
         val excludedTrader = Configuration(config).get[Configuration](prefix)
         val vrn = excludedTrader.get[String]("vrn")
-        val exclusionCode = excludedTrader.get[Int]("exclusionCode")
         val exclusionReason = excludedTrader.get[Int]("exclusionReason")
         val effectivePeriod = excludedTrader.get[String]("effectivePeriod")
 
         Period.fromString(effectivePeriod) match {
           case Some(excludedPeriod) =>
-            HashedExcludedTrader(vrn, exclusionCode, exclusionReason, excludedPeriod)
+            HashedExcludedTrader(vrn, exclusionReason, excludedPeriod)
           case _ =>
             logger.error("Unable to parse period")
             throw new Exception("Unable to parse period")
@@ -77,7 +83,6 @@ object HashedExcludedTrader extends Logging {
 
         HashedExcludedTrader(
           value.getString("vrn"),
-          value.getInt("exclusionCode"),
           value.getInt("exclusionReason"),
           Period.fromString(value.getString("effectivePeriod")) match {
             case Some(excludedPeriod) =>

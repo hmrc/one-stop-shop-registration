@@ -108,7 +108,7 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
 
     "when exclusion is enabled and trader is excluded" - {
 
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 2, 4, period)
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period)
 
       "must return a Some(registration) when the connector returns right" in {
         when(registrationRepository.get(any())) thenReturn Future.successful(Some(registration))
