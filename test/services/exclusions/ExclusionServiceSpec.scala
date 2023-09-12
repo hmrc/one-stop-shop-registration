@@ -22,7 +22,6 @@ class ExclusionServiceSpec extends BaseSpec with BeforeAndAfterEach {
   when(mockConfig.exclusionsHashingKey) thenReturn "mERA6vGFqQLsa4TuKmnqQTDLBQ43N8Lzbhj5auPJtHGyteuU8KCkYXFZH67sVoPa"
   private val hashingUtil = new HashingUtil(mockConfig)
   private val exclusionService = new ExclusionService(hashingUtil, mockConfig)
-  private val exclusionSource = Gen.oneOf("HMRC", "TRADER").sample.value
   private val exclusionReason = Gen.oneOf("01", "02", "03", "04", "05", "06", "-01").sample.value.toInt
   private val exclusionPeriod = Period(2022, Q3)
   private val hashedVrn = hashingUtil.hashValue("123456789")
@@ -36,9 +35,9 @@ class ExclusionServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
     "must return ExcludedTrader if vrn is matched" in {
 
-      when(mockConfig.excludedTraders) thenReturn Seq(HashedExcludedTrader(hashedVrn, exclusionSource, exclusionReason, exclusionPeriod))
+      when(mockConfig.excludedTraders) thenReturn Seq(HashedExcludedTrader(hashedVrn, exclusionReason, exclusionPeriod))
 
-      val expected = ExcludedTrader(vrn, exclusionSource, exclusionReason, exclusionPeriod)
+      val expected = ExcludedTrader(vrn, exclusionReason, exclusionPeriod)
 
       exclusionService.findExcludedTrader(vrn).futureValue mustBe Some(expected)
 

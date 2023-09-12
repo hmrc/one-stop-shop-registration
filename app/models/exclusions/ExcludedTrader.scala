@@ -25,14 +25,12 @@ import uk.gov.hmrc.domain.Vrn
 
 case class ExcludedTrader(
                            vrn: Vrn,
-                           exclusionSource: String,
                            exclusionReason: Int,
                            effectivePeriod: Period
                          )
 
 case class HashedExcludedTrader(
                                  hashedVrn: String,
-                                 exclusionSource: String,
                                  exclusionReason: Int,
                                  effectivePeriod: Period
                                )
@@ -53,13 +51,12 @@ object HashedExcludedTrader extends Logging {
 
         val excludedTrader = Configuration(config).get[Configuration](prefix)
         val vrn = excludedTrader.get[String]("vrn")
-        val exclusionSource = excludedTrader.get[String]("exclusionSource")
         val exclusionReason = excludedTrader.get[Int]("exclusionReason")
         val effectivePeriod = excludedTrader.get[String]("effectivePeriod")
 
         Period.fromString(effectivePeriod) match {
           case Some(excludedPeriod) =>
-            HashedExcludedTrader(vrn, exclusionSource, exclusionReason, excludedPeriod)
+            HashedExcludedTrader(vrn, exclusionReason, excludedPeriod)
           case _ =>
             logger.error("Unable to parse period")
             throw new Exception("Unable to parse period")
@@ -77,7 +74,6 @@ object HashedExcludedTrader extends Logging {
 
         HashedExcludedTrader(
           value.getString("vrn"),
-          value.getString("exclusionSource"),
           value.getInt("exclusionReason"),
           Period.fromString(value.getString("effectivePeriod")) match {
             case Some(excludedPeriod) =>
