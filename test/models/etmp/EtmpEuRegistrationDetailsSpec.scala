@@ -81,6 +81,21 @@ class EtmpEuRegistrationDetailsSpec extends BaseSpec {
         EtmpEuRegistrationDetails.create(euVatRegistration) mustBe etmpEuRegistrationDetails
       }
 
+      "should create EtmpEuRegistrationDetails from an EuVatRegistration when invoked ireland" in {
+
+        val euVatRegistration = EuVatRegistration(
+          country = Country("IE", "Ireland"),
+          vatNumber = "IEIE1234567WI"
+        )
+
+        val etmpEuRegistrationDetails = EtmpEuRegistrationDetails(
+          countryOfRegistration = "IE",
+          vatNumber = Some("1234567WI")
+        )
+
+        EtmpEuRegistrationDetails.create(euVatRegistration) mustBe etmpEuRegistrationDetails
+      }
+
       "should create EtmpEuRegistrationDetails from a RegistrationWithoutTaxId when invoked" in {
 
         val euVatRegistration = RegistrationWithoutTaxId(

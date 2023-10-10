@@ -114,7 +114,7 @@ object CountryWithValidationDetails extends Logging {
   private val franceVatNumberRegex = """^FR[A-Z0-9]{2}[0-9]{9}$"""
   private val croatiaVatNumberRegex = """^HR[0-9]{11}$"""
   private val hungaryVatNumberRegex = """^HU[0-9]{8}$"""
-  private val irelandVatNumberRegex = """^IE[0-9][A-Z0-9\+\*][0-9]{5}[A-Z]$|^IE[0-9]{7}WI$"""
+  private val irelandVatNumberRegex = """^IE([0-9][A-Z][0-9]{5}[A-Z]|[0-9]{7}[A-Z0-9]{1,2})$"""
   private val italyVatNumberRegex = """^IT[0-9]{11}$"""
   private val lithuaniaVatNumberRegex = """^LT[0-9]{9}$|^LT[0-9]{12}$"""
   private val luxembourgVatNumberRegex = """^LU[0-9]{8}$"""
@@ -134,6 +134,8 @@ object CountryWithValidationDetails extends Logging {
       case Some(countryValidationDetails) =>
         if (identifier.matches(countryValidationDetails.vrnRegex)) {
           identifier.substring(2)
+        } else if(identifier.substring(2).matches(countryValidationDetails.vrnRegex)) {
+          identifier.substring(4)
         } else {
           identifier
         }
