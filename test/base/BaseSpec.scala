@@ -36,7 +36,7 @@ trait BaseSpec
   val iban: Iban = Iban("GB33BUKB20201555555555").toOption.get
   val bic: Bic = Bic("ABCDGB2A").get
 
-  val period: Period = Period(2021, Q3)
+  val period: Period = StandardPeriod(2021, Q3)
 
   protected def applicationBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()

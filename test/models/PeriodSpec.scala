@@ -12,7 +12,7 @@ class PeriodSpec extends BaseSpec with ScalaCheckPropertyChecks {
 
     "must resolve for valid periods" in {
 
-      Period.fromString("2021-Q1").get mustEqual Period(2021, Q1)
+      Period.fromString("2021-Q1").get mustEqual StandardPeriod(2021, Q1)
 
     }
 

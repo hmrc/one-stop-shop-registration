@@ -16,14 +16,40 @@
 
 package models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json, OFormat, Reads, Writes}
 
+import java.time.{Clock, LocalDate}
 import scala.util.Try
 import scala.util.matching.Regex
 
-case class Period(year: Int, quarter: Quarter) {
+trait Period {
+  val year: Int
+  val quarter: Quarter
+  val firstDay: LocalDate
+  val lastDay: LocalDate
+  val isPartial: Boolean
+
+  val paymentDeadline: LocalDate = LocalDate.of(year, quarter.startMonth, 1).plusMonths(4).minusDays(1)
+
+  def isOverdue(clock: Clock): Boolean = {
+    paymentDeadline.isBefore(LocalDate.now(clock))
+  }
+
+}
+
+
+case class StandardPeriod(year: Int, quarter: Quarter) extends Period {
+
+  override val firstDay: LocalDate = LocalDate.of(year, quarter.startMonth, 1)
+  override val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)
+
+  override val isPartial: Boolean = false
 
   override def toString: String = s"$year-${quarter.toString}"
+}
+
+object StandardPeriod {
+  implicit val format: OFormat[StandardPeriod] = Json.format[StandardPeriod]
 }
 
 object Period {
@@ -34,7 +60,7 @@ object Period {
     for {
       year <- Try(yearString.toInt)
       quarter <- Quarter.fromString(quarterString)
-    } yield Period(year, quarter)
+    } yield StandardPeriod(year, quarter)
 
   def fromString(string: String): Option[Period] =
     string match {
@@ -44,6 +70,15 @@ object Period {
         None
     }
 
-  implicit val format: OFormat[Period] = Json.format[Period]
+  def reads: Reads[Period] =
+    StandardPeriod.format.widen[Period] orElse
+      PartialReturnPeriod.format.widen[Period]
+
+  def writes: Writes[Period] = Writes {
+    case s: StandardPeriod => Json.toJson(s)(StandardPeriod.format)
+    case p: PartialReturnPeriod => Json.toJson(p)(PartialReturnPeriod.format)
+  }
+
+  implicit def format: Format[Period] = Format(reads, writes)
 
 }

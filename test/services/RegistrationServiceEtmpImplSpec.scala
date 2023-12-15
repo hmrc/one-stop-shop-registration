@@ -20,7 +20,7 @@ import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import com.codahale.metrics.Timer
 import config.AppConfig
-import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
+import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector, ReturnStatusConnector}
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import metrics.ServiceMetrics
 import models._
@@ -66,7 +66,23 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val auditService = mock[AuditService]
 
-  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, getVatInfoConnector, registrationRepository, registrationStatusRepository, cachedRegistrationRepository, retryService, appConfig, exclusionService, auditService, stubClock)
+  private val coreValidationService = mock[CoreValidationService]
+  private val returnStatusConnector = mock[ReturnStatusConnector]
+
+  private val registrationService = new RegistrationServiceEtmpImpl(
+    registrationConnector,
+    enrolmentsConnector,
+    getVatInfoConnector,
+    registrationRepository,
+    registrationStatusRepository,
+    cachedRegistrationRepository,
+    retryService,
+    appConfig,
+    exclusionService,
+    auditService,
+    coreValidationService,
+    returnStatusConnector,
+    stubClock)
 
   implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
 

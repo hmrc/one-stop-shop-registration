@@ -44,6 +44,7 @@ case class Registration(
                          submissionReceived: Option[Instant],
                          lastUpdated: Option[Instant],
                          excludedTrader: Option[ExcludedTrader] = None,
+                         transferringMsidEffectiveFromDate: Option[LocalDate] = None,
                          nonCompliantReturns: Option[Int] = None,
                          nonCompliantPayments: Option[Int] = None,
                          adminUse: AdminUse

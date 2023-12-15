@@ -2,7 +2,7 @@ package services.exclusions
 
 import base.BaseSpec
 import config.AppConfig
-import models.Period
+import models.{Period, StandardPeriod}
 import models.Quarter.Q3
 import models.exclusions.{ExcludedTrader, HashedExcludedTrader}
 import org.mockito.Mockito
@@ -23,7 +23,7 @@ class ExclusionServiceSpec extends BaseSpec with BeforeAndAfterEach {
   private val hashingUtil = new HashingUtil(mockConfig)
   private val exclusionService = new ExclusionService(hashingUtil, mockConfig)
   private val exclusionReason = Gen.oneOf("01", "02", "03", "04", "05", "06", "-01").sample.value.toInt
-  private val exclusionPeriod = Period(2022, Q3)
+  private val exclusionPeriod = StandardPeriod(2022, Q3)
   private val hashedVrn = hashingUtil.hashValue("123456789")
 
   override def beforeEach(): Unit = {
