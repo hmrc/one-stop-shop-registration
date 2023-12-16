@@ -16,7 +16,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import services.{FakeHistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentService}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Clock, LocalDate, LocalDateTime, ZoneId}
+import java.time.{Clock, LocalDate, ZoneId}
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 

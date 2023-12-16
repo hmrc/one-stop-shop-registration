@@ -1,12 +1,11 @@
 package generators
 
 import crypto.EncryptedValue
-import models.requests.SaveForLaterRequest
 import models._
-import models.etmp.{AdminUse, EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
-import models.returns.{PeriodWithStatus, SubmissionStatus}
-import org.scalacheck.Arbitrary.arbitrary
+import models.etmp._
+import models.requests.SaveForLaterRequest
 import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Arbitrary.arbitrary
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 
@@ -425,11 +424,4 @@ trait Generators {
       } yield StandardPeriod(year, quarter)
     }
 
-  implicit val arbitraryPeriodWithStatus: Arbitrary[PeriodWithStatus] =
-    Arbitrary {
-      for {
-        period <- arbitrary[StandardPeriod]
-        status <- Gen.oneOf(SubmissionStatus.values)
-      } yield PeriodWithStatus(period, status)
-    }
 }

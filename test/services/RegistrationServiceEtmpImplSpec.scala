@@ -20,7 +20,7 @@ import akka.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import com.codahale.metrics.Timer
 import config.AppConfig
-import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector, ReturnStatusConnector}
+import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import metrics.ServiceMetrics
 import models._
@@ -67,7 +67,6 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   private val auditService = mock[AuditService]
 
   private val coreValidationService = mock[CoreValidationService]
-  private val returnStatusConnector = mock[ReturnStatusConnector]
 
   private val registrationService = new RegistrationServiceEtmpImpl(
     registrationConnector,
@@ -81,7 +80,6 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     exclusionService,
     auditService,
     coreValidationService,
-    returnStatusConnector,
     stubClock)
 
   implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
@@ -337,6 +335,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(appConfig.exclusionsEnabled) thenReturn true
         when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
         when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
+        when(coreValidationService.searchScheme(any(), any(), any(), any())(any())) thenReturn Future.successful(None)
         registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationConnector, times(1)).get(Vrn("123456789"))
         verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))
