@@ -2,8 +2,8 @@ package services.exclusions
 
 import base.BaseSpec
 import config.AppConfig
-import models.{Period, StandardPeriod}
 import models.Quarter.Q3
+import models.StandardPeriod
 import models.exclusions.{ExcludedTrader, HashedExcludedTrader}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -35,9 +35,9 @@ class ExclusionServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
     "must return ExcludedTrader if vrn is matched" in {
 
-      when(mockConfig.excludedTraders) thenReturn Seq(HashedExcludedTrader(hashedVrn, exclusionReason, exclusionPeriod))
+      when(mockConfig.excludedTraders) thenReturn Seq(HashedExcludedTrader(hashedVrn, exclusionReason, exclusionPeriod, None))
 
-      val expected = ExcludedTrader(vrn, exclusionReason, exclusionPeriod)
+      val expected = ExcludedTrader(vrn, exclusionReason, exclusionPeriod, None)
 
       exclusionService.findExcludedTrader(vrn).futureValue mustBe Some(expected)
 

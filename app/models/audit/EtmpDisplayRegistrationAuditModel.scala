@@ -17,11 +17,9 @@
 package models.audit
 
 import controllers.actions.AuthorisedMandatoryVrnRequest
-import models.enrolments.EtmpEnrolmentResponse
-import models.etmp.{AmendRegistrationResponse, DisplayRegistration, EtmpRegistrationRequest}
+import models.etmp.DisplayRegistration
 import models.Registration
-import models.exclusions.ExcludedTrader
-import play.api.libs.json.{JsObject, Json, JsValue}
+import play.api.libs.json.{Json, JsValue}
 
 case class EtmpDisplayRegistrationAuditModel(
                                               etmpRegistrationAuditType: EtmpRegistrationAuditType,
