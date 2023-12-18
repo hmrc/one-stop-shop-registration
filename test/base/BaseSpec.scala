@@ -16,7 +16,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import services.{FakeHistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentService}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Clock, LocalDate, LocalDateTime, ZoneId}
+import java.time.{Clock, LocalDate, ZoneId}
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -36,7 +36,7 @@ trait BaseSpec
   val iban: Iban = Iban("GB33BUKB20201555555555").toOption.get
   val bic: Bic = Bic("ABCDGB2A").get
 
-  val period: Period = Period(2021, Q3)
+  val period: Period = StandardPeriod(2021, Q3)
 
   protected def applicationBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()

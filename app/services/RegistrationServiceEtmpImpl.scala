@@ -19,22 +19,22 @@ package services
 import config.AppConfig
 import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
 import controllers.actions.AuthorisedMandatoryVrnRequest
-import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.enrolments.EtmpEnrolmentErrorResponse
-import models.etmp.{AmendRegistrationResponse, DisplayRegistration, EtmpMessageType, EtmpRegistrationRequest, EtmpRegistrationStatus}
-import models.requests.RegistrationRequest
 import models._
 import models.audit.{EtmpDisplayRegistrationAuditModel, EtmpRegistrationAuditModel, EtmpRegistrationAuditType, SubmissionResult}
-import models.core.EisDisplayErrorResponse
+import models.core.{EisDisplayErrorResponse, MatchType}
+import models.enrolments.EtmpEnrolmentErrorResponse
+import models.etmp._
 import models.repository.{AmendResult, InsertResult}
 import models.repository.AmendResult.AmendSucceeded
+import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.requests.RegistrationRequest
 import play.api.http.Status.NO_CONTENT
 import repositories.{CachedRegistrationRepository, RegistrationRepository, RegistrationStatusRepository}
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.Clock
+import java.time.{Clock, LocalDate}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -50,6 +50,7 @@ class RegistrationServiceEtmpImpl @Inject()(
                                              appConfig: AppConfig,
                                              exclusionService: ExclusionService,
                                              auditService: AuditService,
+                                             coreValidationService: CoreValidationService,
                                              clock: Clock
                                            )(implicit ec: ExecutionContext) extends RegistrationService {
 
@@ -95,7 +96,7 @@ class RegistrationServiceEtmpImpl @Inject()(
         throw EtmpException(s"There was an error creating Registration enrolment from ETMP: ${error.body}")
     }
 
-    if(appConfig.registrationCacheEnabled) {
+    if (appConfig.registrationCacheEnabled) {
       cachedRegistrationRepository.clear(request.userId)
     }
     creationResponse
@@ -117,7 +118,6 @@ class RegistrationServiceEtmpImpl @Inject()(
     } else {
       getRegistration(vrn, auditBlock)
     }
-
 
   }
 
@@ -145,10 +145,12 @@ class RegistrationServiceEtmpImpl @Inject()(
               )
 
               if (appConfig.exclusionsEnabled) {
-                exclusionService.findExcludedTrader(registration.vrn).map { maybeExcludedTrader =>
-                  val registrationWithExcludedTrader = registration.copy(excludedTrader = maybeExcludedTrader)
-                  auditBlock(etmpRegistration, registrationWithExcludedTrader)
-                  Some(registrationWithExcludedTrader)
+                exclusionService.findExcludedTrader(registration.vrn).flatMap { maybeExcludedTrader =>
+                  getTransferringMsidEffectiveFromDate(registration).map { transferringMsidEffectiveFromDate =>
+                    val registrationWithExcludedTraderAndPartialReturnPeriod = registration.copy(excludedTrader = maybeExcludedTrader, transferringMsidEffectiveFromDate = transferringMsidEffectiveFromDate)
+                    auditBlock(etmpRegistration, registrationWithExcludedTraderAndPartialReturnPeriod)
+                    Some(registrationWithExcludedTraderAndPartialReturnPeriod)
+                  }
                 }
               } else {
                 auditBlock(etmpRegistration, registration)
@@ -166,18 +168,47 @@ class RegistrationServiceEtmpImpl @Inject()(
           throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
       }
     } else {
-      for {
+      (for {
         maybeRegistration <- registrationRepository.get(vrn)
         maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
       } yield {
-        maybeRegistration.map { registration =>
-          if (appConfig.exclusionsEnabled) {
-            registration.copy(excludedTrader = maybeExcludedTrader)
-          } else {
-            registration
-          }
+        maybeRegistration match {
+          case Some(registration) =>
+            getTransferringMsidEffectiveFromDate(registration).map { transferringMsidEffectiveFromDate =>
+              Some(registration.copy(excludedTrader = maybeExcludedTrader, transferringMsidEffectiveFromDate = transferringMsidEffectiveFromDate))
+            }
+          case _ => Future.successful(None)
         }
+      }).flatten
+    }
+  }
+
+  private def getTransferringMsidEffectiveFromDate(registration: Registration)
+                                                  (implicit hc: HeaderCarrier): Future[Option[LocalDate]] = {
+    val hasPreviousRegistration = registration.previousRegistrations.nonEmpty
+
+    if (hasPreviousRegistration) {
+      val filteredPreviousRegistrations = registration.previousRegistrations.find {
+        case previousRegistration: PreviousRegistrationNew =>
+          previousRegistration.previousSchemesDetails.exists(_.previousScheme == PreviousScheme.OSSU)
       }
+      filteredPreviousRegistrations.map {
+        case previousRegistration: PreviousRegistrationNew =>
+          val previousOssRegistration = previousRegistration.previousSchemesDetails.find(_.previousScheme == PreviousScheme.OSSU).get
+          coreValidationService.searchScheme(
+            searchNumber = previousOssRegistration.previousSchemeNumbers.previousSchemeNumber,
+            previousScheme = PreviousScheme.OSSU,
+            intermediaryNumber = None,
+            countryCode = previousRegistration.country.code
+          ).map {
+            case Some(coreRegistrationMatch) if coreRegistrationMatch.matchType == MatchType.TransferringMSID =>
+              coreRegistrationMatch.exclusionEffectiveDate.map(LocalDate.parse)
+            case _ =>
+              None
+          }
+      }.getOrElse(Future.successful(None))
+    } else {
+      Future.successful(None)
     }
   }
 

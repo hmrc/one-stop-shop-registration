@@ -20,7 +20,7 @@ import models._
 import models.etmp.AdminUse
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Clock, LocalDateTime, ZoneOffset}
+import java.time.{Clock, LocalDateTime}
 import javax.inject.Inject
 
 class RegistrationEncrypter @Inject()(
@@ -299,8 +299,8 @@ class RegistrationEncrypter @Inject()(
 
   def decryptPreviousSchemeDetails(previousSchemeDetails: EncryptedPreviousSchemeDetails, vrn: Vrn, key: String): PreviousSchemeDetails = {
     def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
-    import previousSchemeDetails._
     import models.PreviousScheme._
+    import previousSchemeDetails._
 
     def decryptPreviousScheme(field: EncryptedValue): PreviousScheme =
       PreviousScheme.withName(d(field)).getOrElse(throw new Exception("Unable to decrypt value"))

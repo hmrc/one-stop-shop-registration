@@ -1,11 +1,11 @@
 package generators
 
 import crypto.EncryptedValue
-import models.requests.SaveForLaterRequest
 import models._
-import models.etmp.{AdminUse, EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
-import org.scalacheck.Arbitrary.arbitrary
+import models.etmp._
+import models.requests.SaveForLaterRequest
 import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Arbitrary.arbitrary
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 
@@ -407,11 +407,21 @@ trait Generators {
         vrn <- arbitrary[Vrn]
         name <- arbitrary[String]
         vatDetails <- arbitrary[VatDetails]
+
         contactDetails <- arbitrary[ContactDetails]
         bankDetails <- arbitrary[BankDetails]
         commencementDate <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
         isOnlineMarketplace <- arbitrary[Boolean]
         adminUse <- arbitrary[AdminUse]
-      } yield Registration(vrn, name, Nil, vatDetails, Nil, contactDetails, Nil, commencementDate, Nil, bankDetails, isOnlineMarketplace, None, None, None, None, None, None, None, adminUse)
+      } yield Registration(vrn, name, Nil, vatDetails, Nil, contactDetails, Nil, commencementDate, Nil, bankDetails, isOnlineMarketplace, None, None, None, None, None, None, None, None, adminUse)
     }
+
+  implicit val arbitraryStandardPeriod: Arbitrary[StandardPeriod] =
+    Arbitrary {
+      for {
+        year <- Gen.choose(2022, 2099)
+        quarter <- Gen.oneOf(Quarter.values)
+      } yield StandardPeriod(year, quarter)
+    }
+
 }

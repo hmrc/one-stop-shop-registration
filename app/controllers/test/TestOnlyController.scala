@@ -18,15 +18,15 @@ package controllers.test
 
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models._
 import models.EuTaxIdentifierType.Vat
 import models.VatDetailSource.UserEntered
-import models._
 import models.etmp.AdminUse
 import models.repository.AmendResult.AmendSucceeded
 import models.requests.RegistrationRequest
 import org.mongodb.scala.model.Filters
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, AnyContent}
 import repositories.RegistrationRepository
 import services.RegistrationServiceRepositoryImpl
 import uk.gov.hmrc.domain.Vrn

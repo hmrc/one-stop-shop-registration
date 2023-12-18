@@ -27,7 +27,6 @@ import models.requests.RegistrationRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import play.api.inject.bind
 import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
 import play.api.test.Helpers.running
@@ -37,7 +36,7 @@ import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.{Clock, Instant}
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -108,7 +107,7 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
 
     "when exclusion is enabled and trader is excluded" - {
 
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period)
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period, None)
 
       "must return a Some(registration) when the connector returns right" in {
         when(registrationRepository.get(any())) thenReturn Future.successful(Some(registration))

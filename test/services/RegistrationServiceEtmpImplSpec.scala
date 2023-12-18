@@ -66,7 +66,21 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val auditService = mock[AuditService]
 
-  private val registrationService = new RegistrationServiceEtmpImpl(registrationConnector, enrolmentsConnector, getVatInfoConnector, registrationRepository, registrationStatusRepository, cachedRegistrationRepository, retryService, appConfig, exclusionService, auditService, stubClock)
+  private val coreValidationService = mock[CoreValidationService]
+
+  private val registrationService = new RegistrationServiceEtmpImpl(
+    registrationConnector,
+    enrolmentsConnector,
+    getVatInfoConnector,
+    registrationRepository,
+    registrationStatusRepository,
+    cachedRegistrationRepository,
+    retryService,
+    appConfig,
+    exclusionService,
+    auditService,
+    coreValidationService,
+    stubClock)
 
   implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
 
@@ -313,7 +327,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
     "when exclusion is enabled and trader is excluded" - {
 
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period)
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period, None)
 
       "must return Some(registration) when both connectors return right" in {
         when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
@@ -321,6 +335,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(appConfig.exclusionsEnabled) thenReturn true
         when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
         when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
+        when(coreValidationService.searchScheme(any(), any(), any(), any())(any())) thenReturn Future.successful(None)
         registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationConnector, times(1)).get(Vrn("123456789"))
         verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))

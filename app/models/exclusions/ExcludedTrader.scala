@@ -23,16 +23,21 @@ import play.api.{ConfigLoader, Configuration}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
+import java.time.LocalDate
+import scala.util.Try
+
 case class ExcludedTrader(
                            vrn: Vrn,
                            exclusionReason: Int,
-                           effectivePeriod: Period
+                           effectivePeriod: Period,
+                           effectiveDate: Option[LocalDate]
                          )
 
 case class HashedExcludedTrader(
                                  hashedVrn: String,
                                  exclusionReason: Int,
-                                 effectivePeriod: Period
+                                 effectivePeriod: Period,
+                                 effectiveDate: Option[LocalDate]
                                )
 
 object ExcludedTrader extends Logging {
@@ -53,10 +58,11 @@ object HashedExcludedTrader extends Logging {
         val vrn = excludedTrader.get[String]("vrn")
         val exclusionReason = excludedTrader.get[Int]("exclusionReason")
         val effectivePeriod = excludedTrader.get[String]("effectivePeriod")
+        val effectiveDate = excludedTrader.getOptional[String]("effectiveDate").map(LocalDate.parse)
 
         Period.fromString(effectivePeriod) match {
           case Some(excludedPeriod) =>
-            HashedExcludedTrader(vrn, exclusionReason, excludedPeriod)
+            HashedExcludedTrader(vrn, exclusionReason, excludedPeriod, effectiveDate)
           case _ =>
             logger.error("Unable to parse period")
             throw new Exception("Unable to parse period")
@@ -81,7 +87,8 @@ object HashedExcludedTrader extends Logging {
             case _ =>
               logger.error("Unable to parse period")
               throw new Exception("Unable to parse period")
-          }
+          },
+          Try(value.getString("effectiveDate")).toOption.map(LocalDate.parse)
         )
       }.toSeq
     }

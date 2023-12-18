@@ -47,7 +47,8 @@ class RegistrationController @Inject()(
   def get: Action[AnyContent] = cc.authAndRequireVat().async {
     implicit request =>
       registrationService.get(request.vrn) map {
-        case Some(registration) => Ok(Json.toJson(registration))
+        case Some(registration) =>
+          Ok(Json.toJson(registration))
         case None => NotFound
       }
   }
