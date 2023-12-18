@@ -32,12 +32,13 @@ class ExclusionService @Inject()(
                                 ) extends Logging {
 
   def findExcludedTrader(vrn: Vrn): Future[Option[ExcludedTrader]] =
-    Future.successful(
+    Future.successful({
       appConfig.excludedTraders.find { e =>
         hashingUtil.verifyValue(vrn.vrn, e.hashedVrn)
       }.map { e =>
         ExcludedTrader(vrn, e.exclusionReason, e.effectivePeriod, e.effectiveDate)
       }
+    }
     )
 
 }

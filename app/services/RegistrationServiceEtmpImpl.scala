@@ -111,7 +111,6 @@ class RegistrationServiceEtmpImpl @Inject()(
         case Some(cachedRegistration) => Future.successful(cachedRegistration.registration)
         case _ =>
           getRegistration(vrn, auditBlock).map { maybeRegistration =>
-            println(maybeRegistration)
             cachedRegistrationRepository.set(request.userId, maybeRegistration)
             maybeRegistration
           }
@@ -188,18 +187,13 @@ class RegistrationServiceEtmpImpl @Inject()(
                                                   (implicit hc: HeaderCarrier): Future[Option[LocalDate]] = {
     val hasPreviousRegistration = registration.previousRegistrations.nonEmpty
 
-    println("#had0")
-
     if (hasPreviousRegistration) {
-      println("#had1")
       val filteredPreviousRegistrations = registration.previousRegistrations.find {
         case previousRegistration: PreviousRegistrationNew =>
-          println(s"#had2 ${previousRegistration}")
           previousRegistration.previousSchemesDetails.exists(_.previousScheme == PreviousScheme.OSSU)
       }
       filteredPreviousRegistrations.map {
         case previousRegistration: PreviousRegistrationNew =>
-          println(s"#had3 ${previousRegistration}")
           val previousOssRegistration = previousRegistration.previousSchemesDetails.find(_.previousScheme == PreviousScheme.OSSU).get
           coreValidationService.searchScheme(
             searchNumber = previousOssRegistration.previousSchemeNumbers.previousSchemeNumber,
