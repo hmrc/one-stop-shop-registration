@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,14 +36,9 @@ class CoreValidationService @Inject()(
       Future.successful(None)
     } else {
 
-      val sourceType = previousScheme match {
-        case PreviousScheme.OSSU => SourceType.EUVATNumber
-        case PreviousScheme.OSSNU => SourceType.EUVATNumber
-        case PreviousScheme.IOSSWOI => SourceType.TraderId
-        case PreviousScheme.IOSSWI => SourceType.TraderId
-      }
+      val sourceType = SourceType.TraderId
 
-      val convertedSearchNumber = if (sourceType == SourceType.EUVATNumber) {
+      val convertedSearchNumber = if (Seq(PreviousScheme.OSSU, PreviousScheme.OSSNU).contains(previousScheme)) {
         convertTaxIdentifierForTransfer(searchNumber, countryCode)
       } else {
         searchNumber

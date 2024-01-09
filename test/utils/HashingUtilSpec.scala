@@ -44,7 +44,14 @@ class HashingUtilSpec extends BaseSpec with BeforeAndAfterEach {
         "600000011",
         "600000012",
         "600000013",
-        "600000014"
+        "600000014",
+        "600000015",
+        "100000003",
+        "110079461",
+        "222221122",
+        "888999957",
+        "888999947",
+        "888999946"
       )
 
       valuesToBeHashed.zipWithIndex.foreach { case (valueToBeHashed, index) =>
