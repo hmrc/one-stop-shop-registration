@@ -18,9 +18,10 @@ package metrics
 
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.Timer.Context
-import com.kenshoo.play.metrics.Metrics
+
 import javax.inject.Inject
 import metrics.MetricsEnum.MetricsEnum
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 class DefaultServiceMetrics @Inject()(val metrics: Metrics) extends ServiceMetrics
 trait ServiceMetrics {

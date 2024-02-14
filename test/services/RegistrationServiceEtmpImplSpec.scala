@@ -16,7 +16,7 @@
 
 package services
 
-import akka.http.scaladsl.util.FastFuture.successful
+import org.apache.pekko.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import com.codahale.metrics.Timer
 import config.AppConfig

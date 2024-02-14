@@ -16,7 +16,7 @@
 
 package services
 
-import akka.http.scaladsl.util.FastFuture.successful
+import org.apache.pekko.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import config.AppConfig
 import controllers.actions.AuthorisedMandatoryVrnRequest
