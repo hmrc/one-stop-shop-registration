@@ -16,11 +16,11 @@
 
 package services
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import models.etmp.EtmpRegistrationStatus
 import repositories.RegistrationStatusRepository
 import scala.concurrent.duration._
-import akka.pattern.after
+import org.apache.pekko.pattern.after
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

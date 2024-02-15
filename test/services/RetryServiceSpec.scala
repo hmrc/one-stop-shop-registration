@@ -1,6 +1,6 @@
 package services
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import base.BaseSpec
 import models.etmp.EtmpRegistrationStatus
 import models.RegistrationStatus
