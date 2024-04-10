@@ -69,7 +69,9 @@ class AuthActionImpl @Inject()(
               throw InsufficientConfidenceLevel("Insufficient confidence level")
             }
       case _ =>
-        throw new UnauthorizedException("Unable to retrieve authorisation data")
+        val message = "Unable to retrieve authorisation data"
+        logger.info(message)
+        throw new UnauthorizedException(message)
     } recover {
       case e: AuthorisationException =>
         logger.info(e.getMessage, e)
