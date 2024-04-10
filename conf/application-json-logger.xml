@@ -31,6 +31,10 @@
 
     <logger name="application.connectors.EnrolmentsConnector" level="INFO"/>
 
+    <logger name="application.controllers.actions.AuthActionImpl" level="INFO"/>
+    
+    <logger name="application.controllers.actions.VatRequiredAction" level="INFO"/>
+
     <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
