@@ -2,14 +2,26 @@ package models.etmp
 
 import base.BaseSpec
 import models.EuTaxIdentifierType.{Other, Vat}
+import models.Quarter.Q1
 import models.VatDetailSource.UserEntered
-import models.requests.RegistrationRequest
 import models._
+import models.exclusions.ExcludedTrader
+import models.requests.RegistrationRequest
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate, LocalDateTime}
+import java.time.{Instant, LocalDate}
 
 class EtmpRegistrationRequestSpec extends BaseSpec {
+
+  private val etmpRegistrationRequestWithExclusion = etmpRegistrationRequest
+    .copy(schemeDetails = etmpRegistrationRequest.schemeDetails
+      .copy(exclusions = Seq(EtmpExclusion(
+        exclusionReason = "1",
+        effectiveDate = "2024-04-25",
+        validToDate = "2023-03-31",
+        quarantine = true
+      )))
+    )
 
   "EtmpRegistrationRequest" - {
 
@@ -106,12 +118,18 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             isOnlineMarketplace = false,
             niPresence = Some(PrincipalPlaceOfBusinessInNi),
             dateOfFirstSale = Some(LocalDate.now),
-            nonCompliantReturns = Some(1),
-            nonCompliantPayments = Some(2),
-            submissionReceived = None
+            nonCompliantReturns = Some("1"),
+            nonCompliantPayments = Some("2"),
+            submissionReceived = None,
+            excludedTrader = Some(ExcludedTrader(
+              vrn = Vrn("123456789"),
+              exclusionReason = 1,
+              effectivePeriod = StandardPeriod(2023, Q1),
+              effectiveDate = Some(LocalDate.now())
+            ))
           )
 
-        EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate) mustBe etmpRegistrationRequest
+        EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate) mustBe etmpRegistrationRequestWithExclusion
       }
 
       "should return a correctly mapped Etmp amend Registration Request when invoked" in {
@@ -205,9 +223,10 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             isOnlineMarketplace = false,
             niPresence = Some(PrincipalPlaceOfBusinessInNi),
             dateOfFirstSale = Some(LocalDate.now),
-            nonCompliantReturns = Some(1),
-            nonCompliantPayments = Some(2),
-            submissionReceived = Some(Instant.now)
+            nonCompliantReturns = Some("1"),
+            nonCompliantPayments = Some("2"),
+            submissionReceived = Some(Instant.now),
+            excludedTrader = None
           )
 
         EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionAmend) mustBe etmpAmendRegistrationRequest

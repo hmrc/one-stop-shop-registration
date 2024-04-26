@@ -22,6 +22,7 @@ import models.des.VatCustomerInfo
 import models.etmp.EtmpSchemeDetails.dateFormatter
 import models.etmp._
 import models.exclusions.ExcludedTrader
+import models.exclusions.ExcludedTrader.fromEtmpExclusion
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -45,12 +46,13 @@ case class Registration(
                          lastUpdated: Option[Instant],
                          excludedTrader: Option[ExcludedTrader] = None,
                          transferringMsidEffectiveFromDate: Option[LocalDate] = None,
-                         nonCompliantReturns: Option[Int] = None,
-                         nonCompliantPayments: Option[Int] = None,
+                         nonCompliantReturns: Option[String] = None,
+                         nonCompliantPayments: Option[String] = None,
                          adminUse: AdminUse
                        )
 
 object Registration extends Logging {
+
   def fromEtmpRegistration(
                             vrn: Vrn,
                             vatDetails: VatCustomerInfo,
@@ -93,6 +95,7 @@ object Registration extends Logging {
       lastUpdated = None,
       nonCompliantReturns = schemeDetails.nonCompliantReturns,
       nonCompliantPayments = schemeDetails.nonCompliantPayments,
+      excludedTrader = schemeDetails.exclusions.headOption.map(etmpExclusion => fromEtmpExclusion(vrn, etmpExclusion)),
       adminUse = adminUse
     )
 
@@ -239,8 +242,8 @@ case class EncryptedRegistration(
                                   submissionReceived: Option[Instant],
                                   lastUpdated: Option[Instant],
                                   dateOfFirstSale: Option[LocalDate],
-                                  nonCompliantReturns: Option[Int],
-                                  nonCompliantPayments: Option[Int]
+                                  nonCompliantReturns: Option[String],
+                                  nonCompliantPayments: Option[String]
                                 )
 
 object EncryptedRegistration {

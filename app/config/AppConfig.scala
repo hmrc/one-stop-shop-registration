@@ -32,7 +32,6 @@ class AppConfig @Inject()(config: Configuration) {
   val cacheTtl: Int = config.get[Int]("mongodb.timeToLiveInDays")
   val registrationStatusTtl: Int = config.get[Int]("mongodb.timeToLiveInHours")
 
-  val exclusionsEnabled: Boolean = config.get[Boolean]("features.exclusions.enabled")
   val exclusionsHashingKey: String = config.get[String]("features.exclusions.hashing-key")
   val excludedTraders: Seq[HashedExcludedTrader] = config.get[Seq[HashedExcludedTrader]]("features.exclusions.excluded-traders")
   val maxRetryCount: Int = config.get[Int]("features.maxRetryCount")

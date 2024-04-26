@@ -357,6 +357,25 @@ trait Generators {
     }
   }
 
+  implicit val arbitraryEtmpExclusion: Arbitrary[EtmpExclusion] = {
+
+    Arbitrary {
+      for {
+        exclusionReason <- arbitrary[String]
+        effectiveDate <- arbitrary[String]
+        validToDate <- arbitrary[String]
+        quarantine <- arbitrary[Boolean]
+      } yield {
+        EtmpExclusion(
+          exclusionReason = exclusionReason,
+          effectiveDate = effectiveDate,
+          validToDate = validToDate,
+          quarantine = quarantine
+        )
+      }
+    }
+  }
+
   implicit val arbitraryEtmpSchemeDetails: Arbitrary[EtmpSchemeDetails] = {
     Arbitrary {
       for {
@@ -369,8 +388,9 @@ trait Generators {
         contactName <- arbitrary[String]
         businessTelephoneNumber <- arbitrary[String]
         businessEmailId <- arbitrary[String]
-        nonCompliantReturns <- Gen.option(arbitrary[Int])
-        nonCompliantPayments <- Gen.option(arbitrary[Int])
+        nonCompliantReturns <- Gen.option(arbitrary[String])
+        nonCompliantPayments <- Gen.option(arbitrary[String])
+        exclusions <- Gen.listOfN(1, arbitraryEtmpExclusion.arbitrary)
       } yield
         EtmpSchemeDetails(
           commencementDate,
@@ -385,7 +405,8 @@ trait Generators {
           businessTelephoneNumber,
           businessEmailId,
           nonCompliantReturns,
-          nonCompliantPayments
+          nonCompliantPayments,
+          exclusions
         )
     }
   }

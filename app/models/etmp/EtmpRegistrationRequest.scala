@@ -16,8 +16,11 @@
 
 package models.etmp
 
+import logging.Logging
+import models._
+import models.etmp.EtmpSchemeDetails.dateFormatter
+import models.exclusions.ExcludedTrader
 import models.requests.RegistrationRequest
-import models.{BankDetails, CountryWithValidationDetails, PreviousRegistration, PreviousRegistrationLegacy, PreviousRegistrationNew, PreviousScheme}
 import play.api.libs.json.{Json, OFormat}
 
 case class EtmpRegistrationRequest(
@@ -28,7 +31,7 @@ case class EtmpRegistrationRequest(
                                     bankDetails: BankDetails
                                   )
 
-object EtmpRegistrationRequest {
+object EtmpRegistrationRequest extends Logging {
 
   def fromRegistrationRequest(registration: RegistrationRequest, etmpMessageType: EtmpMessageType): EtmpRegistrationRequest = {
     EtmpRegistrationRequest(
@@ -46,7 +49,8 @@ object EtmpRegistrationRequest {
         businessTelephoneNumber = registration.contactDetails.telephoneNumber,
         businessEmailId = registration.contactDetails.emailAddress,
         nonCompliantReturns = registration.nonCompliantReturns,
-        nonCompliantPayments = registration.nonCompliantPayments
+        nonCompliantPayments = registration.nonCompliantPayments,
+        exclusions = registration.excludedTrader.map(excludedTrader => mapEtmpExclusion(excludedTrader)).toSeq
       ),
       bankDetails = registration.bankDetails
     )
@@ -91,6 +95,22 @@ object EtmpRegistrationRequest {
       case PreviousScheme.IOSSWOI => SchemeType.IOSSWithoutIntermediary
       case PreviousScheme.IOSSWI => SchemeType.IOSSWithIntermediary
       case _ => throw new Exception("Unknown scheme, unable to convert")
+    }
+  }
+
+  private def mapEtmpExclusion(excludedTrader: ExcludedTrader): EtmpExclusion = {
+    excludedTrader.effectiveDate match {
+      case Some(effectiveDate) =>
+        EtmpExclusion(
+          exclusionReason = excludedTrader.exclusionReason.toString,
+          effectiveDate = effectiveDate.format(dateFormatter),
+          validToDate = excludedTrader.effectivePeriod.lastDay.format(dateFormatter), // TODO -> Check this
+          quarantine = excludedTrader.exclusionReason == 4
+        )
+      case _ =>
+        val message: String = "Unable to parse effective date"
+        logger.error(message)
+        throw new Exception(message)
     }
   }
 

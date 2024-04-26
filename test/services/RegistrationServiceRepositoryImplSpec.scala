@@ -16,14 +16,12 @@
 
 package services
 
-import org.apache.pekko.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
-import config.AppConfig
 import controllers.actions.AuthorisedMandatoryVrnRequest
-import models.exclusions.ExcludedTrader
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.InsertSucceeded
 import models.requests.RegistrationRequest
+import org.apache.pekko.http.scaladsl.util.FastFuture.successful
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
@@ -32,7 +30,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.running
 import repositories.RegistrationRepository
 import services.exclusions.ExclusionService
-import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -46,9 +43,8 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
 
   private val registrationRequest = mock[RegistrationRequest]
   private val registrationRepository = mock[RegistrationRepository]
-  private val mockConfig = mock[AppConfig]
   private val exclusionService = mock[ExclusionService]
-  private val registrationService = new RegistrationServiceRepositoryImpl(registrationRepository, stubClock, mockConfig, exclusionService)
+  private val registrationService = new RegistrationServiceRepositoryImpl(registrationRepository, stubClock, exclusionService)
 
   implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
 
@@ -104,20 +100,6 @@ class RegistrationServiceRepositoryImplSpec extends BaseSpec with BeforeAndAfter
       registrationService.get(Vrn("123456789")).futureValue
       verify(registrationRepository, times(1)).get(Vrn("123456789"))
     }
-
-    "when exclusion is enabled and trader is excluded" - {
-
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period, None)
-
-      "must return a Some(registration) when the connector returns right" in {
-        when(registrationRepository.get(any())) thenReturn Future.successful(Some(registration))
-        when(mockConfig.exclusionsEnabled) thenReturn true
-        when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
-        registrationService.get(Vrn("123456789")).futureValue mustBe Some(registration.copy(excludedTrader = Some(excludedTrader)))
-        verify(registrationRepository, times(1)).get(Vrn("123456789"))
-      }
-    }
-
   }
 
   ".amendRegistration" - {

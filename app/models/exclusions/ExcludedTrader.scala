@@ -19,8 +19,9 @@ package models.exclusions
 import com.typesafe.config.Config
 import logging.Logging
 import models.Period
-import play.api.{ConfigLoader, Configuration}
+import models.etmp.EtmpExclusion
 import play.api.libs.json.{Json, OFormat}
+import play.api.{ConfigLoader, Configuration}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.LocalDate
@@ -42,8 +43,26 @@ case class HashedExcludedTrader(
 
 object ExcludedTrader extends Logging {
 
-  implicit val format: OFormat[ExcludedTrader] = Json.format[ExcludedTrader]
+  def fromEtmpExclusion(
+                         vrn: Vrn,
+                         etmpExclusion: EtmpExclusion
+                       ): ExcludedTrader = {
 
+    Period.fromString(etmpExclusion.effectiveDate) match {
+      case Some(excludedPeriod) =>
+        ExcludedTrader(
+          vrn = vrn,
+          exclusionReason = etmpExclusion.exclusionReason.toInt,
+          effectivePeriod = excludedPeriod,
+          effectiveDate = Some(LocalDate.parse(etmpExclusion.effectiveDate))
+        )
+      case _ =>
+        logger.error("Unable to parse period")
+        throw new Exception("Unable to parse period")
+    }
+  }
+
+  implicit val format: OFormat[ExcludedTrader] = Json.format[ExcludedTrader]
 }
 
 object HashedExcludedTrader extends Logging {
@@ -93,6 +112,6 @@ object HashedExcludedTrader extends Logging {
       }.toSeq
     }
   }
-
 }
+
 

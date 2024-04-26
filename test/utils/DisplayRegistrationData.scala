@@ -44,8 +44,9 @@ object DisplayRegistrationData extends BaseSpec {
         (__ \ "contactDetails" \ "contactNameOrBusinessAddress").write[String] and
         (__ \ "contactDetails" \ "businessTelephoneNumber").write[String] and
         (__ \ "contactDetails" \ "businessEmailAddress").write[String] and
-        (__ \ "nonCompliantReturns").writeNullable[Int] and
-        (__ \ "nonCompliantPayments").writeNullable[Int]
+        (__ \ "nonCompliantReturns").writeNullable[String] and
+        (__ \ "nonCompliantPayments").writeNullable[String] and
+        (__ \ "exclusions").write[Seq[EtmpExclusion]]
       ) (unlift(EtmpSchemeDetails.unapply))
   }
 }

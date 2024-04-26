@@ -109,8 +109,8 @@ object RegistrationData {
       dateOfFirstSale = Some(LocalDate.now),
       submissionReceived = Some(Instant.now(stubClock)),
       lastUpdated = Some(Instant.now(stubClock)),
-      nonCompliantReturns = Some(1),
-      nonCompliantPayments = Some(2),
+      nonCompliantReturns = Some("1"),
+      nonCompliantPayments = Some("2"),
       adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
@@ -217,8 +217,8 @@ object RegistrationData {
       dateOfFirstSale = Some(LocalDate.of(2023, 1, 25)),
       submissionReceived = None,
       lastUpdated = None,
-      nonCompliantReturns = Some(1),
-      nonCompliantPayments = Some(2),
+      nonCompliantReturns = Some("1"),
+      nonCompliantPayments = Some("2"),
       adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
@@ -303,8 +303,9 @@ object RegistrationData {
         contactName = "Joe Bloggs",
         businessTelephoneNumber = "01112223344",
         businessEmailId = "email@email.com",
-        nonCompliantReturns = Some(1),
-        nonCompliantPayments = Some(2)
+        nonCompliantReturns = Some("1"),
+        nonCompliantPayments = Some("2"),
+        exclusions = Seq.empty
       ),
       bankDetails = BankDetails("Account name", Some(bic), iban),
       adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
@@ -326,7 +327,8 @@ object RegistrationData {
         businessTelephoneNumber = "1234567890",
         businessEmailId = "test@testEmail.com",
         None,
-        None
+        None,
+        Seq.empty
       ),
       bankDetails = BankDetails(
         accountName = "Bank Account Name",
@@ -355,8 +357,8 @@ object RegistrationData {
       registration.dateOfFirstSale,
       registration.nonCompliantReturns,
       registration.nonCompliantPayments,
-      registration.submissionReceived
+      registration.submissionReceived,
+      registration.excludedTrader
     )
   }
-
 }

@@ -17,7 +17,7 @@
 package models.requests
 
 import models._
-import models.etmp.AdminUse
+import models.exclusions.ExcludedTrader
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -37,11 +37,13 @@ case class RegistrationRequest(
                                 isOnlineMarketplace: Boolean,
                                 niPresence: Option[NiPresence],
                                 dateOfFirstSale: Option[LocalDate],
-                                nonCompliantReturns: Option[Int],
-                                nonCompliantPayments: Option[Int],
-                                submissionReceived: Option[Instant]
+                                nonCompliantReturns: Option[String],
+                                nonCompliantPayments: Option[String],
+                                submissionReceived: Option[Instant],
+                                excludedTrader: Option[ExcludedTrader]
                               )
 
 object RegistrationRequest {
+
   implicit val format: OFormat[RegistrationRequest] = Json.format[RegistrationRequest]
 }

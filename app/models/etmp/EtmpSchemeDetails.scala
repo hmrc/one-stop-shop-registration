@@ -21,19 +21,22 @@ import play.api.libs.json.{Json, OWrites, Reads, __}
 
 import java.time.format.DateTimeFormatter
 
-case class EtmpSchemeDetails(commencementDate: String,
-                             requestDate: Option[String] = None,
-                             registrationDate: Option[String] = None,
-                             firstSaleDate: Option[String],
-                             euRegistrationDetails: Seq[EtmpEuRegistrationDetails],
-                             previousEURegistrationDetails: Seq[EtmpPreviousEURegistrationDetails],
-                             onlineMarketPlace: Boolean,
-                             websites: Seq[Website],
-                             contactName: String,
-                             businessTelephoneNumber: String,
-                             businessEmailId: String,
-                             nonCompliantReturns: Option[Int],
-                             nonCompliantPayments: Option[Int])
+case class EtmpSchemeDetails(
+                              commencementDate: String,
+                              requestDate: Option[String] = None,
+                              registrationDate: Option[String] = None,
+                              firstSaleDate: Option[String],
+                              euRegistrationDetails: Seq[EtmpEuRegistrationDetails],
+                              previousEURegistrationDetails: Seq[EtmpPreviousEURegistrationDetails],
+                              onlineMarketPlace: Boolean,
+                              websites: Seq[Website],
+                              contactName: String,
+                              businessTelephoneNumber: String,
+                              businessEmailId: String,
+                              nonCompliantReturns: Option[String],
+                              nonCompliantPayments: Option[String],
+                              exclusions: Seq[EtmpExclusion]
+                            )
 
 object EtmpSchemeDetails {
 
@@ -51,8 +54,9 @@ object EtmpSchemeDetails {
                                               contactNameOrBusinessAddress: String,
                                               businessTelephoneNumber: String,
                                               businessEmailAddress: String,
-                                              nonCompliantReturns: Option[Int],
-                                              nonCompliantPayments: Option[Int]
+                                              nonCompliantReturns: Option[String],
+                                              nonCompliantPayments: Option[String],
+                                              exclusions: Option[Seq[EtmpExclusion]]
                                             ): EtmpSchemeDetails =
     EtmpSchemeDetails(
       commencementDate = commencementDate,
@@ -67,7 +71,8 @@ object EtmpSchemeDetails {
       businessTelephoneNumber = businessTelephoneNumber,
       businessEmailId = businessEmailAddress,
       nonCompliantReturns = nonCompliantReturns,
-      nonCompliantPayments = nonCompliantPayments
+      nonCompliantPayments = nonCompliantPayments,
+      exclusions = exclusions.fold(Seq.empty[EtmpExclusion])(a => a)
     )
 
   implicit val reads: Reads[EtmpSchemeDetails] =
@@ -83,11 +88,11 @@ object EtmpSchemeDetails {
         (__ \ "contactDetails" \ "contactNameOrBusinessAddress").read[String] and
         (__ \ "contactDetails" \ "businessTelephoneNumber").read[String] and
         (__ \ "contactDetails" \ "businessEmailAddress").read[String] and
-        (__ \ "nonCompliantReturns").readNullable[Int] and
-        (__ \ "nonCompliantPayments").readNullable[Int]
-      ) (EtmpSchemeDetails.fromDisplayRegistrationPayload _)
+        (__ \ "nonCompliantReturns").readNullable[String] and
+        (__ \ "nonCompliantPayments").readNullable[String] and
+        (__ \ "exclusions").readNullable[Seq[EtmpExclusion]]
+      )(EtmpSchemeDetails.fromDisplayRegistrationPayload _)
 
   implicit val writes: OWrites[EtmpSchemeDetails] =
     Json.writes[EtmpSchemeDetails]
-
 }

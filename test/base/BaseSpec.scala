@@ -129,8 +129,9 @@ trait BaseSpec
       contactName = "Joe Bloggs",
       businessTelephoneNumber = "01112223344",
       businessEmailId = "email@email.com",
-      nonCompliantReturns = Some(1),
-      nonCompliantPayments = Some(2)
+      nonCompliantReturns = Some("1"),
+      nonCompliantPayments = Some("2"),
+      exclusions = Seq.empty
     ),
     BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get)
   )

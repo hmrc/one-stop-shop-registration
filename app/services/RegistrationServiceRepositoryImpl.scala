@@ -16,7 +16,6 @@
 
 package services
 
-import config.AppConfig
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import models.Registration
 import models.repository.{AmendResult, InsertResult}
@@ -32,11 +31,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RegistrationServiceRepositoryImpl @Inject()(
-                                     registrationRepository: RegistrationRepository,
-                                     clock: Clock,
-                                     appConfig: AppConfig,
-                                     exclusionService: ExclusionService
-                                   )(implicit ec: ExecutionContext) extends RegistrationService {
+                                                   registrationRepository: RegistrationRepository,
+                                                   clock: Clock,
+                                                   exclusionService: ExclusionService
+                                                 )(implicit ec: ExecutionContext) extends RegistrationService {
 
   def createRegistration(registrationRequest: RegistrationRequest)
                         (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult] =
@@ -56,11 +54,7 @@ class RegistrationServiceRepositoryImpl @Inject()(
       maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
     } yield {
       maybeRegistration.map { registration =>
-        if (appConfig.exclusionsEnabled) {
-          registration.copy(excludedTrader = maybeExcludedTrader)
-        } else {
-          registration
-        }
+        registration.copy(excludedTrader = maybeExcludedTrader)
       }
     }
   }

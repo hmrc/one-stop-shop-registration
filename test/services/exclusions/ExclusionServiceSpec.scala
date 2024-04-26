@@ -18,7 +18,6 @@ import scala.util.{Failure, Success, Try}
 class ExclusionServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val mockConfig = mock[AppConfig]
-  when(mockConfig.exclusionsEnabled) thenReturn true
   when(mockConfig.exclusionsHashingKey) thenReturn "mERA6vGFqQLsa4TuKmnqQTDLBQ43N8Lzbhj5auPJtHGyteuU8KCkYXFZH67sVoPa"
   private val hashingUtil = new HashingUtil(mockConfig)
   private val exclusionService = new ExclusionService(hashingUtil, mockConfig)

@@ -23,8 +23,8 @@ class DisplayRegistrationSpec extends BaseSpec {
           "schemeDetails" -> Json.obj(
             "commencementDate" -> "2023-01-01",
             "firstSaleDate" -> "2023-01-25",
-            "nonCompliantReturns" -> 1,
-            "nonCompliantPayments" -> 2,
+            "nonCompliantReturns" -> "1",
+            "nonCompliantPayments" -> "2",
             "euRegistrationDetails" -> Json.arr(
               Json.obj(
                 "issuedBy" -> "FR",
@@ -57,6 +57,14 @@ class DisplayRegistrationSpec extends BaseSpec {
               "contactNameOrBusinessAddress" -> "Mr Test",
               "businessTelephoneNumber" -> "1234567890",
               "businessEmailAddress" -> "test@testEmail.com"
+            ),
+            "exclusions" -> Json.arr(
+              Json.obj(
+                "exclusionReason" -> "1",
+                "effectiveDate" -> "2024-02-25",
+                "validToDate" -> "2024-04-25",
+                "quarantine" -> true
+              )
             )
           ),
           "bankDetails" -> Json.obj(
@@ -109,8 +117,14 @@ class DisplayRegistrationSpec extends BaseSpec {
             contactName = "Mr Test",
             businessTelephoneNumber = "1234567890",
             businessEmailId = "test@testEmail.com",
-            nonCompliantReturns = Some(1),
-            nonCompliantPayments = Some(2)
+            nonCompliantReturns = Some("1"),
+            nonCompliantPayments = Some("2"),
+            exclusions = Seq(EtmpExclusion(
+              exclusionReason = "1",
+              effectiveDate = "2024-02-25",
+              validToDate = "2024-04-25",
+              quarantine = true
+            ))
           ),
           bankDetails = BankDetails(
             accountName = "Bank Account Name",
@@ -163,7 +177,8 @@ class DisplayRegistrationSpec extends BaseSpec {
             businessTelephoneNumber = "1234567890",
             businessEmailId = "test@testEmail.com",
             None,
-            None
+            None,
+            exclusions = Seq.empty
           ),
           bankDetails = BankDetails(
             accountName = "Bank Account Name",

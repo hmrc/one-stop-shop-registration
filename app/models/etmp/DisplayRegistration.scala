@@ -18,14 +18,14 @@ package models.etmp
 
 import models.BankDetails
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{__, Json, OWrites, Reads}
+import play.api.libs.json.{Json, OWrites, Reads, __}
 
 
 case class DisplayRegistration(
-                              tradingNames: Seq[EtmpTradingNames],
-                              schemeDetails: EtmpSchemeDetails,
-                              bankDetails: BankDetails,
-                              adminUse: AdminUse
+                                tradingNames: Seq[EtmpTradingNames],
+                                schemeDetails: EtmpSchemeDetails,
+                                bankDetails: BankDetails,
+                                adminUse: AdminUse
                               )
 
 
@@ -54,5 +54,4 @@ object DisplayRegistration {
 
   implicit val writes: OWrites[DisplayRegistration] =
     Json.writes[DisplayRegistration]
-
 }

@@ -16,7 +16,6 @@
 
 package services
 
-import org.apache.pekko.http.scaladsl.util.FastFuture.successful
 import base.BaseSpec
 import com.codahale.metrics.Timer
 import config.AppConfig
@@ -26,10 +25,11 @@ import metrics.ServiceMetrics
 import models._
 import models.core.{EisDisplayErrorDetail, EisDisplayErrorResponse}
 import models.enrolments.EtmpEnrolmentResponse
-import models.etmp.{AmendRegistrationResponse, EtmpRegistrationStatus}
+import models.etmp.{AmendRegistrationResponse, DisplayRegistration, EtmpExclusion, EtmpRegistrationStatus}
 import models.exclusions.ExcludedTrader
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
+import org.apache.pekko.http.scaladsl.util.FastFuture.successful
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
@@ -37,9 +37,8 @@ import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
 import play.api.test.Helpers.running
 import repositories.{CachedRegistrationRepository, RegistrationRepository, RegistrationStatusRepository}
-import services.exclusions.ExclusionService
-import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration, wrappedCachedRegistration}
 import testutils.RegistrationData
+import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration, wrappedCachedRegistration}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
@@ -62,8 +61,6 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   private val appConfig = mock[AppConfig]
   private val serviceMetrics: ServiceMetrics = mock[ServiceMetrics]
 
-  private val exclusionService = mock[ExclusionService]
-
   private val auditService = mock[AuditService]
 
   private val coreValidationService = mock[CoreValidationService]
@@ -77,10 +74,10 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     cachedRegistrationRepository,
     retryService,
     appConfig,
-    exclusionService,
     auditService,
     coreValidationService,
-    stubClock)
+    stubClock
+  )
 
   implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
 
@@ -90,7 +87,6 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     reset(registrationRepository)
     reset(registrationStatusRepository)
     reset(cachedRegistrationRepository)
-    reset(exclusionService)
     reset(appConfig)
     reset(serviceMetrics)
     reset(auditService)
@@ -325,16 +321,26 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       verifyNoInteractions(cachedRegistrationRepository)
     }
 
-    "when exclusion is enabled and trader is excluded" - {
+    "when trader is excluded" - {
 
       val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period, None)
+      val etmpExclusion: EtmpExclusion = EtmpExclusion(
+        exclusionReason = "4",
+        effectiveDate = "2021-07-01",
+        validToDate = "2021-09-30",
+        quarantine = true
+      )
+
+      val displayRegistrationWithExclusion: DisplayRegistration =
+        displayRegistration
+          .copy(schemeDetails = displayRegistration.schemeDetails.copy(
+            exclusions = Seq(etmpExclusion)
+          ))
 
       "must return Some(registration) when both connectors return right" in {
-        when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
+        when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistrationWithExclusion))
         when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
-        when(appConfig.exclusionsEnabled) thenReturn true
         when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
-        when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
         when(coreValidationService.searchScheme(any(), any(), any(), any())(any())) thenReturn Future.successful(None)
         registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationConnector, times(1)).get(Vrn("123456789"))
@@ -373,7 +379,6 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   }
 
   ".amendRegistration" - {
-
 
     "duplicateRegistrationIntoRepository.disabled" - {
 
