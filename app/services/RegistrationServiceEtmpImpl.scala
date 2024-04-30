@@ -101,7 +101,7 @@ class RegistrationServiceEtmpImpl @Inject()(
   }
 
   def get(vrn: Vrn)(implicit headerCarrier: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[Option[Registration]] = {
-    val auditBlock = (etmpRegistration: DisplayRegistration, registration: Registration) =>
+    val auditBlock = (etmpRegistration: EtmpDisplayRegistration, registration: Registration) =>
       auditService.audit(EtmpDisplayRegistrationAuditModel.build(EtmpRegistrationAuditType.DisplayRegistration, etmpRegistration, registration))
 
     if (appConfig.registrationCacheEnabled) {
@@ -121,13 +121,13 @@ class RegistrationServiceEtmpImpl @Inject()(
   }
 
   def getWithoutAudit(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[Option[Registration]] = {
-    val emptyAuditBlock = (_: DisplayRegistration, _: Registration) => ()
+    val emptyAuditBlock = (_: EtmpDisplayRegistration, _: Registration) => ()
 
     getRegistration(vrn, emptyAuditBlock)
   }
 
   private def getRegistration(vrn: Vrn,
-                              auditBlock: (DisplayRegistration, Registration) => Unit)(implicit hc: HeaderCarrier): Future[Option[Registration]] = {
+                              auditBlock: (EtmpDisplayRegistration, Registration) => Unit)(implicit hc: HeaderCarrier): Future[Option[Registration]] = {
     registrationConnector.get(vrn).flatMap {
       case Right(etmpRegistration) =>
         getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {

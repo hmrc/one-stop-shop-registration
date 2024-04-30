@@ -18,9 +18,9 @@ package controllers.test
 
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models._
 import models.EuTaxIdentifierType.Vat
 import models.VatDetailSource.UserEntered
+import models._
 import models.etmp.AdminUse
 import models.repository.AmendResult.AmendSucceeded
 import models.requests.RegistrationRequest
@@ -28,7 +28,7 @@ import org.mongodb.scala.model.Filters
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 import repositories.RegistrationRepository
-import services.RegistrationServiceRepositoryImpl
+import services.RegistrationServiceEtmpImpl
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -39,7 +39,7 @@ import scala.language.postfixOps
 
 class TestOnlyController @Inject()(
                                     cc: AuthenticatedControllerComponents,
-                                    registrationService: RegistrationServiceRepositoryImpl,
+                                    registrationService: RegistrationServiceEtmpImpl,
                                     clock: Clock,
                                     registrationRepository: RegistrationRepository)(implicit ec: ExecutionContext)
   extends BackendController(cc) with Logging {
@@ -148,5 +148,4 @@ class TestOnlyController @Inject()(
       nonCompliantPayments = Some("2"),
       adminUse = AdminUse(Some(LocalDateTime.now(clock)))
     )
-
 }

@@ -16,12 +16,8 @@
 
 package models.etmp
 
-import config.Constants.quarantineReason4
 import logging.Logging
 import models._
-import models.etmp.EtmpExclusionReason.{CeasedTrade, FailsToComply, NoLongerMeetsConditions, NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
-import models.etmp.EtmpSchemeDetails.dateFormatter
-import models.exclusions.ExcludedTrader
 import models.requests.RegistrationRequest
 import play.api.libs.json.{Json, OFormat}
 
@@ -51,8 +47,7 @@ object EtmpRegistrationRequest extends Logging {
         businessTelephoneNumber = registration.contactDetails.telephoneNumber,
         businessEmailId = registration.contactDetails.emailAddress,
         nonCompliantReturns = registration.nonCompliantReturns,
-        nonCompliantPayments = registration.nonCompliantPayments,
-        exclusions = registration.excludedTrader.map(excludedTrader => mapEtmpExclusion(excludedTrader)).toSeq
+        nonCompliantPayments = registration.nonCompliantPayments
       ),
       bankDetails = registration.bankDetails
     )
@@ -97,32 +92,6 @@ object EtmpRegistrationRequest extends Logging {
       case PreviousScheme.IOSSWOI => SchemeType.IOSSWithoutIntermediary
       case PreviousScheme.IOSSWI => SchemeType.IOSSWithIntermediary
       case _ => throw new Exception("Unknown scheme, unable to convert")
-    }
-  }
-
-  private def mapEtmpExclusion(excludedTrader: ExcludedTrader): EtmpExclusion = {
-    excludedTrader.effectiveDate match {
-      case Some(effectiveDate) =>
-        EtmpExclusion(
-          exclusionReason = mapEtmpExclusionReason(excludedTrader.exclusionReason),
-          effectiveDate = effectiveDate,
-          decisionDate = excludedTrader.effectivePeriod.lastDay, // TODO -> Check this
-          quarantine = excludedTrader.exclusionReason == quarantineReason4
-        )
-      case _ =>
-        val message: String = "Unable to parse effective date"
-        logger.error(message)
-        throw new Exception(message)
-    }
-  }
-
-  private def mapEtmpExclusionReason(exclusionReason: Int): EtmpExclusionReason = {
-    EtmpExclusionReason.enumerable.withName(exclusionReason.toString) match {
-      case Some(etmpExclusionReason) => etmpExclusionReason
-      case _ =>
-        val message: String = "Not a valid exclusion reason"
-        logger.error(message)
-        throw new IllegalStateException(message)
     }
   }
 

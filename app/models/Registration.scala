@@ -57,7 +57,7 @@ object Registration extends Logging {
                             vrn: Vrn,
                             vatDetails: VatCustomerInfo,
                             tradingNames: Seq[EtmpTradingNames],
-                            schemeDetails: EtmpSchemeDetails,
+                            schemeDetails: EtmpDisplaySchemeDetails,
                             bankDetails: BankDetails,
                             adminUse: AdminUse
                           ): Registration = {

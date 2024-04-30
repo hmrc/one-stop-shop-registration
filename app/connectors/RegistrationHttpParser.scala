@@ -19,7 +19,7 @@ package connectors
 import models._
 import models.core.EisDisplayErrorResponse
 import models.enrolments.{EtmpEnrolmentErrorResponse, EtmpEnrolmentResponse}
-import models.etmp.{AmendRegistrationResponse, DisplayRegistration}
+import models.etmp.{AmendRegistrationResponse, EtmpDisplayRegistration}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -32,7 +32,7 @@ object RegistrationHttpParser extends BaseHttpParser {
 
   type CreateEtmpRegistrationResponse = Either[ErrorResponse, EtmpEnrolmentResponse]
 
-  type DisplayRegistrationResponse = Either[ErrorResponse, DisplayRegistration]
+  type DisplayRegistrationResponse = Either[ErrorResponse, EtmpDisplayRegistration]
 
   type CreateAmendRegistrationResponse = Either[ErrorResponse, AmendRegistrationResponse]
 
@@ -91,7 +91,7 @@ object RegistrationHttpParser extends BaseHttpParser {
   implicit object DisplayRegistrationReads extends HttpReads[DisplayRegistrationResponse] {
     override def read(method: String, url: String, response: HttpResponse): DisplayRegistrationResponse =
       response.status match {
-        case OK => response.json.validate[DisplayRegistration] match {
+        case OK => response.json.validate[EtmpDisplayRegistration] match {
           case JsSuccess(displayRegistrationResponse, _) => Right(displayRegistrationResponse)
           case JsError(errors) =>
             logger.error(s"Failed trying to parse display registration response JSON with status ${response.status} with errors: $errors")

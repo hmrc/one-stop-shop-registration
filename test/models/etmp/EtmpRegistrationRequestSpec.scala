@@ -13,16 +13,6 @@ import java.time.{Instant, LocalDate}
 
 class EtmpRegistrationRequestSpec extends BaseSpec {
 
-  private val etmpRegistrationRequestWithExclusion = etmpRegistrationRequest
-    .copy(schemeDetails = etmpRegistrationRequest.schemeDetails
-      .copy(exclusions = Seq(EtmpExclusion(
-        exclusionReason = EtmpExclusionReason.FailsToComply,
-        effectiveDate = LocalDate.parse("2024-04-29"),
-        decisionDate = LocalDate.parse("2023-03-31"),
-        quarantine = true
-      )))
-    )
-
   "EtmpRegistrationRequest" - {
 
     ".fromRegistrationRequest" - {
@@ -129,7 +119,7 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             ))
           )
 
-        EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate) mustBe etmpRegistrationRequestWithExclusion
+        EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate) mustBe etmpRegistrationRequest
       }
 
       "should return a correctly mapped Etmp amend Registration Request when invoked" in {

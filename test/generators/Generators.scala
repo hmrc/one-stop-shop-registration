@@ -390,9 +390,42 @@ trait Generators {
         businessEmailId <- arbitrary[String]
         nonCompliantReturns <- Gen.option(arbitrary[String])
         nonCompliantPayments <- Gen.option(arbitrary[String])
-        exclusions <- Gen.listOfN(1, arbitraryEtmpExclusion.arbitrary)
       } yield
         EtmpSchemeDetails(
+          commencementDate,
+          firstSaleDate,
+          None,
+          None,
+          euRegistrationDetails,
+          previousEURegistrationDetails,
+          onlineMarketPlace,
+          websites,
+          contactName,
+          businessTelephoneNumber,
+          businessEmailId,
+          nonCompliantReturns,
+          nonCompliantPayments
+        )
+    }
+  }
+
+  implicit val arbitraryEtmpDisplauSchemeDetails: Arbitrary[EtmpDisplaySchemeDetails] = {
+    Arbitrary {
+      for {
+        commencementDate <- arbitrary[String]
+        firstSaleDate <- Gen.option(arbitrary[String])
+        euRegistrationDetails <- Gen.listOfN(5, arbitraryEtmpEuRegistrationDetails.arbitrary)
+        previousEURegistrationDetails <- Gen.listOfN(5, arbitraryEtmpPreviousEURegistrationDetails.arbitrary)
+        onlineMarketPlace <- arbitrary[Boolean]
+        websites <- Gen.listOfN(10, arbitraryWebsite.arbitrary)
+        contactName <- arbitrary[String]
+        businessTelephoneNumber <- arbitrary[String]
+        businessEmailId <- arbitrary[String]
+        nonCompliantReturns <- Gen.option(arbitrary[String])
+        nonCompliantPayments <- Gen.option(arbitrary[String])
+        exclusions <- Gen.listOfN(1, arbitraryEtmpExclusion.arbitrary)
+      } yield
+        EtmpDisplaySchemeDetails(
           commencementDate,
           firstSaleDate,
           None,

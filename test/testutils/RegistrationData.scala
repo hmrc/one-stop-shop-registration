@@ -224,10 +224,10 @@ object RegistrationData {
 
   val wrappedCachedRegistration: RegistrationWrapper = RegistrationWrapper(userId, Some(fromEtmpRegistration), Instant.now(stubClock))
 
-  val displayRegistration: DisplayRegistration =
-    DisplayRegistration(
+  val displayRegistration: EtmpDisplayRegistration =
+    EtmpDisplayRegistration(
       tradingNames = Seq(EtmpTradingNames("single"), EtmpTradingNames("double")),
-      schemeDetails = EtmpSchemeDetails(
+      schemeDetails = EtmpDisplaySchemeDetails(
         commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
         firstSaleDate = Some(LocalDate.of(2023, 1, 25).format(dateFormatter)),
         euRegistrationDetails = Seq(
@@ -311,10 +311,10 @@ object RegistrationData {
       adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
-  val optionalDisplayRegistration: DisplayRegistration =
-    DisplayRegistration(
+  val optionalDisplayRegistration: EtmpDisplayRegistration =
+    EtmpDisplayRegistration(
       tradingNames = Seq.empty,
-      schemeDetails = EtmpSchemeDetails(
+      schemeDetails = EtmpDisplaySchemeDetails(
         commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
         None,
         None,

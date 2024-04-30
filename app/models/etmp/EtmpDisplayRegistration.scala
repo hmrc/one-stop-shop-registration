@@ -21,37 +21,37 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, OWrites, Reads, __}
 
 
-case class DisplayRegistration(
-                                tradingNames: Seq[EtmpTradingNames],
-                                schemeDetails: EtmpSchemeDetails,
-                                bankDetails: BankDetails,
-                                adminUse: AdminUse
-                              )
+case class EtmpDisplayRegistration(
+                                    tradingNames: Seq[EtmpTradingNames],
+                                    schemeDetails: EtmpDisplaySchemeDetails,
+                                    bankDetails: BankDetails,
+                                    adminUse: AdminUse
+                                  )
 
 
-object DisplayRegistration {
+object EtmpDisplayRegistration {
 
   private def fromDisplayRegistrationPayload(
                                               tradingNames: Option[Seq[EtmpTradingNames]],
-                                              schemeDetails: EtmpSchemeDetails,
+                                              schemeDetails: EtmpDisplaySchemeDetails,
                                               bankDetails: BankDetails,
                                               adminUse: AdminUse
-                                            ): DisplayRegistration =
-    DisplayRegistration(
+                                            ): EtmpDisplayRegistration =
+    EtmpDisplayRegistration(
       tradingNames = tradingNames.fold(Seq.empty[EtmpTradingNames])(a => a),
       schemeDetails = schemeDetails,
       bankDetails = bankDetails,
       adminUse = adminUse
     )
 
-  implicit val reads: Reads[DisplayRegistration] =
+  implicit val reads: Reads[EtmpDisplayRegistration] =
     (
       (__ \ "tradingNames").readNullable[Seq[EtmpTradingNames]] and
-        (__ \ "schemeDetails").read[EtmpSchemeDetails] and
+        (__ \ "schemeDetails").read[EtmpDisplaySchemeDetails] and
         (__ \ "bankDetails").read[BankDetails] and
         (__ \ "adminUse").read[AdminUse]
-      )(DisplayRegistration.fromDisplayRegistrationPayload _)
+      )(EtmpDisplayRegistration.fromDisplayRegistrationPayload _)
 
-  implicit val writes: OWrites[DisplayRegistration] =
-    Json.writes[DisplayRegistration]
+  implicit val writes: OWrites[EtmpDisplayRegistration] =
+    Json.writes[EtmpDisplayRegistration]
 }

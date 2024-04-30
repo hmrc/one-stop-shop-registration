@@ -22,11 +22,10 @@ import config.AppConfig
 import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import metrics.ServiceMetrics
-import models.Quarter.Q1
 import models._
 import models.core.{EisDisplayErrorDetail, EisDisplayErrorResponse, Match, MatchType}
 import models.enrolments.EtmpEnrolmentResponse
-import models.etmp.{AmendRegistrationResponse, DisplayRegistration, EtmpExclusion, EtmpExclusionReason, EtmpRegistrationStatus}
+import models.etmp._
 import models.exclusions.ExcludedTrader
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
@@ -39,7 +38,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.running
 import repositories.{CachedRegistrationRepository, RegistrationRepository, RegistrationStatusRepository}
 import testutils.RegistrationData
-import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration, registration, wrappedCachedRegistration}
+import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration, wrappedCachedRegistration}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
@@ -345,7 +344,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         quarantine = true
       )
 
-      val displayRegistrationWithExclusion: DisplayRegistration =
+      val displayRegistrationWithExclusion: EtmpDisplayRegistration =
         displayRegistration
           .copy(schemeDetails = displayRegistration.schemeDetails.copy(
             exclusions = Seq(etmpExclusion)

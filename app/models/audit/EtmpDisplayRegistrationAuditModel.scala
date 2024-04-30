@@ -17,7 +17,7 @@
 package models.audit
 
 import controllers.actions.AuthorisedMandatoryVrnRequest
-import models.etmp.DisplayRegistration
+import models.etmp.EtmpDisplayRegistration
 import models.Registration
 import play.api.libs.json.{Json, JsValue}
 
@@ -26,7 +26,7 @@ case class EtmpDisplayRegistrationAuditModel(
                                               userId: String,
                                               userAgent: String,
                                               vrn: String,
-                                              etmpDisplayRegistration: DisplayRegistration,
+                                              etmpDisplayRegistration: EtmpDisplayRegistration,
                                               convertedRegistration: Registration
                                      ) extends JsonAuditModel {
 
@@ -46,7 +46,7 @@ case class EtmpDisplayRegistrationAuditModel(
 object EtmpDisplayRegistrationAuditModel {
   def build(
              etmpRegistrationAuditType: EtmpRegistrationAuditType,
-             etmpDisplayRegistration: DisplayRegistration,
+             etmpDisplayRegistration: EtmpDisplayRegistration,
              convertedRegistration: Registration
            )(implicit request: AuthorisedMandatoryVrnRequest[_]): EtmpDisplayRegistrationAuditModel =
     EtmpDisplayRegistrationAuditModel(

@@ -18,7 +18,6 @@ package config
 
 import play.api.Configuration
 import play.api.http.HeaderNames
-import play.api.http.HeaderNames.ACCEPT_ENCODING
 
 import javax.inject.Inject
 

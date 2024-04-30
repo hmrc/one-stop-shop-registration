@@ -6,9 +6,9 @@ import play.api.libs.json.{JsSuccess, Json}
 
 import java.time.{LocalDate, LocalDateTime}
 
-class DisplayRegistrationSpec extends BaseSpec {
+class EtmpDisplayRegistrationSpec extends BaseSpec {
 
-  "DisplayRegistration" - {
+  "EtmpDisplayRegistration" - {
 
     "must deserialise" - {
 
@@ -77,13 +77,13 @@ class DisplayRegistrationSpec extends BaseSpec {
           )
         )
 
-        val expectedResult = DisplayRegistration(
+        val expectedResult = EtmpDisplayRegistration(
           tradingNames = Seq(
             EtmpTradingNames(
               tradingName = "French Trading Company"
             )
           ),
-          schemeDetails = EtmpSchemeDetails(
+          schemeDetails = EtmpDisplaySchemeDetails(
             commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
             firstSaleDate = Some(LocalDate.of(2023, 1, 25).format(dateFormatter)),
             euRegistrationDetails = Seq(
@@ -134,7 +134,7 @@ class DisplayRegistrationSpec extends BaseSpec {
           adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
         )
 
-        json.validate[DisplayRegistration] mustEqual JsSuccess(expectedResult)
+        json.validate[EtmpDisplayRegistration] mustEqual JsSuccess(expectedResult)
       }
 
       "when all optional fields are absent" in {
@@ -162,9 +162,9 @@ class DisplayRegistrationSpec extends BaseSpec {
           )
         )
 
-        val expectedResult = DisplayRegistration(
+        val expectedResult = EtmpDisplayRegistration(
           tradingNames = Seq.empty,
-          schemeDetails = EtmpSchemeDetails(
+          schemeDetails = EtmpDisplaySchemeDetails(
             commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
             None,
             None,
@@ -188,7 +188,7 @@ class DisplayRegistrationSpec extends BaseSpec {
           adminUse = AdminUse(None)
         )
 
-        json.validate[DisplayRegistration] mustEqual JsSuccess(expectedResult)
+        json.validate[EtmpDisplayRegistration] mustEqual JsSuccess(expectedResult)
       }
     }
   }

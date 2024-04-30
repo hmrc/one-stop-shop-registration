@@ -19,7 +19,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import testutils.RegistrationData.optionalDisplayRegistration
 import uk.gov.hmrc.domain.Vrn
-import utils.DisplayRegistrationData.{arbitraryDisplayRegistration, writesEtmpSchemeDetails}
+import utils.EtmpDisplayRegistrationData.{arbitraryEtmpDisplayRegistration, writesEtmpSchemeDetails}
 
 import java.time.{LocalDate, LocalDateTime}
 
@@ -220,7 +220,7 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
 
       val app = application
 
-      val etmpRegistration = arbitraryDisplayRegistration
+      val etmpRegistration = arbitraryEtmpDisplayRegistration
 
       val responseJson =
         s"""{
