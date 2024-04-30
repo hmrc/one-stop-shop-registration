@@ -4,19 +4,19 @@ import models.EuTaxIdentifierType.{Other, Vat}
 import models.VatDetailSource.{Etmp, UserEntered}
 import models._
 import models.etmp.EtmpSchemeDetails.dateFormatter
-import models.etmp.{AdminUse, DisplayRegistration, EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
+import models.etmp._
 import models.requests.RegistrationRequest
 import repositories.RegistrationWrapper
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Clock, Instant, LocalDate, LocalDateTime, ZoneId}
+import java.time._
 
 object RegistrationData {
 
   val stubClock: Clock = Clock.fixed(LocalDate.now.atStartOfDay(ZoneId.systemDefault).toInstant, ZoneId.systemDefault)
   val iban: Iban = Iban("GB33BUKB20201555555555").toOption.get
   val bic: Bic = Bic("ABCDGB2A").get
-  private val userId  = "id-123"
+  private val userId = "id-123"
 
   val registration: Registration =
     Registration(

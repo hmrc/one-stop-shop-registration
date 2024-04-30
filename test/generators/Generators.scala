@@ -361,15 +361,15 @@ trait Generators {
 
     Arbitrary {
       for {
-        exclusionReason <- arbitrary[String]
-        effectiveDate <- arbitrary[String]
-        validToDate <- arbitrary[String]
+        exclusionReason <- Gen.oneOf[EtmpExclusionReason](EtmpExclusionReason.values)
+        effectiveDate <- arbitrary[Int].map(n => LocalDate.ofEpochDay(n))
+        decisionDate <- arbitrary[Int].map(n => LocalDate.ofEpochDay(n))
         quarantine <- arbitrary[Boolean]
       } yield {
         EtmpExclusion(
           exclusionReason = exclusionReason,
           effectiveDate = effectiveDate,
-          validToDate = validToDate,
+          decisionDate = decisionDate,
           quarantine = quarantine
         )
       }

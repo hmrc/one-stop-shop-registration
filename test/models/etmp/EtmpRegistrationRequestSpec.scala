@@ -16,9 +16,9 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
   private val etmpRegistrationRequestWithExclusion = etmpRegistrationRequest
     .copy(schemeDetails = etmpRegistrationRequest.schemeDetails
       .copy(exclusions = Seq(EtmpExclusion(
-        exclusionReason = "1",
-        effectiveDate = "2024-04-25",
-        validToDate = "2023-03-31",
+        exclusionReason = EtmpExclusionReason.FailsToComply,
+        effectiveDate = LocalDate.parse("2024-04-29"),
+        decisionDate = LocalDate.parse("2023-03-31"),
         quarantine = true
       )))
     )
@@ -123,9 +123,9 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             submissionReceived = None,
             excludedTrader = Some(ExcludedTrader(
               vrn = Vrn("123456789"),
-              exclusionReason = 1,
+              exclusionReason = 4,
               effectivePeriod = StandardPeriod(2023, Q1),
-              effectiveDate = Some(LocalDate.now())
+              effectiveDate = Some(LocalDate.of(2024, 4, 29))
             ))
           )
 
@@ -233,7 +233,7 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
       }
     }
   }
-
 }
+
 
 

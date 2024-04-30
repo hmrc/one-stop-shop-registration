@@ -25,6 +25,7 @@ import utils.HashingUtil
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
+// TODO Remove Service and HashUtil
 @Singleton
 class ExclusionService @Inject()(
                                   hashingUtil: HashingUtil,

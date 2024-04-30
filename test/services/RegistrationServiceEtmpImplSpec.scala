@@ -22,10 +22,11 @@ import config.AppConfig
 import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
 import controllers.actions.AuthorisedMandatoryVrnRequest
 import metrics.ServiceMetrics
+import models.Quarter.Q1
 import models._
-import models.core.{EisDisplayErrorDetail, EisDisplayErrorResponse}
+import models.core.{EisDisplayErrorDetail, EisDisplayErrorResponse, Match, MatchType}
 import models.enrolments.EtmpEnrolmentResponse
-import models.etmp.{AmendRegistrationResponse, DisplayRegistration, EtmpExclusion, EtmpRegistrationStatus}
+import models.etmp.{AmendRegistrationResponse, DisplayRegistration, EtmpExclusion, EtmpExclusionReason, EtmpRegistrationStatus}
 import models.exclusions.ExcludedTrader
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
@@ -38,11 +39,11 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.running
 import repositories.{CachedRegistrationRepository, RegistrationRepository, RegistrationStatusRepository}
 import testutils.RegistrationData
-import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration, wrappedCachedRegistration}
+import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration, registration, wrappedCachedRegistration}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -289,11 +290,25 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
   ".get" - {
 
     "must return Some(registration) when both connectors return right and no cache value" in {
-      when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
+
+      val searchSchemeMatch: Match = Match(
+        matchType = MatchType.OtherMSNETPQuarantinedNETP,
+        traderId = "123456789",
+        intermediary = None,
+        memberState = "DE",
+        exclusionStatusCode = None,
+        exclusionDecisionDate = None,
+        exclusionEffectiveDate = None,
+        nonCompliantReturns = None,
+        nonCompliantPayments = None
+      )
+
       when(appConfig.registrationCacheEnabled) thenReturn true
       when(cachedRegistrationRepository.get(any())) thenReturn Future.successful(None)
       when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
       when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+      when(coreValidationService.searchScheme(any(), any(), any(), any())(any())) thenReturn Future.successful(Some(searchSchemeMatch))
+
       registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
       verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))
@@ -301,7 +316,6 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     }
 
     "must return cached registration value when cached" in {
-      when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
       when(appConfig.registrationCacheEnabled) thenReturn true
       when(cachedRegistrationRepository.get(any())) thenReturn Future.successful(Some(wrappedCachedRegistration))
       registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
@@ -311,7 +325,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     }
 
     "must return Some(registration) when both connectors return right and doesn't call cache when not enabled" in {
-      when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
+
       when(appConfig.registrationCacheEnabled) thenReturn false
       when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
       when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -323,11 +337,11 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
     "when trader is excluded" - {
 
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period, None)
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period, Some(LocalDate.parse("2021-07-01")))
       val etmpExclusion: EtmpExclusion = EtmpExclusion(
-        exclusionReason = "4",
-        effectiveDate = "2021-07-01",
-        validToDate = "2021-09-30",
+        exclusionReason = EtmpExclusionReason.FailsToComply,
+        effectiveDate = LocalDate.parse("2021-07-01"),
+        decisionDate = LocalDate.parse("2021-09-30"),
         quarantine = true
       )
 
@@ -340,7 +354,6 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       "must return Some(registration) when both connectors return right" in {
         when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistrationWithExclusion))
         when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
-        when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
         when(coreValidationService.searchScheme(any(), any(), any(), any())(any())) thenReturn Future.successful(None)
         registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationConnector, times(1)).get(Vrn("123456789"))
@@ -349,7 +362,6 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     }
 
     "must return an exception when no customer VAT details are found" in {
-      when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
       when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
       when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Left(NotFound))
       whenReady(registrationService.get(Vrn("123456789")).failed) {
@@ -361,14 +373,12 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     }
 
     "must return a None when the connector returns Left Eis display error with code 098" in {
-      when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
       when(registrationConnector.get(any())) thenReturn Future.successful(Left(EisDisplayRegistrationError(EisDisplayErrorResponse(EisDisplayErrorDetail("correlationId1", "089", "error message", "timestamp")))))
       registrationService.get(Vrn("123456789")).futureValue mustBe None
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
     }
 
     "must return an ETMP Exception when the Registration Connector returns Left(error)" in {
-      when(appConfig.displayRegistrationEndpointEnabled) thenReturn true
       when(registrationConnector.get(any())) thenReturn Future.successful(Left(ServiceUnavailable))
       whenReady(registrationService.get(Vrn("123456789")).failed) {
         exp => exp mustBe EtmpException(s"There was an error getting Registration from ETMP: ${ServiceUnavailable.body}")

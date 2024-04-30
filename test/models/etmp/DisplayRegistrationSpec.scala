@@ -60,9 +60,9 @@ class DisplayRegistrationSpec extends BaseSpec {
             ),
             "exclusions" -> Json.arr(
               Json.obj(
-                "exclusionReason" -> "1",
+                "exclusionReason" -> "4",
                 "effectiveDate" -> "2024-02-25",
-                "validToDate" -> "2024-04-25",
+                "decisionDate" -> "2024-04-25",
                 "quarantine" -> true
               )
             )
@@ -120,9 +120,9 @@ class DisplayRegistrationSpec extends BaseSpec {
             nonCompliantReturns = Some("1"),
             nonCompliantPayments = Some("2"),
             exclusions = Seq(EtmpExclusion(
-              exclusionReason = "1",
-              effectiveDate = "2024-02-25",
-              validToDate = "2024-04-25",
+              exclusionReason = EtmpExclusionReason.FailsToComply,
+              effectiveDate = LocalDate.parse("2024-02-25"),
+              decisionDate = LocalDate.parse("2024-04-25"),
               quarantine = true
             ))
           ),

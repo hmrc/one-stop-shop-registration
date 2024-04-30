@@ -29,6 +29,7 @@ import java.time.Clock
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+// TODO -> Remove this whole file and cleanup where called
 @Singleton
 class RegistrationServiceRepositoryImpl @Inject()(
                                                    registrationRepository: RegistrationRepository,

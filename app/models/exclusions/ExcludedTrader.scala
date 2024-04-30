@@ -18,14 +18,16 @@ package models.exclusions
 
 import com.typesafe.config.Config
 import logging.Logging
-import models.Period
-import models.etmp.EtmpExclusion
+import models.etmp.EtmpExclusionReason.{CeasedTrade, FailsToComply, NoLongerMeetsConditions, NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
+import models.etmp.{EtmpExclusion, EtmpExclusionReason}
+import models.{Period, Quarter, StandardPeriod}
 import play.api.libs.json.{Json, OFormat}
 import play.api.{ConfigLoader, Configuration}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.LocalDate
-import scala.util.Try
+import java.time.format.DateTimeFormatter
+import scala.util.{Failure, Success, Try}
 
 case class ExcludedTrader(
                            vrn: Vrn,
@@ -47,18 +49,38 @@ object ExcludedTrader extends Logging {
                          vrn: Vrn,
                          etmpExclusion: EtmpExclusion
                        ): ExcludedTrader = {
+    ExcludedTrader(
+      vrn = vrn,
+      exclusionReason = convertExclusionReason(etmpExclusion.exclusionReason),
+      effectivePeriod = getPeriod(etmpExclusion.effectiveDate),
+      effectiveDate = Some(etmpExclusion.effectiveDate)
+    )
+  }
 
-    Period.fromString(etmpExclusion.effectiveDate) match {
-      case Some(excludedPeriod) =>
-        ExcludedTrader(
-          vrn = vrn,
-          exclusionReason = etmpExclusion.exclusionReason.toInt,
-          effectivePeriod = excludedPeriod,
-          effectiveDate = Some(LocalDate.parse(etmpExclusion.effectiveDate))
-        )
+  private def convertExclusionReason(exclusionReason: EtmpExclusionReason): Int = {
+    exclusionReason match {
+      case Reversal => -1
+      case NoLongerSupplies => 1
+      case CeasedTrade => 2
+      case NoLongerMeetsConditions => 3
+      case FailsToComply => 4
+      case VoluntarilyLeaves => 5
+      case TransferringMSID => 6
       case _ =>
-        logger.error("Unable to parse period")
-        throw new Exception("Unable to parse period")
+        val message: String = "Invalid Exclusion Reason"
+        logger.error(message)
+        throw new IllegalStateException(message)
+    }
+  }
+
+  private def getPeriod(date: LocalDate): Period = {
+    val quarter = Quarter.fromString(date.format(DateTimeFormatter.ofPattern("QQQ")))
+
+    quarter match {
+      case Success(value) =>
+      StandardPeriod(date.getYear, value)
+      case Failure(exception) =>
+        throw exception
     }
   }
 

@@ -60,7 +60,7 @@ object Registration extends Logging {
                             schemeDetails: EtmpSchemeDetails,
                             bankDetails: BankDetails,
                             adminUse: AdminUse
-                          ): Registration =
+                          ): Registration = {
     Registration(
       vrn = vrn,
       registeredCompanyName = vatDetails.organisationName.getOrElse {
@@ -98,6 +98,7 @@ object Registration extends Logging {
       excludedTrader = schemeDetails.exclusions.headOption.map(etmpExclusion => fromEtmpExclusion(vrn, etmpExclusion)),
       adminUse = adminUse
     )
+  }
 
   private def convertToEuTaxRegistration(etmpEuRegistrationDetails: Seq[EtmpEuRegistrationDetails]): Seq[EuTaxRegistration] = {
 

@@ -33,6 +33,7 @@ class AppConfig @Inject()(config: Configuration) {
   val registrationStatusTtl: Int = config.get[Int]("mongodb.timeToLiveInHours")
 
   val exclusionsHashingKey: String = config.get[String]("features.exclusions.hashing-key")
+  //TODO -> Remove excludedTraders
   val excludedTraders: Seq[HashedExcludedTrader] = config.get[Seq[HashedExcludedTrader]]("features.exclusions.excluded-traders")
   val maxRetryCount: Int = config.get[Int]("features.maxRetryCount")
   val delay: Int = config.get[Int]("features.delay")
@@ -45,8 +46,6 @@ class AppConfig @Inject()(config: Configuration) {
 
   val historicTradersForEnrolmentEnabled: Boolean = config.get[Boolean]("features.enroll-historic-registration.enabled")
   val historicTradersForEnrolment: Seq[HistoricTraderForEnrolment] = config.get[Seq[HistoricTraderForEnrolment]]("features.enroll-historic-registration.historic-traders")
-
-  val displayRegistrationEndpointEnabled: Boolean = config.get[Boolean]("features.displayRegistrationEndpointEnabled")
 
   val registrationCacheEnabled: Boolean = config.get[Boolean]("features.registrationCache.enabled")
   val registrationCacheTtl: Int = config.get[Int]("features.registrationCache.ttlInMins")

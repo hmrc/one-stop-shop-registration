@@ -14,25 +14,9 @@
  * limitations under the License.
  */
 
-package utils
+package config
 
-import config.AppConfig
-import uk.gov.hmrc.crypto.{PlainText, Scrambled, Sha512Crypto}
+object Constants {
 
-import javax.inject.{Inject, Singleton}
-
-// TODO -> Remove
-@Singleton
-class HashingUtil @Inject()(appConfig: AppConfig) {
-
-  lazy val crypto = new Sha512Crypto(appConfig.exclusionsHashingKey)
-
-  def hashValue(value: String): String = {
-    crypto.hash(PlainText(value)).value
-  }
-
-  def verifyValue(value: String, hashedValue: String): Boolean = {
-    crypto.verify(PlainText(value), Scrambled(hashedValue))
-  }
-
+  val quarantineReason4: Int = 4
 }

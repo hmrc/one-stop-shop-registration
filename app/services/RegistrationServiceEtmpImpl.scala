@@ -106,7 +106,8 @@ class RegistrationServiceEtmpImpl @Inject()(
 
     if (appConfig.registrationCacheEnabled) {
       cachedRegistrationRepository.get(request.userId).flatMap {
-        case Some(cachedRegistration) => Future.successful(cachedRegistration.registration)
+        case Some(cachedRegistration) =>
+          Future.successful(cachedRegistration.registration)
         case _ =>
           getRegistration(vrn, auditBlock).map { maybeRegistration =>
             cachedRegistrationRepository.set(request.userId, maybeRegistration)
