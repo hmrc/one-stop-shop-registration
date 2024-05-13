@@ -31,7 +31,7 @@ case class ExcludedTrader(
                            vrn: Vrn,
                            exclusionReason: Int,
                            effectivePeriod: Period,
-                           effectiveDate: Option[LocalDate]
+                           effectiveDate: LocalDate
                          )
 
 object ExcludedTrader extends Logging {
@@ -44,7 +44,7 @@ object ExcludedTrader extends Logging {
       vrn = vrn,
       exclusionReason = convertExclusionReason(etmpExclusion.exclusionReason),
       effectivePeriod = getPeriod(etmpExclusion.effectiveDate),
-      effectiveDate = Some(etmpExclusion.effectiveDate)
+      effectiveDate = etmpExclusion.effectiveDate
     )
   }
 

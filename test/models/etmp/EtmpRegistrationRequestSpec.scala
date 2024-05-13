@@ -115,7 +115,7 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
               vrn = Vrn("123456789"),
               exclusionReason = 4,
               effectivePeriod = StandardPeriod(2023, Q1),
-              effectiveDate = Some(LocalDate.of(2024, 4, 29))
+              effectiveDate = LocalDate.of(2024, 4, 29)
             ))
           )
 

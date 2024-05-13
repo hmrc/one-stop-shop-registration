@@ -336,7 +336,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
     "when trader is excluded" - {
 
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period, Some(LocalDate.parse("2021-07-01")))
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period, LocalDate.parse("2021-07-01"))
       val etmpExclusion: EtmpExclusion = EtmpExclusion(
         exclusionReason = EtmpExclusionReason.FailsToComply,
         effectiveDate = LocalDate.parse("2021-07-01"),
