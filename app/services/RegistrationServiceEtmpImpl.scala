@@ -24,12 +24,12 @@ import models.audit.{EtmpDisplayRegistrationAuditModel, EtmpRegistrationAuditMod
 import models.core.{EisDisplayErrorResponse, MatchType}
 import models.enrolments.EtmpEnrolmentErrorResponse
 import models.etmp._
+import models.repository.{AmendResult, InsertResult}
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.repository.{AmendResult, InsertResult}
 import models.requests.RegistrationRequest
 import play.api.http.Status.NO_CONTENT
-import repositories.{CachedRegistrationRepository, RegistrationRepository, RegistrationStatusRepository}
+import repositories.{CachedRegistrationRepository, RegistrationStatusRepository}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -42,7 +42,6 @@ class RegistrationServiceEtmpImpl @Inject()(
                                              registrationConnector: RegistrationConnector,
                                              enrolmentsConnector: EnrolmentsConnector,
                                              getVatInfoConnector: GetVatInfoConnector,
-                                             registrationRepository: RegistrationRepository,
                                              registrationStatusRepository: RegistrationStatusRepository,
                                              cachedRegistrationRepository: CachedRegistrationRepository,
                                              retryService: RetryService,
@@ -66,18 +65,14 @@ class RegistrationServiceEtmpImpl @Inject()(
         } yield {
           enrolmentResponse.status match {
             case NO_CONTENT =>
-              if (appConfig.duplicateRegistrationIntoRepository) {
-                retryService.getEtmpRegistrationStatus(appConfig.maxRetryCount, appConfig.delay, response.formBundleNumber).flatMap {
-                  case EtmpRegistrationStatus.Success =>
-                    logger.info("Insert succeeded")
-                    registrationRepository.insert(buildRegistration(registrationRequest, clock))
-                  case _ =>
-                    logger.error(s"Failed to add enrolment")
-                    registrationStatusRepository.set(RegistrationStatus(subscriptionId = response.formBundleNumber, status = EtmpRegistrationStatus.Error))
-                    throw EtmpException("Failed to add enrolment")
-                }
-              } else {
-                Future.successful(InsertSucceeded)
+              retryService.getEtmpRegistrationStatus(appConfig.maxRetryCount, appConfig.delay, response.formBundleNumber).flatMap {
+                case EtmpRegistrationStatus.Success =>
+                  logger.info("Enrolment succeeded")
+                  Future.successful(InsertSucceeded)
+                case _ =>
+                  logger.error(s"Failed to add enrolment")
+                  registrationStatusRepository.set(RegistrationStatus(subscriptionId = response.formBundleNumber, status = EtmpRegistrationStatus.Error))
+                  throw EtmpException("Failed to add enrolment")
               }
             case status =>
               logger.error(s"Failed to add enrolment - $status with body ${enrolmentResponse.body}")
@@ -229,11 +224,7 @@ class RegistrationServiceEtmpImpl @Inject()(
         auditBlock(etmpRegistrationRequest, amendRegistrationResponse)
 
         logger.info(s"Successfully sent amend registration to ETMP at ${amendRegistrationResponse.processingDateTime} for vrn ${amendRegistrationResponse.vrn}")
-        if (appConfig.duplicateRegistrationIntoRepository) {
-          registrationRepository.set(buildRegistration(registrationRequest, clock))
-        } else {
-          Future.successful(AmendSucceeded)
-        }
+        Future.successful(AmendSucceeded)
       case Left(e) =>
         logger.error(s"An error occurred while amending registration ${e.getClass} ${e.body}")
         failureAuditBlock(etmpRegistrationRequest)
