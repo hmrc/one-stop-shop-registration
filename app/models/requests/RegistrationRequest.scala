@@ -17,7 +17,6 @@
 package models.requests
 
 import models._
-import models.exclusions.ExcludedTrader
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -39,8 +38,7 @@ case class RegistrationRequest(
                                 dateOfFirstSale: Option[LocalDate],
                                 nonCompliantReturns: Option[String],
                                 nonCompliantPayments: Option[String],
-                                submissionReceived: Option[Instant],
-                                excludedTrader: Option[ExcludedTrader]
+                                submissionReceived: Option[Instant]
                               )
 
 object RegistrationRequest {

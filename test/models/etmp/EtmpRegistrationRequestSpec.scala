@@ -2,10 +2,8 @@ package models.etmp
 
 import base.BaseSpec
 import models.EuTaxIdentifierType.{Other, Vat}
-import models.Quarter.Q1
 import models.VatDetailSource.UserEntered
 import models._
-import models.exclusions.ExcludedTrader
 import models.requests.RegistrationRequest
 import uk.gov.hmrc.domain.Vrn
 
@@ -110,13 +108,7 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             dateOfFirstSale = Some(LocalDate.now),
             nonCompliantReturns = Some("1"),
             nonCompliantPayments = Some("2"),
-            submissionReceived = None,
-            excludedTrader = Some(ExcludedTrader(
-              vrn = Vrn("123456789"),
-              exclusionReason = 4,
-              effectivePeriod = StandardPeriod(2023, Q1),
-              effectiveDate = LocalDate.of(2024, 4, 29)
-            ))
+            submissionReceived = None
           )
 
         EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionCreate) mustBe etmpRegistrationRequest
@@ -215,8 +207,7 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             dateOfFirstSale = Some(LocalDate.now),
             nonCompliantReturns = Some("1"),
             nonCompliantPayments = Some("2"),
-            submissionReceived = Some(Instant.now),
-            excludedTrader = None
+            submissionReceived = Some(Instant.now)
           )
 
         EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionAmend) mustBe etmpAmendRegistrationRequest
