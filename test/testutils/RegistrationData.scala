@@ -357,8 +357,7 @@ object RegistrationData {
       registration.dateOfFirstSale,
       registration.nonCompliantReturns,
       registration.nonCompliantPayments,
-      registration.submissionReceived,
-      registration.excludedTrader
+      registration.submissionReceived
     )
   }
 }
