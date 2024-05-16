@@ -19,6 +19,7 @@ package connectors
 import config.{AmendRegistrationConfig, DisplayRegistrationConfig, IfConfig}
 import connectors.RegistrationHttpParser._
 import logging.Logging
+import metrics.{MetricsEnum, ServiceMetrics}
 import models.UnexpectedResponseStatus
 import models.etmp.EtmpRegistrationRequest
 import play.api.http.HeaderNames.AUTHORIZATION
@@ -29,17 +30,18 @@ import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-import metrics.{MetricsEnum, ServiceMetrics}
 class RegistrationConnector @Inject()(
-                                        httpClient: HttpClient,
-                                        ifConfig: IfConfig,
-                                        amendRegistrationConfig: AmendRegistrationConfig,
-                                        displayRegistrationConfig: DisplayRegistrationConfig,
-                                        metrics: ServiceMetrics
-                                      )(implicit ec: ExecutionContext) extends Logging {
+                                       httpClient: HttpClient,
+                                       ifConfig: IfConfig,
+                                       amendRegistrationConfig: AmendRegistrationConfig,
+                                       displayRegistrationConfig: DisplayRegistrationConfig,
+                                       metrics: ServiceMetrics
+                                     )(implicit ec: ExecutionContext) extends Logging {
 
   private implicit val emptyHc: HeaderCarrier = HeaderCarrier()
+
   private def getHeaders(correlationId: String): Seq[(String, String)] = displayRegistrationConfig.eisEtmpGetHeaders(correlationId)
+
   private def createHeaders(correlationId: String): Seq[(String, String)] = ifConfig.eisEtmpCreateHeaders(correlationId)
 
   private def amendHeaders(correlationId: String): Seq[(String, String)] = amendRegistrationConfig.eisEtmpAmendHeaders(correlationId)
@@ -66,7 +68,7 @@ class RegistrationConnector @Inject()(
     val correlationId = UUID.randomUUID().toString
     val headersWithCorrelationId = createHeaders(correlationId)
     val timerContext = metrics.startTimer(MetricsEnum.CreateEtmpRegistration)
-    val headersWithoutAuth = headersWithCorrelationId.filterNot{
+    val headersWithoutAuth = headersWithCorrelationId.filterNot {
       case (key, _) => key.matches(AUTHORIZATION)
     }
 

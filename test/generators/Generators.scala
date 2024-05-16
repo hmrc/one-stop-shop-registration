@@ -357,6 +357,25 @@ trait Generators {
     }
   }
 
+  implicit val arbitraryEtmpExclusion: Arbitrary[EtmpExclusion] = {
+
+    Arbitrary {
+      for {
+        exclusionReason <- Gen.oneOf[EtmpExclusionReason](EtmpExclusionReason.values)
+        effectiveDate <- arbitrary[Int].map(n => LocalDate.ofEpochDay(n))
+        decisionDate <- arbitrary[Int].map(n => LocalDate.ofEpochDay(n))
+        quarantine <- arbitrary[Boolean]
+      } yield {
+        EtmpExclusion(
+          exclusionReason = exclusionReason,
+          effectiveDate = effectiveDate,
+          decisionDate = decisionDate,
+          quarantine = quarantine
+        )
+      }
+    }
+  }
+
   implicit val arbitraryEtmpSchemeDetails: Arbitrary[EtmpSchemeDetails] = {
     Arbitrary {
       for {
@@ -369,8 +388,8 @@ trait Generators {
         contactName <- arbitrary[String]
         businessTelephoneNumber <- arbitrary[String]
         businessEmailId <- arbitrary[String]
-        nonCompliantReturns <- Gen.option(arbitrary[Int])
-        nonCompliantPayments <- Gen.option(arbitrary[Int])
+        nonCompliantReturns <- Gen.option(arbitrary[String])
+        nonCompliantPayments <- Gen.option(arbitrary[String])
       } yield
         EtmpSchemeDetails(
           commencementDate,
@@ -386,6 +405,41 @@ trait Generators {
           businessEmailId,
           nonCompliantReturns,
           nonCompliantPayments
+        )
+    }
+  }
+
+  implicit val arbitraryEtmpDisplauSchemeDetails: Arbitrary[EtmpDisplaySchemeDetails] = {
+    Arbitrary {
+      for {
+        commencementDate <- arbitrary[String]
+        firstSaleDate <- Gen.option(arbitrary[String])
+        euRegistrationDetails <- Gen.listOfN(5, arbitraryEtmpEuRegistrationDetails.arbitrary)
+        previousEURegistrationDetails <- Gen.listOfN(5, arbitraryEtmpPreviousEURegistrationDetails.arbitrary)
+        onlineMarketPlace <- arbitrary[Boolean]
+        websites <- Gen.listOfN(10, arbitraryWebsite.arbitrary)
+        contactName <- arbitrary[String]
+        businessTelephoneNumber <- arbitrary[String]
+        businessEmailId <- arbitrary[String]
+        nonCompliantReturns <- Gen.option(arbitrary[String])
+        nonCompliantPayments <- Gen.option(arbitrary[String])
+        exclusions <- Gen.listOfN(1, arbitraryEtmpExclusion.arbitrary)
+      } yield
+        EtmpDisplaySchemeDetails(
+          commencementDate,
+          firstSaleDate,
+          None,
+          None,
+          euRegistrationDetails,
+          previousEURegistrationDetails,
+          onlineMarketPlace,
+          websites,
+          contactName,
+          businessTelephoneNumber,
+          businessEmailId,
+          nonCompliantReturns,
+          nonCompliantPayments,
+          exclusions
         )
     }
   }

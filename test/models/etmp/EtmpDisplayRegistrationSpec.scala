@@ -6,9 +6,9 @@ import play.api.libs.json.{JsSuccess, Json}
 
 import java.time.{LocalDate, LocalDateTime}
 
-class DisplayRegistrationSpec extends BaseSpec {
+class EtmpDisplayRegistrationSpec extends BaseSpec {
 
-  "DisplayRegistration" - {
+  "EtmpDisplayRegistration" - {
 
     "must deserialise" - {
 
@@ -23,8 +23,8 @@ class DisplayRegistrationSpec extends BaseSpec {
           "schemeDetails" -> Json.obj(
             "commencementDate" -> "2023-01-01",
             "firstSaleDate" -> "2023-01-25",
-            "nonCompliantReturns" -> 1,
-            "nonCompliantPayments" -> 2,
+            "nonCompliantReturns" -> "1",
+            "nonCompliantPayments" -> "2",
             "euRegistrationDetails" -> Json.arr(
               Json.obj(
                 "issuedBy" -> "FR",
@@ -57,6 +57,14 @@ class DisplayRegistrationSpec extends BaseSpec {
               "contactNameOrBusinessAddress" -> "Mr Test",
               "businessTelephoneNumber" -> "1234567890",
               "businessEmailAddress" -> "test@testEmail.com"
+            ),
+            "exclusions" -> Json.arr(
+              Json.obj(
+                "exclusionReason" -> "4",
+                "effectiveDate" -> "2024-02-25",
+                "decisionDate" -> "2024-04-25",
+                "quarantine" -> true
+              )
             )
           ),
           "bankDetails" -> Json.obj(
@@ -69,13 +77,13 @@ class DisplayRegistrationSpec extends BaseSpec {
           )
         )
 
-        val expectedResult = DisplayRegistration(
+        val expectedResult = EtmpDisplayRegistration(
           tradingNames = Seq(
             EtmpTradingNames(
               tradingName = "French Trading Company"
             )
           ),
-          schemeDetails = EtmpSchemeDetails(
+          schemeDetails = EtmpDisplaySchemeDetails(
             commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
             firstSaleDate = Some(LocalDate.of(2023, 1, 25).format(dateFormatter)),
             euRegistrationDetails = Seq(
@@ -109,8 +117,14 @@ class DisplayRegistrationSpec extends BaseSpec {
             contactName = "Mr Test",
             businessTelephoneNumber = "1234567890",
             businessEmailId = "test@testEmail.com",
-            nonCompliantReturns = Some(1),
-            nonCompliantPayments = Some(2)
+            nonCompliantReturns = Some("1"),
+            nonCompliantPayments = Some("2"),
+            exclusions = Seq(EtmpExclusion(
+              exclusionReason = EtmpExclusionReason.FailsToComply,
+              effectiveDate = LocalDate.parse("2024-02-25"),
+              decisionDate = LocalDate.parse("2024-04-25"),
+              quarantine = true
+            ))
           ),
           bankDetails = BankDetails(
             accountName = "Bank Account Name",
@@ -120,7 +134,7 @@ class DisplayRegistrationSpec extends BaseSpec {
           adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
         )
 
-        json.validate[DisplayRegistration] mustEqual JsSuccess(expectedResult)
+        json.validate[EtmpDisplayRegistration] mustEqual JsSuccess(expectedResult)
       }
 
       "when all optional fields are absent" in {
@@ -148,9 +162,9 @@ class DisplayRegistrationSpec extends BaseSpec {
           )
         )
 
-        val expectedResult = DisplayRegistration(
+        val expectedResult = EtmpDisplayRegistration(
           tradingNames = Seq.empty,
-          schemeDetails = EtmpSchemeDetails(
+          schemeDetails = EtmpDisplaySchemeDetails(
             commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
             None,
             None,
@@ -163,7 +177,8 @@ class DisplayRegistrationSpec extends BaseSpec {
             businessTelephoneNumber = "1234567890",
             businessEmailId = "test@testEmail.com",
             None,
-            None
+            None,
+            exclusions = Seq.empty
           ),
           bankDetails = BankDetails(
             accountName = "Bank Account Name",
@@ -173,7 +188,7 @@ class DisplayRegistrationSpec extends BaseSpec {
           adminUse = AdminUse(None)
         )
 
-        json.validate[DisplayRegistration] mustEqual JsSuccess(expectedResult)
+        json.validate[EtmpDisplayRegistration] mustEqual JsSuccess(expectedResult)
       }
     }
   }

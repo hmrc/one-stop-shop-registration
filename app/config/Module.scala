@@ -18,9 +18,9 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions.{AuthAction, AuthActionImpl, AuthenticatedControllerComponents, DefaultAuthenticatedControllerComponents}
-import play.api.{Configuration, Environment}
-import services.{HistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentServiceImpl, RegistrationService, RegistrationServiceEtmpImpl, RegistrationServiceRepositoryImpl}
 import metrics.{DefaultServiceMetrics, ServiceMetrics}
+import play.api.{Configuration, Environment}
+import services.{HistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentServiceImpl, RegistrationService, RegistrationServiceEtmpImpl}
 
 import java.time.{Clock, ZoneOffset}
 
@@ -28,19 +28,13 @@ class Module(environment: Environment, config: Configuration) extends AbstractMo
 
   override def configure(): Unit = {
 
-    val sendRegToEtmp: Boolean = config.get[Boolean]("features.sendRegToEtmp")
-
     bind(classOf[AuthAction]).to(classOf[AuthActionImpl]).asEagerSingleton()
     bind(classOf[ServiceMetrics]).to(classOf[DefaultServiceMetrics])
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
 
     bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
 
-    if(sendRegToEtmp) {
-      bind(classOf[RegistrationService]).to(classOf[RegistrationServiceEtmpImpl]).asEagerSingleton()
-    } else {
-      bind(classOf[RegistrationService]).to(classOf[RegistrationServiceRepositoryImpl]).asEagerSingleton()
-    }
+    bind(classOf[RegistrationService]).to(classOf[RegistrationServiceEtmpImpl]).asEagerSingleton()
     bind(classOf[HistoricalRegistrationEnrolmentService]).to(classOf[HistoricalRegistrationEnrolmentServiceImpl]).asEagerSingleton()
   }
 }

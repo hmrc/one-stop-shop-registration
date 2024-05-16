@@ -16,8 +16,9 @@
 
 package models.etmp
 
+import logging.Logging
+import models._
 import models.requests.RegistrationRequest
-import models.{BankDetails, CountryWithValidationDetails, PreviousRegistration, PreviousRegistrationLegacy, PreviousRegistrationNew, PreviousScheme}
 import play.api.libs.json.{Json, OFormat}
 
 case class EtmpRegistrationRequest(
@@ -28,7 +29,7 @@ case class EtmpRegistrationRequest(
                                     bankDetails: BankDetails
                                   )
 
-object EtmpRegistrationRequest {
+object EtmpRegistrationRequest extends Logging {
 
   def fromRegistrationRequest(registration: RegistrationRequest, etmpMessageType: EtmpMessageType): EtmpRegistrationRequest = {
     EtmpRegistrationRequest(

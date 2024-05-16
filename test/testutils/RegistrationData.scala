@@ -4,19 +4,19 @@ import models.EuTaxIdentifierType.{Other, Vat}
 import models.VatDetailSource.{Etmp, UserEntered}
 import models._
 import models.etmp.EtmpSchemeDetails.dateFormatter
-import models.etmp.{AdminUse, DisplayRegistration, EtmpEuRegistrationDetails, EtmpPreviousEURegistrationDetails, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
+import models.etmp._
 import models.requests.RegistrationRequest
 import repositories.RegistrationWrapper
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Clock, Instant, LocalDate, LocalDateTime, ZoneId}
+import java.time._
 
 object RegistrationData {
 
   val stubClock: Clock = Clock.fixed(LocalDate.now.atStartOfDay(ZoneId.systemDefault).toInstant, ZoneId.systemDefault)
   val iban: Iban = Iban("GB33BUKB20201555555555").toOption.get
   val bic: Bic = Bic("ABCDGB2A").get
-  private val userId  = "id-123"
+  private val userId = "id-123"
 
   val registration: Registration =
     Registration(
@@ -109,8 +109,8 @@ object RegistrationData {
       dateOfFirstSale = Some(LocalDate.now),
       submissionReceived = Some(Instant.now(stubClock)),
       lastUpdated = Some(Instant.now(stubClock)),
-      nonCompliantReturns = Some(1),
-      nonCompliantPayments = Some(2),
+      nonCompliantReturns = Some("1"),
+      nonCompliantPayments = Some("2"),
       adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
@@ -217,17 +217,17 @@ object RegistrationData {
       dateOfFirstSale = Some(LocalDate.of(2023, 1, 25)),
       submissionReceived = None,
       lastUpdated = None,
-      nonCompliantReturns = Some(1),
-      nonCompliantPayments = Some(2),
+      nonCompliantReturns = Some("1"),
+      nonCompliantPayments = Some("2"),
       adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
   val wrappedCachedRegistration: RegistrationWrapper = RegistrationWrapper(userId, Some(fromEtmpRegistration), Instant.now(stubClock))
 
-  val displayRegistration: DisplayRegistration =
-    DisplayRegistration(
+  val displayRegistration: EtmpDisplayRegistration =
+    EtmpDisplayRegistration(
       tradingNames = Seq(EtmpTradingNames("single"), EtmpTradingNames("double")),
-      schemeDetails = EtmpSchemeDetails(
+      schemeDetails = EtmpDisplaySchemeDetails(
         commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
         firstSaleDate = Some(LocalDate.of(2023, 1, 25).format(dateFormatter)),
         euRegistrationDetails = Seq(
@@ -303,17 +303,18 @@ object RegistrationData {
         contactName = "Joe Bloggs",
         businessTelephoneNumber = "01112223344",
         businessEmailId = "email@email.com",
-        nonCompliantReturns = Some(1),
-        nonCompliantPayments = Some(2)
+        nonCompliantReturns = Some("1"),
+        nonCompliantPayments = Some("2"),
+        exclusions = Seq.empty
       ),
       bankDetails = BankDetails("Account name", Some(bic), iban),
       adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
-  val optionalDisplayRegistration: DisplayRegistration =
-    DisplayRegistration(
+  val optionalDisplayRegistration: EtmpDisplayRegistration =
+    EtmpDisplayRegistration(
       tradingNames = Seq.empty,
-      schemeDetails = EtmpSchemeDetails(
+      schemeDetails = EtmpDisplaySchemeDetails(
         commencementDate = LocalDate.of(2023, 1, 1).format(dateFormatter),
         None,
         None,
@@ -326,7 +327,8 @@ object RegistrationData {
         businessTelephoneNumber = "1234567890",
         businessEmailId = "test@testEmail.com",
         None,
-        None
+        None,
+        Seq.empty
       ),
       bankDetails = BankDetails(
         accountName = "Bank Account Name",
@@ -355,8 +357,8 @@ object RegistrationData {
       registration.dateOfFirstSale,
       registration.nonCompliantReturns,
       registration.nonCompliantPayments,
-      registration.submissionReceived
+      registration.submissionReceived,
+      registration.excludedTrader
     )
   }
-
 }

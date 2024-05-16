@@ -1,15 +1,14 @@
 package repositories
 
 import config.AppConfig
+import models.RegistrationStatus
 import models.etmp.EtmpRegistrationStatus
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.RegistrationStatus
 import org.mockito.MockitoSugar
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, PlayMongoRepositorySupport}
 
 import scala.concurrent.ExecutionContext.Implicits.global

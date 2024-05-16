@@ -6,12 +6,12 @@ import org.scalacheck.Gen
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{OWrites, __}
 
-object DisplayRegistrationData extends BaseSpec {
+object EtmpDisplayRegistrationData extends BaseSpec {
 
-  val arbitraryDisplayRegistration: DisplayRegistration =
-    DisplayRegistration(
+  val arbitraryEtmpDisplayRegistration: EtmpDisplayRegistration =
+    EtmpDisplayRegistration(
       tradingNames = Gen.listOfN(3, arbitraryEtmpTradingNames.arbitrary).sample.value,
-      schemeDetails = arbitraryEtmpSchemeDetails.arbitrary.sample.value,
+      schemeDetails = arbitraryEtmpDisplauSchemeDetails.arbitrary.sample.value,
       bankDetails = arbitraryBankDetails.arbitrary.sample.value,
       adminUse = arbitraryAdminUse.arbitrary.sample.value
     )
@@ -31,7 +31,7 @@ object DisplayRegistrationData extends BaseSpec {
       ) (unlift(EtmpEuRegistrationDetails.unapply))
   }
 
-  implicit val writesEtmpSchemeDetails: OWrites[EtmpSchemeDetails] = {
+  implicit val writesEtmpSchemeDetails: OWrites[EtmpDisplaySchemeDetails] = {
     (
       (__ \ "commencementDate").write[String] and
         (__ \ "requestDate").writeNullable[String] and
@@ -44,8 +44,9 @@ object DisplayRegistrationData extends BaseSpec {
         (__ \ "contactDetails" \ "contactNameOrBusinessAddress").write[String] and
         (__ \ "contactDetails" \ "businessTelephoneNumber").write[String] and
         (__ \ "contactDetails" \ "businessEmailAddress").write[String] and
-        (__ \ "nonCompliantReturns").writeNullable[Int] and
-        (__ \ "nonCompliantPayments").writeNullable[Int]
-      ) (unlift(EtmpSchemeDetails.unapply))
+        (__ \ "nonCompliantReturns").writeNullable[String] and
+        (__ \ "nonCompliantPayments").writeNullable[String] and
+        (__ \ "exclusions").write[Seq[EtmpExclusion]]
+      ) (unlift(EtmpDisplaySchemeDetails.unapply))
   }
 }

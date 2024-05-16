@@ -24,13 +24,12 @@ import models.audit.{EtmpDisplayRegistrationAuditModel, EtmpRegistrationAuditMod
 import models.core.{EisDisplayErrorResponse, MatchType}
 import models.enrolments.EtmpEnrolmentErrorResponse
 import models.etmp._
-import models.repository.{AmendResult, InsertResult}
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.repository.{AmendResult, InsertResult}
 import models.requests.RegistrationRequest
 import play.api.http.Status.NO_CONTENT
 import repositories.{CachedRegistrationRepository, RegistrationRepository, RegistrationStatusRepository}
-import services.exclusions.ExclusionService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -48,7 +47,6 @@ class RegistrationServiceEtmpImpl @Inject()(
                                              cachedRegistrationRepository: CachedRegistrationRepository,
                                              retryService: RetryService,
                                              appConfig: AppConfig,
-                                             exclusionService: ExclusionService,
                                              auditService: AuditService,
                                              coreValidationService: CoreValidationService,
                                              clock: Clock
@@ -103,12 +101,13 @@ class RegistrationServiceEtmpImpl @Inject()(
   }
 
   def get(vrn: Vrn)(implicit headerCarrier: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[Option[Registration]] = {
-    val auditBlock = (etmpRegistration: DisplayRegistration, registration: Registration) =>
+    val auditBlock = (etmpRegistration: EtmpDisplayRegistration, registration: Registration) =>
       auditService.audit(EtmpDisplayRegistrationAuditModel.build(EtmpRegistrationAuditType.DisplayRegistration, etmpRegistration, registration))
 
     if (appConfig.registrationCacheEnabled) {
       cachedRegistrationRepository.get(request.userId).flatMap {
-        case Some(cachedRegistration) => Future.successful(cachedRegistration.registration)
+        case Some(cachedRegistration) =>
+          Future.successful(cachedRegistration.registration)
         case _ =>
           getRegistration(vrn, auditBlock).map { maybeRegistration =>
             cachedRegistrationRepository.set(request.userId, maybeRegistration)
@@ -122,64 +121,41 @@ class RegistrationServiceEtmpImpl @Inject()(
   }
 
   def getWithoutAudit(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[Option[Registration]] = {
-    val emptyAuditBlock = (_: DisplayRegistration, _: Registration) => ()
+    val emptyAuditBlock = (_: EtmpDisplayRegistration, _: Registration) => ()
 
     getRegistration(vrn, emptyAuditBlock)
   }
 
   private def getRegistration(vrn: Vrn,
-                              auditBlock: (DisplayRegistration, Registration) => Unit)(implicit hc: HeaderCarrier): Future[Option[Registration]] = {
-    if (appConfig.displayRegistrationEndpointEnabled) {
-      registrationConnector.get(vrn).flatMap {
-        case Right(etmpRegistration) =>
-          getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
-            case Right(vatDetails) =>
+                              auditBlock: (EtmpDisplayRegistration, Registration) => Unit)(implicit hc: HeaderCarrier): Future[Option[Registration]] = {
+    registrationConnector.get(vrn).flatMap {
+      case Right(etmpRegistration) =>
+        getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
+          case Right(vatDetails) =>
 
-              val registration = Registration.fromEtmpRegistration(
-                vrn,
-                vatDetails,
-                etmpRegistration.tradingNames,
-                etmpRegistration.schemeDetails,
-                etmpRegistration.bankDetails,
-                etmpRegistration.adminUse
-              )
-
-              if (appConfig.exclusionsEnabled) {
-                exclusionService.findExcludedTrader(registration.vrn).flatMap { maybeExcludedTrader =>
-                  getTransferringMsidEffectiveFromDate(registration).map { transferringMsidEffectiveFromDate =>
-                    val registrationWithExcludedTraderAndPartialReturnPeriod = registration.copy(excludedTrader = maybeExcludedTrader, transferringMsidEffectiveFromDate = transferringMsidEffectiveFromDate)
-                    auditBlock(etmpRegistration, registrationWithExcludedTraderAndPartialReturnPeriod)
-                    Some(registrationWithExcludedTraderAndPartialReturnPeriod)
-                  }
-                }
-              } else {
-                auditBlock(etmpRegistration, registration)
-                Future.successful(Some(registration))
-              }
-            case Left(error) =>
-              logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
-              Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
-          }
-        case Left(EisDisplayRegistrationError(eisDisplayErrorResponse)) if eisDisplayErrorResponse.errorDetail.errorCode == EisDisplayErrorResponse.displayErrorCodeNoRegistration =>
-          logger.info(s"There was no Registration from ETMP found")
-          Future.successful(None)
-        case Left(error) =>
-          logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
-          throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
-      }
-    } else {
-      (for {
-        maybeRegistration <- registrationRepository.get(vrn)
-        maybeExcludedTrader <- exclusionService.findExcludedTrader(vrn)
-      } yield {
-        maybeRegistration match {
-          case Some(registration) =>
+            val registration = Registration.fromEtmpRegistration(
+              vrn,
+              vatDetails,
+              etmpRegistration.tradingNames,
+              etmpRegistration.schemeDetails,
+              etmpRegistration.bankDetails,
+              etmpRegistration.adminUse
+            )
             getTransferringMsidEffectiveFromDate(registration).map { transferringMsidEffectiveFromDate =>
-              Some(registration.copy(excludedTrader = maybeExcludedTrader, transferringMsidEffectiveFromDate = transferringMsidEffectiveFromDate))
+              val registrationWithExcludedTraderAndPartialReturnPeriod = registration.copy(transferringMsidEffectiveFromDate = transferringMsidEffectiveFromDate)
+              auditBlock(etmpRegistration, registrationWithExcludedTraderAndPartialReturnPeriod)
+              Some(registrationWithExcludedTraderAndPartialReturnPeriod)
             }
-          case _ => Future.successful(None)
+          case Left(error) =>
+            logger.info(s"There was an error getting customer VAT information from DES: ${error.body}")
+            Future.failed(new Exception(s"There was an error getting customer VAT information from DES: ${error.body}"))
         }
-      }).flatten
+      case Left(EisDisplayRegistrationError(eisDisplayErrorResponse)) if eisDisplayErrorResponse.errorDetail.errorCode == EisDisplayErrorResponse.displayErrorCodeNoRegistration =>
+        logger.info(s"There was no Registration from ETMP found")
+        Future.successful(None)
+      case Left(error) =>
+        logger.error(s"There was an error getting Registration from ETMP: ${error.body}")
+        throw EtmpException(s"There was an error getting Registration from ETMP: ${error.body}")
     }
   }
 
