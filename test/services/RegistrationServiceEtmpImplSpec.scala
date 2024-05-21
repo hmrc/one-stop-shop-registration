@@ -26,7 +26,7 @@ import models._
 import models.core.{EisDisplayErrorDetail, EisDisplayErrorResponse, Match, MatchType}
 import models.enrolments.EtmpEnrolmentResponse
 import models.etmp._
-import models.exclusions.ExcludedTrader
+import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import org.apache.pekko.http.scaladsl.util.FastFuture.successful
@@ -236,7 +236,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
 
     "when trader is excluded" - {
 
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, 4, period, LocalDate.parse("2021-07-01"))
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, ExclusionReason.FailsToComply, LocalDate.parse("2021-07-01"))
       val etmpExclusion: EtmpExclusion = EtmpExclusion(
         exclusionReason = EtmpExclusionReason.FailsToComply,
         effectiveDate = LocalDate.parse("2021-07-01"),
