@@ -49,6 +49,19 @@ trait Period {
     }
   }
 
+  def getPreviousPeriod: Period = {
+    quarter match {
+      case Q4 =>
+        StandardPeriod(year, Q3)
+      case Q3 =>
+        StandardPeriod(year, Q2)
+      case Q2 =>
+        StandardPeriod(year, Q1)
+      case Q1 =>
+        StandardPeriod(year - 1, Q4)
+    }
+  }
+
 }
 
 
