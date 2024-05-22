@@ -17,11 +17,12 @@
 package models
 
 import models.Quarter._
-import play.api.libs.json.{Format, Json, OFormat, Reads, Writes}
+import play.api.libs.json._
 
+import java.time.format.DateTimeFormatter
 import java.time.{Clock, LocalDate}
-import scala.util.Try
 import scala.util.matching.Regex
+import scala.util.{Failure, Success, Try}
 
 trait Period {
   val year: Int
@@ -106,6 +107,16 @@ object Period {
     case p: PartialReturnPeriod => Json.toJson(p)(PartialReturnPeriod.format)
   }
 
-  implicit def format: Format[Period] = Format(reads, writes)
+  def getPeriod(date: LocalDate): Period = {
+    val quarter = Quarter.fromString(date.format(DateTimeFormatter.ofPattern("QQQ")))
 
+    quarter match {
+      case Success(value) =>
+        StandardPeriod(date.getYear, value)
+      case Failure(exception) =>
+        throw exception
+    }
+  }
+
+  implicit def format: Format[Period] = Format(reads, writes)
 }
