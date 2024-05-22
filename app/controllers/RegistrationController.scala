@@ -61,6 +61,7 @@ class RegistrationController @Inject()(
       }
   }
 
+  // TODO RegistrationRequest -> AmendRegistrationRequest
   def amend(): Action[RegistrationRequest] = cc.authAndRequireVat()(parse.json[RegistrationRequest]).async {
     implicit request =>
       registrationService
