@@ -4,6 +4,7 @@ import controllers.actions.{AuthAction, FakeAuthAction}
 import generators.Generators
 import models._
 import models.Quarter.Q3
+import models.amend.{EtmpAmendRegistrationRequest, EtmpExclusionDetails, EtmpRequestedChange, EtmpSelfExclusionReason}
 import models.des.VatCustomerInfo
 import models.etmp._
 import org.scalatest.{OptionValues, TryValues}
@@ -135,7 +136,94 @@ trait BaseSpec
     BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get)
   )
 
-  val etmpAmendRegistrationRequest: EtmpRegistrationRequest = etmpRegistrationRequest.copy(administration = EtmpAdministration(EtmpMessageType.OSSSubscriptionAmend))
+  val etmpAmendRegistrationRequest: EtmpAmendRegistrationRequest = EtmpAmendRegistrationRequest(
+    administration = EtmpAdministration(EtmpMessageType.OSSSubscriptionAmend),
+    customerIdentification = EtmpCustomerIdentification(vrn),
+    tradingNames = Seq(EtmpTradingNames("Foo")),
+    schemeDetails = EtmpSchemeDetails(
+      commencementDate = LocalDate.now().format(dateFormatter),
+      firstSaleDate = Some(LocalDate.now().format(dateFormatter)),
+      euRegistrationDetails = Seq(EtmpEuRegistrationDetails(
+        countryOfRegistration = "FR"
+      ),
+        EtmpEuRegistrationDetails(
+          countryOfRegistration = "DE",
+          vatNumber = Some("DE123"),
+          taxIdentificationNumber = None,
+          fixedEstablishment = Some(true),
+          tradingName = Some("Name"),
+          fixedEstablishmentAddressLine1 = Some("Line 1"),
+          townOrCity = Some("Town")
+        ),
+        EtmpEuRegistrationDetails(
+          countryOfRegistration = "BE",
+          taxIdentificationNumber = Some("12345"),
+          fixedEstablishment = Some(false),
+          tradingName = Some("Name"),
+          fixedEstablishmentAddressLine1 = Some("Line 1"),
+          fixedEstablishmentAddressLine2 = Some("Line 2"),
+          townOrCity = Some("Town"),
+        )
+      ),
+      previousEURegistrationDetails = Seq(
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "DE",
+          registrationNumber = "DE123",
+          schemeType = SchemeType.OSSUnion,
+          intermediaryNumber = None
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "BE",
+          registrationNumber = "BE123",
+          schemeType = SchemeType.OSSNonUnion,
+          intermediaryNumber = None
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "EE",
+          registrationNumber = "EE123",
+          schemeType = SchemeType.OSSNonUnion,
+          intermediaryNumber = None
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "EE",
+          registrationNumber = "EE234",
+          schemeType = SchemeType.IOSSWithIntermediary,
+          intermediaryNumber = Some("IN234")
+        ),
+        EtmpPreviousEURegistrationDetails(
+          issuedBy = "EE",
+          registrationNumber = "EE312",
+          schemeType = SchemeType.IOSSWithoutIntermediary,
+          intermediaryNumber = None
+        )
+      ),
+      onlineMarketPlace = false,
+      websites = Seq(
+        Website("website1"), Website("website2")
+      ),
+      contactName = "Joe Bloggs",
+      businessTelephoneNumber = "01112223344",
+      businessEmailId = "email@email.com",
+      nonCompliantReturns = Some("1"),
+      nonCompliantPayments = Some("2")
+    ),
+    BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get),
+    requestedChange = EtmpRequestedChange(
+      tradingName = false,
+      fixedEstablishment = false,
+      contactDetails = false,
+      bankDetails = false,
+      reRegistration = false,
+      exclusion = false
+    ),
+    exclusionDetails = Some(EtmpExclusionDetails(
+      exclusionRequestDate = LocalDate.now(),
+      exclusionReason = EtmpSelfExclusionReason.NoLongerSupplies,
+      movePOBDate = None,
+      issuedBy = None,
+      vatNumber = None
+    ))
+  )
 
 }
 

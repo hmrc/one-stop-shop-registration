@@ -21,6 +21,7 @@ import connectors.RegistrationHttpParser._
 import logging.Logging
 import metrics.{MetricsEnum, ServiceMetrics}
 import models.UnexpectedResponseStatus
+import models.amend.EtmpAmendRegistrationRequest
 import models.etmp.EtmpRegistrationRequest
 import play.api.http.HeaderNames.AUTHORIZATION
 import uk.gov.hmrc.domain.Vrn
@@ -89,7 +90,7 @@ class RegistrationConnector @Inject()(
     }
   }
 
-  def amendRegistration(registration: EtmpRegistrationRequest): Future[CreateAmendRegistrationResponse] = {
+  def amendRegistration(registration: EtmpAmendRegistrationRequest): Future[CreateAmendRegistrationResponse] = {
 
     val correlationId: String = UUID.randomUUID().toString
     val headersWithCorrelationId = amendHeaders(correlationId)
@@ -100,7 +101,7 @@ class RegistrationConnector @Inject()(
 
     logger.info(s"Sending amend request to etmp with headers $headersWithoutAuth")
 
-    httpClient.PUT[EtmpRegistrationRequest, CreateAmendRegistrationResponse](
+    httpClient.PUT[EtmpAmendRegistrationRequest, CreateAmendRegistrationResponse](
       s"${amendRegistrationConfig.baseUrl}vec/ossregistration/amendreg/v1",
       registration,
       headers = headersWithCorrelationId
