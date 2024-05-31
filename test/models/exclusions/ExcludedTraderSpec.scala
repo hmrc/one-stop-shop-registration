@@ -12,6 +12,7 @@ class ExcludedTraderSpec extends BaseSpec with ScalaCheckPropertyChecks {
 
   private val genExclusionReason: ExclusionReason = Gen.oneOf(ExclusionReason.values).sample.value
   private val genVrn = arbitraryVrn.arbitrary.sample.value
+  private val quarantined: Boolean = arbitrary[Boolean].sample.value
 
   "ExcludedTrader" - {
 
@@ -20,13 +21,15 @@ class ExcludedTraderSpec extends BaseSpec with ScalaCheckPropertyChecks {
       val json = Json.obj(
         "exclusionReason" -> genExclusionReason,
         "effectiveDate" -> LocalDate.of(2023, 2, 1),
-        "vrn" -> genVrn
+        "vrn" -> genVrn,
+        "quarantined" -> quarantined
       )
 
       val expectedResult = ExcludedTrader(
         exclusionReason = genExclusionReason,
         effectiveDate = LocalDate.of(2023, 2, 1),
-        vrn = genVrn
+        vrn = genVrn,
+        quarantined = quarantined
       )
 
       Json.toJson(expectedResult) mustBe json

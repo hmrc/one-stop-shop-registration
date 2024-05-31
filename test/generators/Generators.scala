@@ -490,11 +490,12 @@ trait Generators {
         vrn <- arbitraryVrn.arbitrary
         exclusionReason <- Gen.oneOf(ExclusionReason.values)
         effectiveDate <- arbitraryDate.arbitrary
+        quarantined <- arbitrary[Boolean]
       } yield ExcludedTrader(
         vrn = vrn,
         exclusionReason = exclusionReason,
-        effectiveDate = effectiveDate
+        effectiveDate = effectiveDate,
+        quarantined = quarantined
       )
     }
-
 }

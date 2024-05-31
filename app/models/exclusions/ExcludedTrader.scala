@@ -30,7 +30,8 @@ import scala.util.{Failure, Success}
 case class ExcludedTrader(
                            vrn: Vrn,
                            exclusionReason: ExclusionReason,
-                           effectiveDate: LocalDate
+                           effectiveDate: LocalDate,
+                           quarantined: Boolean
                          ) {
 
   val finalReturnPeriod: Period = {
@@ -51,7 +52,8 @@ object ExcludedTrader extends Logging {
     ExcludedTrader(
       vrn = vrn,
       exclusionReason = etmpExclusion.exclusionReason,
-      effectiveDate = etmpExclusion.effectiveDate
+      effectiveDate = etmpExclusion.effectiveDate,
+      quarantined = etmpExclusion.quarantine
     )
   }
 
