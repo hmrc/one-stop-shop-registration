@@ -31,7 +31,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class RegistrationConnector @Inject()(
-                                       httpClient: HttpClient,
+                                       httpClientV2: HttpClient,
                                        ifConfig: IfConfig,
                                        amendRegistrationConfig: AmendRegistrationConfig,
                                        displayRegistrationConfig: DisplayRegistrationConfig,
@@ -52,7 +52,7 @@ class RegistrationConnector @Inject()(
     val headersWithCorrelationId = getHeaders(correlationId)
     val timerContext = metrics.startTimer(MetricsEnum.GetRegistration)
     val url = s"${displayRegistrationConfig.baseUrl}vec/ossregistration/viewreg/v1/${vrn.value}"
-    httpClient.GET[DisplayRegistrationResponse](url = url, headers = headersWithCorrelationId).map { result =>
+    httpClientV2.GET[DisplayRegistrationResponse](url = url, headers = headersWithCorrelationId).map { result =>
       timerContext.stop()
       result
     }.recover {
@@ -74,7 +74,7 @@ class RegistrationConnector @Inject()(
 
     logger.info(s"Sending create request to etmp with headers $headersWithoutAuth")
 
-    httpClient.POST[EtmpRegistrationRequest, CreateEtmpRegistrationResponse](
+    httpClientV2.POST[EtmpRegistrationRequest, CreateEtmpRegistrationResponse](
       s"${ifConfig.baseUrl}vec/ossregistration/regdatatransfer/v1",
       registration,
       headers = headersWithCorrelationId
@@ -100,7 +100,7 @@ class RegistrationConnector @Inject()(
 
     logger.info(s"Sending amend request to etmp with headers $headersWithoutAuth")
 
-    httpClient.PUT[EtmpRegistrationRequest, CreateAmendRegistrationResponse](
+    httpClientV2.PUT[EtmpRegistrationRequest, CreateAmendRegistrationResponse](
       s"${amendRegistrationConfig.baseUrl}vec/ossregistration/amendreg/v1",
       registration,
       headers = headersWithCorrelationId

@@ -32,8 +32,7 @@ trait HistoricalRegistrationEnrolmentService
 class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
                                                             appConfig: AppConfig,
                                                             enrolmentsConnector: EnrolmentsConnector,
-                                                            registrationService: RegistrationService,
-                                                            clock: Clock
+                                                            registrationService: RegistrationService
                                                           )
                                                           (implicit ec: ExecutionContext) extends HistoricalRegistrationEnrolmentService with Logging {
 
@@ -56,7 +55,7 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
 
   private def submitSequentially(remainingTraders: Seq[HistoricTraderForEnrolment]): Future[Either[HttpResponse, Unit]] = {
     remainingTraders match {
-      case Nil => Future.successful(Right())
+      case Nil => Future.successful(Right(()))
       case traderToEnrol +: Nil =>
         getRegAndTriggerEs8(traderToEnrol, Seq.empty)
       case traderToEnrol +: otherTraders =>

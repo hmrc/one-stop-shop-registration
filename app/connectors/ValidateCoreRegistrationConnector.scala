@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ValidateCoreRegistrationConnector @Inject()(
                                                    coreValidationConfig: CoreValidationConfig,
-                                                   httpClient: HttpClient,
+                                                   httpClientV2: HttpClient,
                                                    metrics: ServiceMetrics
                                                  )(implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
@@ -56,7 +56,7 @@ class ValidateCoreRegistrationConnector @Inject()(
     logger.info(s"Sending request to EIS with headers $headersWithoutAuth and request ${Json.toJson(coreRegistrationRequest)}")
     val timerContext = metrics.startTimer(MetricsEnum.ValidateCoreRegistration)
     val url = s"$baseUrl"
-    httpClient.POST[CoreRegistrationRequest, ValidateCoreRegistrationResponse](
+    httpClientV2.POST[CoreRegistrationRequest, ValidateCoreRegistrationResponse](
       url,
       coreRegistrationRequest,
       headers = headersWithCorrelationId

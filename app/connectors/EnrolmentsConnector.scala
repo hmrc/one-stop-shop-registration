@@ -34,7 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class EnrolmentsConnector @Inject()(
                                      enrolments: EnrolmentsConfig,
                                      enrolmentStoreProxyConfig: EnrolmentStoreProxyConfig,
-                                     httpClient: HttpClient,
+                                     httpClientV2: HttpClient,
                                      metrics: ServiceMetrics)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
@@ -42,7 +42,7 @@ class EnrolmentsConnector @Inject()(
     val timerContext = metrics.startTimer(MetricsEnum.ConfirmEnrolment)
     val etmpId = UUID.randomUUID().toString
 
-    httpClient.PUT[SubscriberRequest, HttpResponse](
+    httpClientV2.PUT[SubscriberRequest, HttpResponse](
       s"${enrolments.baseUrl}subscriptions/$subscriptionId/subscriber",
       SubscriberRequest(enrolments.ossEnrolmentKey,
         s"${enrolments.callbackBaseUrl}${controllers.routes.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId).url}",
@@ -77,7 +77,7 @@ class EnrolmentsConnector @Inject()(
 
     logger.info(s"Sending payload $requestPayload and json: $jsonPayload to url $url")
 
-    httpClient.POST[ES8Request, HttpResponse](
+    httpClientV2.POST[ES8Request, HttpResponse](
       url,
       requestPayload
     )

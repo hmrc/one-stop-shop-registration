@@ -31,7 +31,7 @@ import play.api.http.HeaderNames
 import java.util.UUID
 
 
-class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClient: HttpClient, metrics: ServiceMetrics)
+class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClientV2: HttpClient, metrics: ServiceMetrics)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
   private val XCorrelationId = "X-Correlation-Id"
@@ -46,7 +46,7 @@ class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClie
     val url = s"${getVatInfoConfig.baseUrl}vat/customer/vrn/${vrn.value}/information"
     val timerContext = metrics.startTimer(MetricsEnum.GetVatCustomerDetails)
     val correlationId = UUID.randomUUID().toString
-    httpClient.GET[VatCustomerInfoResponse](
+    httpClientV2.GET[VatCustomerInfoResponse](
       url = url,
       headers = headers(correlationId)
     ).map { result =>
