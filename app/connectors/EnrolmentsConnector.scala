@@ -16,7 +16,7 @@
 
 package connectors
 
-import config.{EnrolmentsConfig, EnrolmentStoreProxyConfig}
+import config.{EnrolmentStoreProxyConfig, EnrolmentsConfig}
 import logging.Logging
 import metrics.{MetricsEnum, ServiceMetrics}
 import models.binders.Format.enrolmentDateFormatter
@@ -24,7 +24,8 @@ import models.enrolments.{ES8Request, SubscriberRequest}
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, StringContextOps}
 
 import java.time.LocalDate
 import java.util.UUID
@@ -34,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class EnrolmentsConnector @Inject()(
                                      enrolments: EnrolmentsConfig,
                                      enrolmentStoreProxyConfig: EnrolmentStoreProxyConfig,
-                                     httpClientV2: HttpClient,
+                                     httpClientV2: HttpClientV2,
                                      metrics: ServiceMetrics)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
@@ -42,12 +43,12 @@ class EnrolmentsConnector @Inject()(
     val timerContext = metrics.startTimer(MetricsEnum.ConfirmEnrolment)
     val etmpId = UUID.randomUUID().toString
 
-    httpClientV2.PUT[SubscriberRequest, HttpResponse](
-      s"${enrolments.baseUrl}subscriptions/$subscriptionId/subscriber",
-      SubscriberRequest(enrolments.ossEnrolmentKey,
+    httpClientV2
+      .put(url"${enrolments.baseUrl}subscriptions/$subscriptionId/subscriber")
+      .withBody(Json.toJson(SubscriberRequest(enrolments.ossEnrolmentKey,
         s"${enrolments.callbackBaseUrl}${controllers.routes.EnrolmentsSubscriptionController.authoriseEnrolment(subscriptionId).url}",
         etmpId
-      )).map { result =>
+      ))).execute[HttpResponse].map { result =>
       timerContext.stop()
       result
     }
@@ -62,7 +63,7 @@ class EnrolmentsConnector @Inject()(
     val action = "enrolAndActivate"
     val enrolmentKey = s"HMRC-OSS-ORG~VRN~$vrn"
 
-    val url = s"${enrolmentStoreProxyConfig.baseUrl}enrolment-store/groups/$groupId/enrolments/$enrolmentKey"
+    val url = url"${enrolmentStoreProxyConfig.baseUrl}enrolment-store/groups/$groupId/enrolments/$enrolmentKey"
 
     val ossRegistrationDate = "OSSRegistrationDate"
 
@@ -77,9 +78,6 @@ class EnrolmentsConnector @Inject()(
 
     logger.info(s"Sending payload $requestPayload and json: $jsonPayload to url $url")
 
-    httpClientV2.POST[ES8Request, HttpResponse](
-      url,
-      requestPayload
-    )
+    httpClientV2.post(url).withBody(Json.toJson(requestPayload)).execute[HttpResponse]
   }
 }

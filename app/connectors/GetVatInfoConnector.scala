@@ -16,22 +16,22 @@
 
 package connectors
 
-import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier, HttpClient, HttpErrorFunctions}
 import config.GetVatInfoConfig
 import connectors.VatCustomerInfoHttpParser._
 import logging.Logging
 import metrics.{MetricsEnum, ServiceMetrics}
 import models.GatewayTimeout
-
-import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
 import play.api.http.HeaderNames
+import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier, HttpErrorFunctions, StringContextOps}
 
 import java.util.UUID
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 
-class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClientV2: HttpClient, metrics: ServiceMetrics)
+class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClientV2: HttpClientV2, metrics: ServiceMetrics)
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
   private val XCorrelationId = "X-Correlation-Id"
@@ -43,16 +43,14 @@ class GetVatInfoConnector @Inject()(getVatInfoConfig: GetVatInfoConfig, httpClie
   )
 
   def getVatCustomerDetails(vrn: Vrn)(implicit headerCarrier: HeaderCarrier): Future[VatCustomerInfoResponse] = {
-    val url = s"${getVatInfoConfig.baseUrl}vat/customer/vrn/${vrn.value}/information"
+    val url = url"${getVatInfoConfig.baseUrl}vat/customer/vrn/${vrn.value}/information"
     val timerContext = metrics.startTimer(MetricsEnum.GetVatCustomerDetails)
-    val correlationId = UUID.randomUUID().toString
-    httpClientV2.GET[VatCustomerInfoResponse](
-      url = url,
-      headers = headers(correlationId)
-    ).map { result =>
+    val correlationId = UUID.randomUUID.toString
+
+    httpClientV2.get(url).setHeader(headers(correlationId): _*).execute[VatCustomerInfoResponse].map { result =>
       timerContext.stop()
       result
-    }.recover{
+    }.recover {
       case e: GatewayTimeoutException =>
         timerContext.stop()
         logger.error(s"Request timeout from Get vat info: $e", e)
