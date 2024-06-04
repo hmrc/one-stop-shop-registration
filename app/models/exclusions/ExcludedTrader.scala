@@ -17,10 +17,9 @@
 package models.exclusions
 
 import logging.Logging
-import models.etmp.EtmpExclusionReason.{CeasedTrade, FailsToComply, NoLongerMeetsConditions, NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
-import models.etmp.{EtmpExclusion, EtmpExclusionReason}
-import models.{Enumerable, Period, Quarter, StandardPeriod, WithName}
+import models.etmp.EtmpExclusion
 import models.exclusions.ExcludedTrader.getPeriod
+import models._
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -31,11 +30,12 @@ import scala.util.{Failure, Success}
 case class ExcludedTrader(
                            vrn: Vrn,
                            exclusionReason: ExclusionReason,
-                           effectiveDate: LocalDate
+                           effectiveDate: LocalDate,
+                           quarantined: Boolean
                          ) {
 
   val finalReturnPeriod: Period = {
-    if(exclusionReason == ExclusionReason.TransferringMSID) {
+    if (exclusionReason == ExclusionReason.TransferringMSID) {
       getPeriod(effectiveDate)
     } else {
       getPeriod(effectiveDate).getPreviousPeriod
@@ -51,26 +51,27 @@ object ExcludedTrader extends Logging {
                        ): ExcludedTrader = {
     ExcludedTrader(
       vrn = vrn,
-      exclusionReason = convertExclusionReason(etmpExclusion.exclusionReason),
-      effectiveDate = etmpExclusion.effectiveDate
+      exclusionReason = etmpExclusion.exclusionReason,
+      effectiveDate = etmpExclusion.effectiveDate,
+      quarantined = etmpExclusion.quarantine
     )
   }
 
-  private def convertExclusionReason(exclusionReason: EtmpExclusionReason): ExclusionReason = {
-    exclusionReason match {
-      case Reversal => ExclusionReason.Reversal
-      case NoLongerSupplies => ExclusionReason.NoLongerSupplies
-      case CeasedTrade => ExclusionReason.CeasedTrade
-      case NoLongerMeetsConditions => ExclusionReason.NoLongerMeetsConditions
-      case FailsToComply => ExclusionReason.FailsToComply
-      case VoluntarilyLeaves => ExclusionReason.VoluntarilyLeaves
-      case TransferringMSID => ExclusionReason.TransferringMSID
-      case _ =>
-        val message: String = "Invalid Exclusion Reason"
-        logger.error(message)
-        throw new IllegalStateException(message)
-    }
-  }
+  //  private def convertExclusionReason(exclusionReason: EtmpExclusionReason): ExclusionReason = {
+  //    exclusionReason match {
+  //      case Reversal => ExclusionReason.Reversal
+  //      case NoLongerSupplies => ExclusionReason.NoLongerSupplies
+  //      case CeasedTrade => ExclusionReason.CeasedTrade
+  //      case NoLongerMeetsConditions => ExclusionReason.NoLongerMeetsConditions
+  //      case FailsToComply => ExclusionReason.FailsToComply
+  //      case VoluntarilyLeaves => ExclusionReason.VoluntarilyLeaves
+  //      case TransferringMSID => ExclusionReason.TransferringMSID
+  //      case _ =>
+  //        val message: String = "Invalid Exclusion Reason"
+  //        logger.error(message)
+  //        throw new IllegalStateException(message)
+  //    }
+  //  }
 
   private def getPeriod(date: LocalDate): Period = {
     val quarter = Quarter.fromString(date.format(DateTimeFormatter.ofPattern("QQQ")))
@@ -87,7 +88,9 @@ object ExcludedTrader extends Logging {
 }
 
 sealed trait ExclusionSource
+
 object HMRC extends ExclusionSource
+
 object TRADER extends ExclusionSource
 
 sealed trait ExclusionReason {
@@ -97,7 +100,7 @@ sealed trait ExclusionReason {
 
 object ExclusionReason extends Enumerable.Implicits {
 
-  case object Reversal extends WithName("-1")  with ExclusionReason {
+  case object Reversal extends WithName("-1") with ExclusionReason {
     val exclusionSource: ExclusionSource = HMRC
     val numberValue: Int = -1
   }

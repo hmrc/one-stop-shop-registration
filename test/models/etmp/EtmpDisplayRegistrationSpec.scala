@@ -2,6 +2,7 @@ package models.etmp
 
 import base.BaseSpec
 import models.BankDetails
+import models.exclusions.ExclusionReason
 import play.api.libs.json.{JsSuccess, Json}
 
 import java.time.{LocalDate, LocalDateTime}
@@ -73,7 +74,7 @@ class EtmpDisplayRegistrationSpec extends BaseSpec {
             "iban" -> "GB33BUKB20201555555555"
           ),
           "adminUse" -> Json.obj(
-            "changeDate" ->LocalDateTime.now(stubClock)
+            "changeDate" -> LocalDateTime.now(stubClock)
           )
         )
 
@@ -120,7 +121,7 @@ class EtmpDisplayRegistrationSpec extends BaseSpec {
             nonCompliantReturns = Some("1"),
             nonCompliantPayments = Some("2"),
             exclusions = Seq(EtmpExclusion(
-              exclusionReason = EtmpExclusionReason.FailsToComply,
+              exclusionReason = ExclusionReason.FailsToComply,
               effectiveDate = LocalDate.parse("2024-02-25"),
               decisionDate = LocalDate.parse("2024-04-25"),
               quarantine = true

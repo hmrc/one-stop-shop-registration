@@ -16,13 +16,13 @@
 
 package models.etmp
 
-import models.{Enumerable, WithName}
+import models.exclusions.ExclusionReason
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
 case class EtmpExclusion(
-                          exclusionReason: EtmpExclusionReason,
+                          exclusionReason: ExclusionReason,
                           effectiveDate: LocalDate,
                           decisionDate: LocalDate,
                           quarantine: Boolean
@@ -31,36 +31,4 @@ case class EtmpExclusion(
 object EtmpExclusion {
 
   implicit val format: OFormat[EtmpExclusion] = Json.format[EtmpExclusion]
-}
-
-sealed trait EtmpExclusionReason
-
-object EtmpExclusionReason extends Enumerable.Implicits {
-
-  case object Reversal extends WithName("-1") with EtmpExclusionReason
-
-  case object NoLongerSupplies extends WithName("1") with EtmpExclusionReason
-
-  case object CeasedTrade extends WithName("2") with EtmpExclusionReason
-
-  case object NoLongerMeetsConditions extends WithName("3") with EtmpExclusionReason
-
-  case object FailsToComply extends WithName("4") with EtmpExclusionReason
-
-  case object VoluntarilyLeaves extends WithName("5") with EtmpExclusionReason
-
-  case object TransferringMSID extends WithName("6") with EtmpExclusionReason
-
-  val values: Seq[EtmpExclusionReason] = Seq(
-    Reversal,
-    NoLongerSupplies,
-    CeasedTrade,
-    NoLongerMeetsConditions,
-    FailsToComply,
-    VoluntarilyLeaves,
-    TransferringMSID
-  )
-
-  implicit val enumerable: Enumerable[EtmpExclusionReason] =
-    Enumerable(values.map(v => v.toString -> v): _*)
 }

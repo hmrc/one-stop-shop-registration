@@ -3,9 +3,10 @@ package generators
 import crypto.EncryptedValue
 import models._
 import models.etmp._
+import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.requests.SaveForLaterRequest
-import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 
@@ -361,7 +362,7 @@ trait Generators {
 
     Arbitrary {
       for {
-        exclusionReason <- Gen.oneOf[EtmpExclusionReason](EtmpExclusionReason.values)
+        exclusionReason <- Gen.oneOf[ExclusionReason](ExclusionReason.values)
         effectiveDate <- arbitrary[Int].map(n => LocalDate.ofEpochDay(n))
         decisionDate <- arbitrary[Int].map(n => LocalDate.ofEpochDay(n))
         quarantine <- arbitrary[Boolean]
@@ -478,4 +479,23 @@ trait Generators {
       } yield StandardPeriod(year, quarter)
     }
 
+  implicit lazy val arbitraryDate: Arbitrary[LocalDate] =
+    Arbitrary {
+      datesBetween(LocalDate.of(2021, 7, 1), LocalDate.of(2023, 12, 31))
+    }
+
+  implicit lazy val arbitraryExcludedTrader: Arbitrary[ExcludedTrader] =
+    Arbitrary {
+      for {
+        vrn <- arbitraryVrn.arbitrary
+        exclusionReason <- Gen.oneOf(ExclusionReason.values)
+        effectiveDate <- arbitraryDate.arbitrary
+        quarantined <- arbitrary[Boolean]
+      } yield ExcludedTrader(
+        vrn = vrn,
+        exclusionReason = exclusionReason,
+        effectiveDate = effectiveDate,
+        quarantined = quarantined
+      )
+    }
 }
