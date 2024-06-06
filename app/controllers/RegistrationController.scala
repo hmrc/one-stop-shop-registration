@@ -19,7 +19,7 @@ package controllers
 import controllers.actions.AuthenticatedControllerComponents
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.requests.RegistrationRequest
+import models.requests.{AmendRegistrationRequest, RegistrationRequest}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 import services.RegistrationService
@@ -61,8 +61,7 @@ class RegistrationController @Inject()(
       }
   }
 
-  // TODO RegistrationRequest -> AmendRegistrationRequest
-  def amend(): Action[RegistrationRequest] = cc.authAndRequireVat()(parse.json[RegistrationRequest]).async {
+  def amend(): Action[AmendRegistrationRequest] = cc.authAndRequireRegistration()(parse.json[AmendRegistrationRequest]).async {
     implicit request =>
       registrationService
         .amend(request.body)

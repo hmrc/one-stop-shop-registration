@@ -16,10 +16,10 @@
 
 package models.audit
 
-import controllers.actions.AuthorisedMandatoryVrnRequest
+import controllers.actions.AuthorisedMandatoryRegistrationRequest
 import models.amend.EtmpAmendRegistrationRequest
 import models.enrolments.EtmpEnrolmentResponse
-import models.etmp.{AmendRegistrationResponse, EtmpRegistrationRequest}
+import models.etmp.AmendRegistrationResponse
 import play.api.libs.json.{JsObject, Json, JsValue}
 
 case class EtmpAmendRegistrationAuditModel(
@@ -78,7 +78,7 @@ object EtmpAmendRegistrationAuditModel {
              etmpAmendResponse: Option[AmendRegistrationResponse],
              errorResponse: Option[String],
              result: SubmissionResult
-           )(implicit request: AuthorisedMandatoryVrnRequest[_]): EtmpAmendRegistrationAuditModel =
+           )(implicit request: AuthorisedMandatoryRegistrationRequest[_]): EtmpAmendRegistrationAuditModel =
     EtmpAmendRegistrationAuditModel(
       etmpRegistrationAuditType = etmpRegistrationAuditType,
       userId = request.userId,

@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-package controllers.actions
+package models.exclusions
 
+import models.amend.EtmpSelfExclusionReason
+import play.api.libs.json.{Format, Json}
 
-import models.Registration
-import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.domain.Vrn
+import java.time.LocalDate
 
-case class AuthorisedRequest[A](request: Request[A], userId: String, vrn: Option[Vrn]) extends WrappedRequest[A](request)
+case class ExclusionDetails(
+                             exclusionRequestDate: LocalDate,
+                             exclusionReason: EtmpSelfExclusionReason,
+                             movePOBDate: Option[LocalDate],
+                             issuedBy: Option[String],
+                             vatNumber: Option[String]
+                           )
 
-case class AuthorisedMandatoryVrnRequest[A](request: Request[A], userId: String, vrn: Vrn) extends WrappedRequest[A](request)
+object ExclusionDetails {
 
-case class AuthorisedMandatoryRegistrationRequest[A](request: Request[A], userId: String, vrn: Vrn, registration: Registration) extends WrappedRequest[A](request)
+  implicit val format: Format[ExclusionDetails] = Json.format[ExclusionDetails]
+
+}

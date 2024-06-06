@@ -4,7 +4,10 @@ import base.BaseSpec
 import models.EuTaxIdentifierType.{Other, Vat}
 import models.VatDetailSource.UserEntered
 import models._
-import models.requests.RegistrationRequest
+import models.amend.{EtmpAmendRegistrationRequest, EtmpSelfExclusionReason}
+import models.exclusions.ExclusionDetails
+import models.requests.{AmendRegistrationRequest, RegistrationRequest}
+import testutils.RegistrationData.registration
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Instant, LocalDate}
@@ -210,7 +213,33 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             submissionReceived = Some(Instant.now)
           )
 
-        EtmpRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionAmend) mustBe etmpAmendRegistrationRequest
+        val amendRegistrationRequest: AmendRegistrationRequest = AmendRegistrationRequest(
+          vrn = registrationRequest.vrn,
+          registeredCompanyName = registrationRequest.registeredCompanyName,
+          tradingNames = registrationRequest.tradingNames,
+          vatDetails = registrationRequest.vatDetails,
+          euRegistrations = registrationRequest.euRegistrations,
+          contactDetails = registrationRequest.contactDetails,
+          websites = registrationRequest.websites,
+          commencementDate = registrationRequest.commencementDate,
+          previousRegistrations = registrationRequest.previousRegistrations,
+          bankDetails = registrationRequest.bankDetails,
+          isOnlineMarketplace = registrationRequest.isOnlineMarketplace,
+          niPresence = registrationRequest.niPresence,
+          dateOfFirstSale = registrationRequest.dateOfFirstSale,
+          nonCompliantReturns = registrationRequest.nonCompliantReturns,
+          nonCompliantPayments = registrationRequest.nonCompliantPayments,
+          submissionReceived = registrationRequest.submissionReceived,
+          exclusionDetails = Some(ExclusionDetails(
+            exclusionRequestDate = LocalDate.now,
+            exclusionReason = EtmpSelfExclusionReason.NoLongerSupplies,
+            movePOBDate = None,
+            issuedBy = None,
+            vatNumber = None
+          ))
+        )
+
+        EtmpAmendRegistrationRequest.fromRegistrationRequest(registration, amendRegistrationRequest, EtmpMessageType.OSSSubscriptionAmend) mustBe etmpAmendRegistrationRequest
       }
     }
   }

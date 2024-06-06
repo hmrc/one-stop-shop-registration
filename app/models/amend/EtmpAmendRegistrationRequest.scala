@@ -16,9 +16,10 @@
 
 package models.amend
 
-import models.etmp.{EtmpAdministration, EtmpCustomerIdentification, EtmpEuRegistrationDetails, EtmpMessageType, EtmpPreviousEURegistrationDetails, EtmpRegistrationRequest, EtmpSchemeDetails, EtmpTradingNames, SchemeType, Website}
-import models.{BankDetails, CountryWithValidationDetails, PreviousRegistration, PreviousRegistrationLegacy, PreviousRegistrationNew, PreviousScheme}
-import models.requests.RegistrationRequest
+import models.etmp._
+import models.exclusions.ExclusionDetails
+import models._
+import models.requests.AmendRegistrationRequest
 import play.api.libs.json.{Json, OFormat}
 
 case class EtmpAmendRegistrationRequest(
@@ -34,36 +35,63 @@ case class EtmpAmendRegistrationRequest(
 
 object EtmpAmendRegistrationRequest {
 
-  def fromRegistrationRequest(registration: RegistrationRequest, etmpMessageType: EtmpMessageType): EtmpAmendRegistrationRequest = {
+  def fromRegistrationRequest(
+                               registration: Registration,
+                               amendedRegistration: AmendRegistrationRequest,
+                               etmpMessageType: EtmpMessageType
+                             ): EtmpAmendRegistrationRequest = {
+
     EtmpAmendRegistrationRequest(
       administration = EtmpAdministration(etmpMessageType),
       customerIdentification = EtmpCustomerIdentification(registration.vrn),
       tradingNames = registration.tradingNames.map(EtmpTradingNames(_)),
-      schemeDetails = EtmpSchemeDetails(
-        commencementDate = registration.commencementDate.format(EtmpSchemeDetails.dateFormatter),
-        firstSaleDate = registration.dateOfFirstSale.map(_.format(EtmpSchemeDetails.dateFormatter)),
-        euRegistrationDetails = registration.euRegistrations.map(registration => EtmpEuRegistrationDetails.create(registration)),
-        previousEURegistrationDetails = mapPreviousRegistrations(registration.previousRegistrations),
-        onlineMarketPlace = registration.isOnlineMarketplace,
-        websites = registration.websites.map(Website(_)),
-        contactName = registration.contactDetails.fullName,
-        businessTelephoneNumber = registration.contactDetails.telephoneNumber,
-        businessEmailId = registration.contactDetails.emailAddress,
-        nonCompliantReturns = registration.nonCompliantReturns,
-        nonCompliantPayments = registration.nonCompliantPayments
-      ),
+      schemeDetails = schemeDetails(amendedRegistration),
       bankDetails = registration.bankDetails,
-      requestedChange = EtmpRequestedChange( // TODO calculate diffs
-        tradingName = false,
-        fixedEstablishment = false,
-        contactDetails = false,
-        bankDetails = false,
-        reRegistration = false,
-        exclusion = false
-      ),
-      exclusionDetails = None // TODO map from exclusion
+      requestedChange = calculateRequestedChange(registration, amendedRegistration),
+      exclusionDetails = mapExclusionDetails(amendedRegistration.exclusionDetails)
     )
   }
+
+  private def schemeDetails(amendedRegistration: AmendRegistrationRequest): EtmpSchemeDetails = {
+    EtmpSchemeDetails(
+      commencementDate = amendedRegistration.commencementDate.format(EtmpSchemeDetails.dateFormatter),
+      firstSaleDate = amendedRegistration.dateOfFirstSale.map(_.format(EtmpSchemeDetails.dateFormatter)),
+      euRegistrationDetails = amendedRegistration.euRegistrations.map(registration => EtmpEuRegistrationDetails.create(registration)),
+      previousEURegistrationDetails = mapPreviousRegistrations(amendedRegistration.previousRegistrations),
+      onlineMarketPlace = amendedRegistration.isOnlineMarketplace,
+      websites = amendedRegistration.websites.map(Website(_)),
+      contactName = amendedRegistration.contactDetails.fullName,
+      businessTelephoneNumber = amendedRegistration.contactDetails.telephoneNumber,
+      businessEmailId = amendedRegistration.contactDetails.emailAddress,
+      nonCompliantReturns = amendedRegistration.nonCompliantReturns,
+      nonCompliantPayments = amendedRegistration.nonCompliantPayments
+    )
+  }
+
+  private def calculateRequestedChange(registration: Registration, amendedReg: AmendRegistrationRequest): EtmpRequestedChange = {
+    EtmpRequestedChange(
+      tradingName = amendedReg.tradingNames != registration.tradingNames,
+      fixedEstablishment = amendedReg.niPresence != registration.niPresence,
+      contactDetails = amendedReg.contactDetails != registration.contactDetails,
+      bankDetails = amendedReg.bankDetails != registration.bankDetails,
+      reRegistration = false, // TODO VEOSS-1328 - needs calculating when a registration comes through
+      exclusion = amendedReg.exclusionDetails.isDefined
+    )
+  }
+
+  private def mapExclusionDetails(exclusionDetails: Option[ExclusionDetails]): Option[EtmpExclusionDetails] = {
+    exclusionDetails.map { exclusion =>
+
+      EtmpExclusionDetails(
+        exclusionRequestDate = exclusion.exclusionRequestDate,
+        exclusionReason = exclusion.exclusionReason,
+        movePOBDate = exclusion.movePOBDate,
+        issuedBy = exclusion.issuedBy,
+        vatNumber = exclusion.vatNumber
+      )
+    }
+  }
+
 
   private def mapPreviousRegistrations(previousRegistrations: Seq[PreviousRegistration]): Seq[EtmpPreviousEURegistrationDetails] = {
 

@@ -20,7 +20,7 @@ import base.BaseSpec
 import com.codahale.metrics.Timer
 import config.AppConfig
 import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
-import controllers.actions.AuthorisedMandatoryVrnRequest
+import controllers.actions.{AuthorisedMandatoryRegistrationRequest, AuthorisedMandatoryVrnRequest}
 import metrics.ServiceMetrics
 import models._
 import models.core.{EisDisplayErrorDetail, EisDisplayErrorResponse, Match, MatchType}
@@ -29,6 +29,7 @@ import models.etmp._
 import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
+import models.requests.AmendRegistrationRequest
 import org.apache.pekko.http.scaladsl.util.FastFuture.successful
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -38,7 +39,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.running
 import repositories.{CachedRegistrationRepository, RegistrationStatusRepository}
 import testutils.RegistrationData
-import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration, wrappedCachedRegistration}
+import testutils.RegistrationData.{displayRegistration, fromEtmpRegistration, registration, wrappedCachedRegistration}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
@@ -73,11 +74,31 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     retryService,
     appConfig,
     auditService,
-    coreValidationService,
-    stubClock
+    coreValidationService
+  )
+
+  private val amendRegistrationRequest = AmendRegistrationRequest(
+    vrn = registrationRequest.vrn,
+    registeredCompanyName = registrationRequest.registeredCompanyName,
+    tradingNames = registrationRequest.tradingNames,
+    vatDetails = registrationRequest.vatDetails,
+    euRegistrations = registrationRequest.euRegistrations,
+    contactDetails = registrationRequest.contactDetails,
+    websites = registrationRequest.websites,
+    commencementDate = registrationRequest.commencementDate,
+    previousRegistrations = registrationRequest.previousRegistrations,
+    bankDetails = registrationRequest.bankDetails,
+    isOnlineMarketplace = registrationRequest.isOnlineMarketplace,
+    niPresence = registrationRequest.niPresence,
+    dateOfFirstSale = registrationRequest.dateOfFirstSale,
+    nonCompliantReturns = registrationRequest.nonCompliantReturns,
+    nonCompliantPayments = registrationRequest.nonCompliantPayments,
+    submissionReceived = registrationRequest.submissionReceived,
+    exclusionDetails = None
   )
 
   implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
+  implicit private lazy val r: AuthorisedMandatoryRegistrationRequest[AnyContent] = AuthorisedMandatoryRegistrationRequest(FakeRequest(), userId, vrn, registration)
 
   override def beforeEach(): Unit = {
     reset(registrationConnector)
@@ -298,7 +319,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
         when(serviceMetrics.startTimer(any())).thenReturn(new Timer().time)
 
-        registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
+        registrationService.amend(amendRegistrationRequest).futureValue mustEqual AmendSucceeded
         verify(auditService, times(1)).audit(any())(any(), any())
       }
 
@@ -307,7 +328,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         doNothing().when(auditService).audit(any())(any(), any())
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
-        whenReady(registrationService.amend(registrationRequest).failed) {
+        whenReady(registrationService.amend(amendRegistrationRequest).failed) {
           exp => exp mustBe EtmpException(s"There was an error amending Registration from ETMP: ${ServiceUnavailable.getClass} ${ServiceUnavailable.body}")
         }
         verify(auditService, times(1)).audit(any())(any(), any())
@@ -324,7 +345,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
         when(serviceMetrics.startTimer(any())).thenReturn(new Timer().time)
 
-        registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
+        registrationService.amend(amendRegistrationRequest).futureValue mustEqual AmendSucceeded
         verify(auditService, times(1)).audit(any())(any(), any())
         verifyNoInteractions(cachedRegistrationRepository)
       }
@@ -338,7 +359,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(serviceMetrics.startTimer(any())).thenReturn(new Timer().time)
         when(cachedRegistrationRepository.clear(any())) thenReturn Future.successful(true)
 
-        registrationService.amend(registrationRequest).futureValue mustEqual AmendSucceeded
+        registrationService.amend(amendRegistrationRequest).futureValue mustEqual AmendSucceeded
         verify(auditService, times(1)).audit(any())(any(), any())
         verify(cachedRegistrationRepository, times(1)).clear(any())
       }
@@ -348,7 +369,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         doNothing().when(auditService).audit(any())(any(), any())
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(Left(ServiceUnavailable))
 
-        whenReady(registrationService.amend(registrationRequest).failed) {
+        whenReady(registrationService.amend(amendRegistrationRequest).failed) {
           exp => exp mustBe EtmpException(s"There was an error amending Registration from ETMP: ${ServiceUnavailable.getClass} ${ServiceUnavailable.body}")
         }
         verify(auditService, times(1)).audit(any())(any(), any())

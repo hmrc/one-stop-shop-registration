@@ -18,7 +18,7 @@ package services
 
 import config.AppConfig
 import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
-import controllers.actions.AuthorisedMandatoryVrnRequest
+import controllers.actions.{AuthorisedMandatoryRegistrationRequest, AuthorisedMandatoryVrnRequest}
 import models._
 import models.amend.EtmpAmendRegistrationRequest
 import models.audit.{EtmpAmendRegistrationAuditModel, EtmpDisplayRegistrationAuditModel, EtmpRegistrationAuditModel, EtmpRegistrationAuditType, SubmissionResult}
@@ -28,13 +28,13 @@ import models.etmp._
 import models.repository.{AmendResult, InsertResult}
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
-import models.requests.RegistrationRequest
+import models.requests.{AmendRegistrationRequest, RegistrationRequest}
 import play.api.http.Status.NO_CONTENT
 import repositories.{CachedRegistrationRepository, RegistrationStatusRepository}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.{Clock, LocalDate}
+import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -48,8 +48,7 @@ class RegistrationServiceEtmpImpl @Inject()(
                                              retryService: RetryService,
                                              appConfig: AppConfig,
                                              auditService: AuditService,
-                                             coreValidationService: CoreValidationService,
-                                             clock: Clock
+                                             coreValidationService: CoreValidationService
                                            )(implicit ec: ExecutionContext) extends RegistrationService {
 
   def createRegistration(registrationRequest: RegistrationRequest)
@@ -184,7 +183,7 @@ class RegistrationServiceEtmpImpl @Inject()(
     }
   }
 
-  def amend(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[AmendResult] = {
+  def amend(amendRegistrationRequest: AmendRegistrationRequest)(implicit hc: HeaderCarrier, request: AuthorisedMandatoryRegistrationRequest[_]): Future[AmendResult] = {
 
     val auditBlock = (etmpRegistrationRequest: EtmpAmendRegistrationRequest, amendRegistrationResponse: AmendRegistrationResponse) =>
       auditService.audit(EtmpAmendRegistrationAuditModel.build(EtmpRegistrationAuditType.AmendRegistration, etmpRegistrationRequest, None, Some(amendRegistrationResponse), None, SubmissionResult.Success))
@@ -193,7 +192,8 @@ class RegistrationServiceEtmpImpl @Inject()(
       auditService.audit(EtmpAmendRegistrationAuditModel.build(EtmpRegistrationAuditType.AmendRegistration, etmpRegistrationRequest, None, None, None, SubmissionResult.Failure))
 
     val amendmentResult = amendRegistration(
-      registrationRequest,
+      request.registration,
+      amendRegistrationRequest,
       auditBlock,
       errorAuditBlock
     )
@@ -204,22 +204,11 @@ class RegistrationServiceEtmpImpl @Inject()(
     amendmentResult
   }
 
-  def amendWithoutAudit(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult] = {
-
-    val emptyAuditBlock = (_: EtmpAmendRegistrationRequest, _: AmendRegistrationResponse) => ()
-    val emptyFailureAuditBlock = (_: EtmpAmendRegistrationRequest) => ()
-
-    amendRegistration(
-      registrationRequest,
-      emptyAuditBlock,
-      emptyFailureAuditBlock
-    )
-  }
-
-  private def amendRegistration(registrationRequest: RegistrationRequest,
+  private def amendRegistration(registration: Registration,
+                                amendRegistrationRequest: AmendRegistrationRequest,
                                 auditBlock: (EtmpAmendRegistrationRequest, AmendRegistrationResponse) => Unit,
                                 failureAuditBlock: EtmpAmendRegistrationRequest => Unit): Future[AmendResult] = {
-    val etmpRegistrationRequest = EtmpAmendRegistrationRequest.fromRegistrationRequest(registrationRequest, EtmpMessageType.OSSSubscriptionAmend)
+    val etmpRegistrationRequest = EtmpAmendRegistrationRequest.fromRegistrationRequest(registration, amendRegistrationRequest, EtmpMessageType.OSSSubscriptionAmend)
     registrationConnector.amendRegistration(etmpRegistrationRequest).flatMap {
       case Right(amendRegistrationResponse) =>
         auditBlock(etmpRegistrationRequest, amendRegistrationResponse)

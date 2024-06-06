@@ -140,7 +140,7 @@ trait BaseSpec
   val etmpAmendRegistrationRequest: EtmpAmendRegistrationRequest = EtmpAmendRegistrationRequest(
     administration = EtmpAdministration(EtmpMessageType.OSSSubscriptionAmend),
     customerIdentification = EtmpCustomerIdentification(vrn),
-    tradingNames = Seq(EtmpTradingNames("Foo")),
+    tradingNames = Seq(EtmpTradingNames("single"),EtmpTradingNames("double")),
     schemeDetails = EtmpSchemeDetails(
       commencementDate = LocalDate.now().format(dateFormatter),
       firstSaleDate = Some(LocalDate.now().format(dateFormatter)),
@@ -210,12 +210,12 @@ trait BaseSpec
     ),
     BankDetails("Account name", Some(bic), Iban("GB33BUKB20201555555555").toOption.get),
     requestedChange = EtmpRequestedChange(
-      tradingName = false,
+      tradingName = true,
       fixedEstablishment = false,
       contactDetails = false,
       bankDetails = false,
       reRegistration = false,
-      exclusion = false
+      exclusion = true
     ),
     exclusionDetails = Some(EtmpExclusionDetails(
       exclusionRequestDate = LocalDate.now(),
