@@ -2,22 +2,22 @@ package base
 
 import controllers.actions.{AuthAction, FakeAuthAction}
 import generators.Generators
-import models._
 import models.Quarter.Q3
+import models._
 import models.des.VatCustomerInfo
 import models.etmp._
-import org.scalatest.{OptionValues, TryValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.{EitherValues, OptionValues, TryValues}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import services.{FakeHistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentService}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Clock, LocalDate, ZoneId}
 import java.time.format.DateTimeFormatter
+import java.time.{Clock, LocalDate, ZoneId}
 import java.util.Locale
 
 trait BaseSpec
@@ -25,6 +25,7 @@ trait BaseSpec
     with Matchers
     with TryValues
     with OptionValues
+    with EitherValues
     with ScalaFutures
     with IntegrationPatience
     with MockitoSugar

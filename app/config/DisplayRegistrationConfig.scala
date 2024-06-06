@@ -26,8 +26,6 @@ class DisplayRegistrationConfig @Inject()(config: Configuration, genericConfig: 
   val baseUrl: Service = config.get[Service]("microservice.services.display-registration")
 
   private val authorizationToken: String = config.get[String]("microservice.services.display-registration.authorizationToken")
-  private val environment: String = config.get[String]("microservice.services.display-registration.environment")
-
 
   def eisEtmpGetHeaders(correlationId: String): Seq[(String, String)] = genericConfig.eisEtmpGenericHeaders(correlationId) ++ Seq(
     HeaderNames.AUTHORIZATION -> s"Bearer $authorizationToken"

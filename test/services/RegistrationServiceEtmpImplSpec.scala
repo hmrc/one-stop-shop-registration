@@ -206,7 +206,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       when(cachedRegistrationRepository.get(any())) thenReturn Future.successful(None)
       when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
       when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
-      when(coreValidationService.searchScheme(any(), any(), any(), any())(any())) thenReturn Future.successful(Some(searchSchemeMatch))
+      when(coreValidationService.searchScheme(any(), any(), any(), any())) thenReturn Future.successful(Some(searchSchemeMatch))
 
       registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
@@ -253,7 +253,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       "must return Some(registration) when both connectors return right" in {
         when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistrationWithExclusion))
         when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
-        when(coreValidationService.searchScheme(any(), any(), any(), any())(any())) thenReturn Future.successful(None)
+        when(coreValidationService.searchScheme(any(), any(), any(), any())) thenReturn Future.successful(None)
         registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration.copy(excludedTrader = Some(excludedTrader)))
         verify(registrationConnector, times(1)).get(Vrn("123456789"))
         verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))

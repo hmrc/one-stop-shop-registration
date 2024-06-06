@@ -36,8 +36,7 @@ class HistoricalRegistrationEnrolmentSpec extends BaseSpec with BeforeAndAfterEa
   private val service = new HistoricalRegistrationEnrolmentServiceImpl(
     mockAppConfig,
     mockEnrolmentsConnector,
-    mockRegistrationService,
-    stubClock)
+    mockRegistrationService)
 
   "sendEnrolmentForUsers()" - {
     "when enabled" - {

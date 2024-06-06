@@ -29,8 +29,10 @@ class CoreValidationService @Inject()(
                                        connector: ValidateCoreRegistrationConnector
                                      )(implicit ec: ExecutionContext) extends Logging {
 
-  def searchScheme(searchNumber: String, previousScheme: PreviousScheme, intermediaryNumber: Option[String], countryCode: String)
-                  (implicit hc: HeaderCarrier): Future[Option[Match]] = {
+  def searchScheme(searchNumber: String,
+                   previousScheme: PreviousScheme,
+                   intermediaryNumber: Option[String],
+                   countryCode: String): Future[Option[Match]] = {
 
     if (previousScheme == PreviousScheme.OSSNU) {
       Future.successful(None)
