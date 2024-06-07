@@ -182,6 +182,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
       val mockService = mock[RegistrationServiceEtmpImpl]
       when(mockService.amend(any())(any(), any())) thenReturn Future.successful(AmendSucceeded)
+      when(mockService.get(any())(any(), any())) thenReturn Future.successful(Some(RegistrationData.registration))
 
       val app =
         applicationBuilder

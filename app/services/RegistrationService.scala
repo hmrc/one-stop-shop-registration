@@ -16,9 +16,9 @@
 
 package services
 
-import controllers.actions.AuthorisedMandatoryVrnRequest
+import controllers.actions.{AuthorisedMandatoryRegistrationRequest, AuthorisedMandatoryVrnRequest}
 import logging.Logging
-import models.requests.RegistrationRequest
+import models.requests.{AmendRegistrationRequest, RegistrationRequest}
 import models.Registration
 import models.etmp.AdminUse
 import models.repository.{AmendResult, InsertResult}
@@ -62,10 +62,7 @@ trait RegistrationService extends Logging {
 
   def getWithoutAudit(vrn: Vrn)(implicit hc: HeaderCarrier): Future[Option[Registration]]
 
-  def amend(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[AmendResult]
-
-  def amendWithoutAudit(registrationRequest: RegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendResult]
-
+  def amend(amendRegistrationRequest: AmendRegistrationRequest)(implicit hc: HeaderCarrier, request: AuthorisedMandatoryRegistrationRequest[_]): Future[AmendResult]
 }
 
 

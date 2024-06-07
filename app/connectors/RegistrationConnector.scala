@@ -21,6 +21,7 @@ import connectors.RegistrationHttpParser._
 import logging.Logging
 import metrics.{MetricsEnum, ServiceMetrics}
 import models.UnexpectedResponseStatus
+import models.amend.EtmpAmendRegistrationRequest
 import models.etmp.EtmpRegistrationRequest
 import play.api.http.HeaderNames.AUTHORIZATION
 import play.api.libs.json.Json
@@ -91,7 +92,7 @@ class RegistrationConnector @Inject()(
     }
   }
 
-  def amendRegistration(registration: EtmpRegistrationRequest): Future[CreateAmendRegistrationResponse] = {
+  def amendRegistration(registration: EtmpAmendRegistrationRequest): Future[CreateAmendRegistrationResponse] = {
 
     val correlationId: String = UUID.randomUUID.toString
     val headersWithCorrelationId = amendHeaders(correlationId)

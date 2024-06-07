@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package controllers.actions
+package models.amend
 
+import play.api.libs.json.{Format, Json}
 
-import models.Registration
-import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.domain.Vrn
+case class EtmpRequestedChange(
+                                tradingName: Boolean,
+                                fixedEstablishment: Boolean,
+                                contactDetails: Boolean,
+                                bankDetails: Boolean,
+                                reRegistration: Boolean,
+                                exclusion: Boolean
+                              )
 
-case class AuthorisedRequest[A](request: Request[A], userId: String, vrn: Option[Vrn]) extends WrappedRequest[A](request)
-
-case class AuthorisedMandatoryVrnRequest[A](request: Request[A], userId: String, vrn: Vrn) extends WrappedRequest[A](request)
-
-case class AuthorisedMandatoryRegistrationRequest[A](request: Request[A], userId: String, vrn: Vrn, registration: Registration) extends WrappedRequest[A](request)
+object EtmpRequestedChange {
+  implicit val format: Format[EtmpRequestedChange] = Json.format[EtmpRequestedChange]
+}
