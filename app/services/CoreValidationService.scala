@@ -20,7 +20,6 @@ import connectors.ValidateCoreRegistrationConnector
 import logging.Logging
 import models.core.{CoreRegistrationRequest, Match, SourceType}
 import models.{CountryWithValidationDetails, PreviousScheme}
-import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
