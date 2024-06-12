@@ -23,7 +23,7 @@ import models.enrolments.HistoricTraderForEnrolment
 import play.api.http.Status.CREATED
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
-import java.time.{Clock, ZoneId}
+import java.time.ZoneId
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -67,7 +67,7 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
     implicit val hc: HeaderCarrier = HeaderCarrier()
     registrationService.getWithoutAudit(traderToEnrol.vrn).flatMap {
       case Some(registration) =>
-        enrolmentsConnector.es8(traderToEnrol.groupId, traderToEnrol.vrn, traderToEnrol.userId, registration.submissionReceived.getOrElse{
+        enrolmentsConnector.es8(traderToEnrol.groupId, traderToEnrol.vrn, traderToEnrol.userId, registration.submissionReceived.getOrElse {
           val exception = new IllegalStateException(s"Registration for user ${traderToEnrol.vrn} did not have a submission received date")
           logger.error(exception.getMessage, exception)
           throw exception

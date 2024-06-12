@@ -154,8 +154,7 @@ class RegistrationServiceEtmpImpl @Inject()(
     }
   }
 
-  private def getTransferringMsidEffectiveFromDate(registration: Registration)
-                                                  (implicit hc: HeaderCarrier): Future[Option[LocalDate]] = {
+  private def getTransferringMsidEffectiveFromDate(registration: Registration): Future[Option[LocalDate]] = {
     val hasPreviousRegistration = registration.previousRegistrations.nonEmpty
 
     if (hasPreviousRegistration) {

@@ -16,6 +16,7 @@
 
 package controllers.actions
 
+import logging.Logging
 import play.api.mvc.Results.Unauthorized
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
@@ -24,7 +25,6 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
-import logging.Logging
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import javax.inject.Inject
@@ -51,23 +51,20 @@ class AuthActionImpl @Inject()(
       Retrievals.internalId and
         Retrievals.allEnrolments and
         Retrievals.affinityGroup and
-        Retrievals.confidenceLevel and
-        Retrievals.credentialRole) {
+        Retrievals.confidenceLevel
+    ) {
 
-      case Some(internalId) ~ enrolments ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == User =>
+      case Some(internalId) ~ enrolments ~ Some(Organisation) ~ _ =>
         val maybeVrn = findVrnFromEnrolments(enrolments)
         block(AuthorisedRequest(request, internalId, maybeVrn))
 
-      case _ ~ _ ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
-        throw UnsupportedCredentialRole("Unsupported credential role")
-
-      case Some(internalId) ~ enrolments ~ Some(Individual) ~ confidence ~ _ =>
+      case Some(internalId) ~ enrolments ~ Some(Individual) ~ confidence =>
         val maybeVrn = findVrnFromEnrolments(enrolments)
-            if (confidence >= ConfidenceLevel.L200) {
-              block(AuthorisedRequest(request, internalId, maybeVrn))
-            } else {
-              throw InsufficientConfidenceLevel("Insufficient confidence level")
-            }
+        if (confidence >= ConfidenceLevel.L200) {
+          block(AuthorisedRequest(request, internalId, maybeVrn))
+        } else {
+          throw InsufficientConfidenceLevel("Insufficient confidence level")
+        }
       case _ =>
         val message = "Unable to retrieve authorisation data"
         logger.info(message)
