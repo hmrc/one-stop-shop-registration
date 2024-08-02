@@ -74,7 +74,7 @@ object EtmpAmendRegistrationRequest {
       fixedEstablishment = amendedReg.niPresence != registration.niPresence,
       contactDetails = amendedReg.contactDetails != registration.contactDetails,
       bankDetails = amendedReg.bankDetails != registration.bankDetails,
-      reRegistration = false, // TODO VEOSS-1328 - needs calculating when a registration comes through
+      reRegistration = amendedReg.rejoin,
       exclusion = amendedReg.exclusionDetails.isDefined
     )
   }

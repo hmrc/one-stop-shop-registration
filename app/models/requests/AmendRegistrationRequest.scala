@@ -40,7 +40,8 @@ case class AmendRegistrationRequest(
                                 nonCompliantReturns: Option[String],
                                 nonCompliantPayments: Option[String],
                                 submissionReceived: Option[Instant],
-                                exclusionDetails: Option[ExclusionDetails]
+                                exclusionDetails: Option[ExclusionDetails],
+                                rejoin: Boolean
                               )
 
 object AmendRegistrationRequest {
