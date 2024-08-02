@@ -94,7 +94,8 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     nonCompliantReturns = registrationRequest.nonCompliantReturns,
     nonCompliantPayments = registrationRequest.nonCompliantPayments,
     submissionReceived = registrationRequest.submissionReceived,
-    exclusionDetails = None
+    exclusionDetails = None,
+    rejoin = false
   )
 
   implicit private lazy val ar: AuthorisedMandatoryVrnRequest[AnyContent] = AuthorisedMandatoryVrnRequest(FakeRequest(), userId, vrn)
