@@ -236,7 +236,8 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
             movePOBDate = None,
             issuedBy = None,
             vatNumber = None
-          ))
+          )),
+          rejoin = false
         )
 
         EtmpAmendRegistrationRequest.fromRegistrationRequest(registration, amendRegistrationRequest, EtmpMessageType.OSSSubscriptionAmend) mustBe etmpAmendRegistrationRequest

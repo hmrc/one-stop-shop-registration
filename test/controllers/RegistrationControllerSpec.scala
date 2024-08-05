@@ -193,7 +193,7 @@ class RegistrationControllerSpec extends BaseSpec {
 
         val request =
           FakeRequest(POST, routes.RegistrationController.amend().url)
-            .withJsonBody(Json.toJson(RegistrationData.registration))
+            .withJsonBody(Json.toJson(RegistrationData.amendRegistrationPayload))
 
         val result = route(app, request).value
 
