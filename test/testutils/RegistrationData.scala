@@ -206,7 +206,7 @@ object RegistrationData {
       nonCompliantReturns = Some("1"),
       nonCompliantPayments = Some("2"),
       exclusionDetails = None,
-      rejoin = false
+      rejoin = Some(false)
     )
 
   val fromEtmpRegistration: Registration =

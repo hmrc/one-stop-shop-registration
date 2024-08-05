@@ -74,7 +74,7 @@ object EtmpAmendRegistrationRequest {
       fixedEstablishment = amendedReg.niPresence != registration.niPresence,
       contactDetails = amendedReg.contactDetails != registration.contactDetails,
       bankDetails = amendedReg.bankDetails != registration.bankDetails,
-      reRegistration = amendedReg.rejoin,
+      reRegistration = amendedReg.rejoin.contains(true),
       exclusion = amendedReg.exclusionDetails.isDefined
     )
   }
