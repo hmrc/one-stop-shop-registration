@@ -44,16 +44,6 @@ class SavedUserAnswersEncryptor @Inject()(
     EncryptedSavedUserAnswers(
       vrn = vrn,
       data = encryptData(answers.data, vrn, key),
-      vatInfo = answers.vatInfo.map {
-        info =>
-          EncryptedVatCustomerInfo(
-            encryptDesAddress(info.address, vrn, key),
-            info.registrationDate,
-            info.partOfVatGroup.map(partOf => crypto.encrypt(partOf.toString, vrn.vrn, key)),
-            info.organisationName.map(name => crypto.encrypt(name, vrn.vrn, key)),
-            info.singleMarketIndicator.map(smIndicator => crypto.encrypt(smIndicator.toString, vrn.vrn, key))
-          )
-      },
       lastUpdated = answers.lastUpdated
     )
   }
@@ -62,34 +52,9 @@ class SavedUserAnswersEncryptor @Inject()(
     SavedUserAnswers(
       vrn = vrn,
       data = decryptData(encryptedAnswers.data, vrn, key),
-      vatInfo =
-        encryptedAnswers.vatInfo.map{
-          info =>
-            VatCustomerInfo(
-              decryptDesAddress(info.address, vrn, key),
-              info.registrationDate,
-              info.partOfVatGroup.map(field => crypto.decrypt(field, vrn.vrn, key).toBoolean),
-              info.organisationName.map(name => crypto.decrypt(name, vrn.vrn, key)),
-              info.singleMarketIndicator.map(smIndicator => crypto.decrypt(smIndicator, vrn.vrn, key).toBoolean)
-            )
-        },
-
       lastUpdated = encryptedAnswers.lastUpdated
     )
   }
 
-  private def encryptDesAddress(address: DesAddress, vrn: Vrn, key: String): EncryptedDesAddress = {
-    def e(field: String): EncryptedValue = crypto.encrypt(field, vrn.vrn, key)
-    import address._
-
-    EncryptedDesAddress(e(line1), line2 map e, line3 map e, line4 map e, line5 map e, postCode map e, e(countryCode))
-  }
-
-  private def decryptDesAddress(address: EncryptedDesAddress, vrn: Vrn, key: String): DesAddress = {
-    def d(field: EncryptedValue): String = crypto.decrypt(field, vrn.vrn, key)
-    import address._
-
-    DesAddress(d(line1), line2 map d, line3 map d, line4 map d, line5 map d, postCode map d, d(countryCode))
-  }
 }
 
