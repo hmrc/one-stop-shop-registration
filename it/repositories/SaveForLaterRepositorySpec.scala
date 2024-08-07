@@ -1,9 +1,9 @@
 package repositories
 
+import _root_.utils.StringUtils
 import config.AppConfig
 import crypto.{SavedUserAnswersEncryptor, SecureGCMCipher}
-import models.domain.VatCustomerInfo
-import models.{DesAddress, EncryptedSavedUserAnswers, SavedUserAnswers}
+import models.{EncryptedSavedUserAnswers, SavedUserAnswers}
 import org.mockito.Mockito.when
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
@@ -16,11 +16,9 @@ import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, DefaultPlayMongoRepositorySupport}
 
-import java.time.{Clock, Instant, LocalDate, ZoneId}
-import scala.concurrent.ExecutionContext.Implicits.global
-import _root_.utils.StringUtils
-
+import java.time.{Clock, Instant, ZoneId}
 import java.time.temporal.ChronoUnit
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class SaveForLaterRepositorySpec
   extends AnyFreeSpec
@@ -31,7 +29,7 @@ class SaveForLaterRepositorySpec
     with IntegrationPatience
     with OptionValues {
 
-  private val cipher    = new SecureGCMCipher
+  private val cipher = new SecureGCMCipher
   private val encryptor = new SavedUserAnswersEncryptor(cipher)
   private val appConfig = mock[AppConfig]
   private val secretKey = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
@@ -52,14 +50,7 @@ class SaveForLaterRepositorySpec
           "test" -> Json.toJson("test")
         ))
         now = Instant.now
-      } yield SavedUserAnswers(
-        vrn, data, Some(VatCustomerInfo(
-          DesAddress("test", Some("test"), Some("test"), Some("test"), Some("test"), Some("test"), countryCode = "UK"),
-          Some(LocalDate.now),
-          Some(true),
-          Some("name"),
-          Some(true)
-        )), now)
+      } yield SavedUserAnswers(vrn, data, now)
     }
 
   when(appConfig.encryptionKey) thenReturn secretKey
@@ -74,13 +65,13 @@ class SaveForLaterRepositorySpec
   ".set savedAnswers" - {
 
     "must insert saved answers for different VRNs" in {
-      val answers    = arbitrary[SavedUserAnswers].sample.value
-      val answers1   = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
-      val vrn2       = Vrn(StringUtils.rotateDigitsInString(answers1.vrn.vrn).mkString)
-      val answers2    = answers1.copy(
-        vrn         = vrn2,
+      val answers = arbitrary[SavedUserAnswers].sample.value
+      val answers1 = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
+      val vrn2 = Vrn(StringUtils.rotateDigitsInString(answers1.vrn.vrn).mkString)
+      val answers2 = answers1.copy(
+        vrn = vrn2,
         lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS)
-        )
+      )
 
       val insertResult1 = repository.set(answers1).futureValue
       val insertReturn2 = repository.set(answers2).futureValue

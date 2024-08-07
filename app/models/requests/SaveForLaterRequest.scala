@@ -16,15 +16,13 @@
 
 package models.requests
 
-import models.domain.VatCustomerInfo
 import play.api.libs.json.{JsObject, Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 
 case class SaveForLaterRequest(
                                 vrn: Vrn,
-                                data: JsObject,
-                                vatInfo: Option[VatCustomerInfo]
+                                data: JsObject
                               )
 
 object SaveForLaterRequest {

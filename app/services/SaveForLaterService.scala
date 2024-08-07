@@ -35,7 +35,6 @@ class SaveForLaterService @Inject()(
     val answers = SavedUserAnswers(
       vrn = request.vrn,
       data = request.data,
-      vatInfo = request.vatInfo,
       lastUpdated = Instant.now(clock)
     )
     repository.set(answers)
