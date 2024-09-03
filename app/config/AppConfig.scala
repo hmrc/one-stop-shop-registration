@@ -44,4 +44,7 @@ class AppConfig @Inject()(config: Configuration) {
 
   val registrationCacheEnabled: Boolean = config.get[Boolean]("features.registrationCache.enabled")
   val registrationCacheTtl: Int = config.get[Int]("features.registrationCache.ttlInMins")
+
+  val cleanupOldCollectionsEnabled: Boolean = config.get[Boolean]("features.cleanupOldCollections.enabled")
+  val cleanupOldCollectionsList: Seq[String] = config.get[Seq[String]]("features.cleanupOldCollections.collections")
 }
