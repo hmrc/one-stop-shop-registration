@@ -35,6 +35,8 @@
     
     <logger name="application.controllers.actions.VatRequiredAction" level="INFO"/>
 
+    <logger name="application.services.CleanupRepositoryServiceImpl" level="INFO"/>
+
     <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
