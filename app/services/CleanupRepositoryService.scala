@@ -35,9 +35,7 @@ class CleanupRepositoryServiceImpl @Inject()(
   val startCleanup: Future[Seq[Void]] = trigger()
 
   def trigger(): Future[Seq[Void]] = {
-    println("test1")
-    if(appConfig.cleanupOldCollectionsEnabled) {
-    println("test2")
+    if (appConfig.cleanupOldCollectionsEnabled) {
       logger.info("Cleanup old collections Enabled")
       val collectionsToDrop = appConfig.cleanupOldCollectionsList
       val futureCollectionsLeftToDrop = mongoComponent
@@ -48,23 +46,17 @@ class CleanupRepositoryServiceImpl @Inject()(
 
 
       futureCollectionsLeftToDrop.flatMap { collectionsLeftToDrop =>
-      println(s"test 6 $futureCollectionsLeftToDrop and $collectionsLeftToDrop")
         logger.info(s"Collection cleanup: Of ${collectionsToDrop.size} requested, ${collectionsLeftToDrop.size} found to be dropped")
         Future.sequence(collectionsLeftToDrop.map { collectionToDrop =>
-          val coll = mongoComponent
+          mongoComponent
             .database
             .getCollection(collectionToDrop)
-
-            val dropcall = coll.drop()
-
-            println(s"10 $dropcall")
-
-              dropcall.toFuture()
+            .drop()
+            .toFuture()
         })
       }
 
     } else {
-    println("test3")
       logger.info("Cleanup old collections disabled")
       Future.successful(Seq.empty)
     }
