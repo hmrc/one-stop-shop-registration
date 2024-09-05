@@ -32,18 +32,27 @@ class CleanupRepositoryServiceImpl @Inject()(
                                             )(implicit ec: ExecutionContext)
   extends CleanupRepositoryService with Logging {
 
-  val startCleanup: Future[Any] = trigger()
+  val startCleanup: Future[Seq[Void]] = trigger()
 
-  private def trigger(): Future[Seq[Void]] = {
-    if(appConfig.cleanupOldCollectionsEnabled) {
+  def trigger(): Future[Seq[Void]] = {
+    if (appConfig.cleanupOldCollectionsEnabled) {
       logger.info("Cleanup old collections Enabled")
       val collectionsToDrop = appConfig.cleanupOldCollectionsList
-      val futureCollectionsLeftToDrop = mongoComponent.database.listCollectionNames().toFuture().map(_.filter(collectionName => collectionsToDrop.contains(collectionName)))
+      val futureCollectionsLeftToDrop = mongoComponent
+        .database
+        .listCollectionNames()
+        .toFuture()
+        .map(_.filter(collectionName => collectionsToDrop.contains(collectionName)))
+
 
       futureCollectionsLeftToDrop.flatMap { collectionsLeftToDrop =>
         logger.info(s"Collection cleanup: Of ${collectionsToDrop.size} requested, ${collectionsLeftToDrop.size} found to be dropped")
         Future.sequence(collectionsLeftToDrop.map { collectionToDrop =>
-          mongoComponent.database.getCollection(collectionToDrop).drop().toFuture()
+          mongoComponent
+            .database
+            .getCollection(collectionToDrop)
+            .drop()
+            .toFuture()
         })
       }
 
