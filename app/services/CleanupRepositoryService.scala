@@ -20,7 +20,7 @@ import config.AppConfig
 import logging.Logging
 import uk.gov.hmrc.mongo.MongoComponent
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 
