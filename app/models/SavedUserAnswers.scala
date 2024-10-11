@@ -17,7 +17,6 @@
 package models
 
 import crypto.EncryptedValue
-import models.domain.{EncryptedVatCustomerInfo, VatCustomerInfo}
 import play.api.libs.json.{JsValue, Json, OFormat, OWrites, Reads, __}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats

@@ -12,7 +12,7 @@ import java.time.{Instant, LocalDate, LocalDateTime}
 
 class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks with Generators {
 
-  private val cipher    = new SecureGCMCipher
+  private val cipher    = new AesGCMCrypto
   private val encrypter = new RegistrationEncrypter(cipher, stubClock)
   private val secretKey = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
 

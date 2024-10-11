@@ -24,7 +24,7 @@ import java.time.{Clock, LocalDateTime}
 import javax.inject.Inject
 
 class RegistrationEncrypter @Inject()(
-                                       crypto: SecureGCMCipher,
+                                       crypto: AesGCMCrypto,
                                        clock: Clock
                                      ) {
 

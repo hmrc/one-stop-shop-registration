@@ -2,7 +2,7 @@ package repositories
 
 import _root_.utils.StringUtils
 import config.AppConfig
-import crypto.{SavedUserAnswersEncryptor, SecureGCMCipher}
+import crypto.{AesGCMCrypto, SavedUserAnswersEncryptor}
 import models.{EncryptedSavedUserAnswers, SavedUserAnswers}
 import org.mockito.Mockito.when
 import org.scalacheck.{Arbitrary, Gen}
@@ -29,7 +29,7 @@ class SaveForLaterRepositorySpec
     with IntegrationPatience
     with OptionValues {
 
-  private val cipher = new SecureGCMCipher
+  private val cipher = new AesGCMCrypto
   private val encryptor = new SavedUserAnswersEncryptor(cipher)
   private val appConfig = mock[AppConfig]
   private val secretKey = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="

@@ -16,8 +16,7 @@
 
 package crypto
 
-import models.domain.{EncryptedVatCustomerInfo, VatCustomerInfo}
-import models.{DesAddress, EncryptedDesAddress, EncryptedSavedUserAnswers, SavedUserAnswers}
+import models.{EncryptedSavedUserAnswers, SavedUserAnswers}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Vrn
 
@@ -25,7 +24,7 @@ import javax.inject.Inject
 
 
 class SavedUserAnswersEncryptor @Inject()(
-                                           crypto: SecureGCMCipher
+                                           crypto: AesGCMCrypto
                                          ) {
 
   def encryptData(data: JsValue, vrn: Vrn, key: String): EncryptedValue = {
