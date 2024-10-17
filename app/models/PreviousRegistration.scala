@@ -16,7 +16,6 @@
 
 package models
 
-import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
 sealed trait PreviousRegistration
@@ -79,7 +78,7 @@ object PreviousRegistrationLegacy {
 
 case class EncryptedPreviousRegistrationLegacy(
                                                 country: EncryptedCountry,
-                                                vatNumber: EncryptedValue
+                                                vatNumber: String
                                               ) extends EncryptedPreviousRegistration
 
 object EncryptedPreviousRegistrationLegacy {
@@ -95,7 +94,7 @@ object PreviousSchemeDetails {
 }
 
 
-case class EncryptedPreviousSchemeDetails(previousScheme: EncryptedValue, previousSchemeNumbers: EncryptedPreviousSchemeNumbers)
+case class EncryptedPreviousSchemeDetails(previousScheme: String, previousSchemeNumbers: EncryptedPreviousSchemeNumbers)
 
 object EncryptedPreviousSchemeDetails {
 
@@ -113,8 +112,8 @@ object PreviousSchemeNumbers {
 }
 
 case class EncryptedPreviousSchemeNumbers(
-                                  previousSchemeNumber: EncryptedValue,
-                                  previousIntermediaryNumber: Option[EncryptedValue]
+                                  previousSchemeNumber: String,
+                                  previousIntermediaryNumber: Option[String]
                                 )
 
 object EncryptedPreviousSchemeNumbers {

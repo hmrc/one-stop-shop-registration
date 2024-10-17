@@ -16,7 +16,7 @@
 
 package models
 
-import crypto.EncryptedValue
+
 import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
 sealed trait EuTaxRegistration
@@ -69,7 +69,7 @@ object EuVatRegistration {
 
 final case class EncryptedEuVatRegistration(
                                              country: EncryptedCountry,
-                                             vatNumber: EncryptedValue
+                                             vatNumber: String
                                            ) extends EncryptedEuTaxRegistration
 
 object EncryptedEuVatRegistration {

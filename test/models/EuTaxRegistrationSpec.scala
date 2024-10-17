@@ -1,6 +1,5 @@
 package models
 
-import crypto.EncryptedValue
 import generators.Generators
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.freespec.AnyFreeSpec
@@ -42,11 +41,11 @@ class EuTaxRegistrationSpec extends AnyFreeSpec with Matchers with ScalaCheckPro
 
       val gen = for {
         country        <- arbitrary[EncryptedCountry]
-        name           <- arbitrary[EncryptedValue]
-        line1          <- arbitrary[EncryptedValue]
-        town           <- arbitrary[EncryptedValue]
-        identifierType <- arbitrary[EncryptedValue]
-        taxRef         <- arbitrary[EncryptedValue]
+        name           <- arbitrary[String]
+        line1          <- arbitrary[String]
+        town           <- arbitrary[String]
+        identifierType <- arbitrary[String]
+        taxRef         <- arbitrary[String]
         addressCountry <- arbitrary[Country]
       } yield (
         country,

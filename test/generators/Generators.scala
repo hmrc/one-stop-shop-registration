@@ -37,11 +37,11 @@ trait Generators {
     Arbitrary {
       for {
         firstChars <- Gen.listOfN(6, Gen.alphaUpperChar).map(_.mkString)
-        char7 <- Gen.oneOf(Gen.alphaUpperChar, Gen.choose(2, 9))
+        char7 <- Gen.oneOf(Gen.alphaUpperChar, Gen.choose(2, 9).map(_.toString.head))
         char8 <- Gen.oneOf(
           Gen.choose(asciiCodeForA, asciiCodeForN).map(_.toChar),
           Gen.choose(asciiCodeForP, asciiCodeForZ).map(_.toChar),
-          Gen.choose(0, 9)
+          Gen.choose(0, 9).map(_.toString.head)
         )
         lastChars <- Gen.option(Gen.listOfN(3, Gen.oneOf(Gen.alphaUpperChar, Gen.numChar)).map(_.mkString))
       } yield Bic(s"$firstChars$char7$char8${lastChars.getOrElse("")}").get
@@ -76,7 +76,7 @@ trait Generators {
       for {
         code <- arbitrary[EncryptedValue]
         name <- arbitrary[EncryptedValue]
-      } yield EncryptedCountry(code, name)
+      } yield EncryptedCountry(code.value, name.value)
     }
 
   implicit lazy val arbitraryEncryptedValue: Arbitrary[EncryptedValue] =

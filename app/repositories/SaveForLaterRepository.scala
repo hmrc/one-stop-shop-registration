@@ -19,7 +19,7 @@ package repositories
 import config.AppConfig
 import crypto.SavedUserAnswersEncryptor
 import logging.Logging
-import models.{EncryptedSavedUserAnswers, SavedUserAnswers}
+import models.{EncryptedSavedUserAnswers, LegacyEncryptedSavedUserAnswers, NewEncryptedSavedUserAnswers, SavedUserAnswers}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions}
 import play.api.libs.json.Format
@@ -63,14 +63,12 @@ class SaveForLaterRepository @Inject()(
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
-  private val encryptionKey = appConfig.encryptionKey
-
   private def byVrn(vrn: Vrn): Bson =
     Filters.equal("vrn", toBson(vrn))
 
   def set(savedUserAnswers: SavedUserAnswers): Future[SavedUserAnswers] = {
 
-    val encryptedAnswers = encryptor.encryptAnswers(savedUserAnswers, savedUserAnswers.vrn, encryptionKey)
+    val encryptedAnswers = encryptor.encryptAnswers(savedUserAnswers, savedUserAnswers.vrn)
 
     collection
       .replaceOne(
@@ -88,8 +86,10 @@ class SaveForLaterRepository @Inject()(
         byVrn(vrn)
       ).headOption()
       .map(_.map {
-        answers =>
-          encryptor.decryptAnswers(answers, answers.vrn, encryptionKey)
+        case l: LegacyEncryptedSavedUserAnswers =>
+          encryptor.decryptLegacyAnswers(l, l.vrn)
+        case n: NewEncryptedSavedUserAnswers =>
+          encryptor.decryptAnswers(n, n.vrn)
       })
 
   def clear(vrn: Vrn): Future[Boolean] =

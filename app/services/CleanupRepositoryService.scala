@@ -20,7 +20,7 @@ import config.AppConfig
 import logging.Logging
 import uk.gov.hmrc.mongo.MongoComponent
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -32,9 +32,9 @@ class CleanupRepositoryServiceImpl @Inject()(
                                             )(implicit ec: ExecutionContext)
   extends CleanupRepositoryService with Logging {
 
-  val startCleanup: Future[Seq[Void]] = trigger()
+  val startCleanup: Future[Seq[Unit]] = trigger()
 
-  def trigger(): Future[Seq[Void]] = {
+  def trigger(): Future[Seq[Unit]] = {
     if (appConfig.cleanupOldCollectionsEnabled) {
       logger.info("Cleanup old collections Enabled")
       val collectionsToDrop = appConfig.cleanupOldCollectionsList

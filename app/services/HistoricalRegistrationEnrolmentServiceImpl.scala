@@ -60,6 +60,8 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
         getRegAndTriggerEs8(traderToEnrol, Seq.empty)
       case traderToEnrol +: otherTraders =>
         getRegAndTriggerEs8(traderToEnrol, otherTraders)
+      case _ =>
+        Future.failed(new Exception("unexpected case in submitSequentially"))
     }
   }
 
@@ -82,7 +84,7 @@ class HistoricalRegistrationEnrolmentServiceImpl @Inject()(
                 Future.successful(Right(()))
               }
             case status =>
-              logger.error(s"Received unexpected response for ${traderToEnrol}: $status ${a.body}")
+              logger.error(s"Received unexpected response for $traderToEnrol: $status ${a.body}")
               submitSequentially(otherTraders)
           }
         }

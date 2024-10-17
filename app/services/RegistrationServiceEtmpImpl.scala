@@ -158,12 +158,12 @@ class RegistrationServiceEtmpImpl @Inject()(
     val hasPreviousRegistration = registration.previousRegistrations.nonEmpty
 
     if (hasPreviousRegistration) {
-      val filteredPreviousRegistrations = registration.previousRegistrations.find {
-        case previousRegistration: PreviousRegistrationNew =>
-          previousRegistration.previousSchemesDetails.exists(_.previousScheme == PreviousScheme.OSSU)
+      val filteredPreviousRegistrations = registration.previousRegistrations.collectFirst {
+        case previousRegistration: PreviousRegistrationNew if
+          previousRegistration.previousSchemesDetails.exists(_.previousScheme == PreviousScheme.OSSU) =>
+          previousRegistration
       }
-      filteredPreviousRegistrations.map {
-        case previousRegistration: PreviousRegistrationNew =>
+      filteredPreviousRegistrations.map { previousRegistration =>
           val previousOssRegistration = previousRegistration.previousSchemesDetails.find(_.previousScheme == PreviousScheme.OSSU).get
           coreValidationService.searchScheme(
             searchNumber = previousOssRegistration.previousSchemeNumbers.previousSchemeNumber,

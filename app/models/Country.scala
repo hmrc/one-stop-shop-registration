@@ -16,7 +16,6 @@
 
 package models
 
-import crypto.EncryptedValue
 import logging.Logging
 import play.api.libs.json.{Json, OFormat}
 
@@ -59,7 +58,7 @@ object Country {
 
 }
 
-case class EncryptedCountry(code: EncryptedValue, name: EncryptedValue)
+case class EncryptedCountry(code: String, name: String)
 
 object EncryptedCountry {
 
