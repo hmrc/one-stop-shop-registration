@@ -16,7 +16,6 @@
 
 package models
 
-import crypto.EncryptedValue
 import play.api.libs.json._
 
 case class ContactDetails(
@@ -30,9 +29,9 @@ object ContactDetails {
 }
 
 case class EncryptedContactDetails (
-                                     fullName: EncryptedValue,
-                                     telephoneNumber: EncryptedValue,
-                                     emailAddress: EncryptedValue
+                                     fullName: String,
+                                     telephoneNumber: String,
+                                     emailAddress: String
                                    )
 
 object EncryptedContactDetails {

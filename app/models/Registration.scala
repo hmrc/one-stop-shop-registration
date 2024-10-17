@@ -16,7 +16,6 @@
 
 package models
 
-import crypto.EncryptedValue
 import logging.Logging
 import models.des.VatCustomerInfo
 import models.etmp.EtmpSchemeDetails.dateFormatter
@@ -229,16 +228,16 @@ object Registration extends Logging {
 
 case class EncryptedRegistration(
                                   vrn: Vrn,
-                                  registeredCompanyName: EncryptedValue,
-                                  tradingNames: Seq[EncryptedValue],
+                                  registeredCompanyName: String,
+                                  tradingNames: Seq[String],
                                   vatDetails: EncryptedVatDetails,
                                   euRegistrations: Seq[EncryptedEuTaxRegistration],
                                   contactDetails: EncryptedContactDetails,
-                                  websites: Seq[EncryptedValue],
+                                  websites: Seq[String],
                                   commencementDate: LocalDate,
                                   previousRegistrations: Seq[EncryptedPreviousRegistration],
                                   bankDetails: EncryptedBankDetails,
-                                  isOnlineMarketplace: EncryptedValue,
+                                  isOnlineMarketplace: String,
                                   niPresence: Option[NiPresence],
                                   submissionReceived: Option[Instant],
                                   lastUpdated: Option[Instant],

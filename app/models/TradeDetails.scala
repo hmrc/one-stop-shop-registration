@@ -16,7 +16,6 @@
 
 package models
 
-import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 
 final case class TradeDetails(tradingName: String, address: InternationalAddress)
@@ -27,7 +26,7 @@ object TradeDetails {
 }
 
 final case class EncryptedTradeDetails(
-                                              tradingName: EncryptedValue,
+                                              tradingName: String,
                                               address: EncryptedInternationalAddress
                                             )
 

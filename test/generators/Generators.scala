@@ -76,7 +76,7 @@ trait Generators {
       for {
         code <- arbitrary[EncryptedValue]
         name <- arbitrary[EncryptedValue]
-      } yield EncryptedCountry(code, name)
+      } yield EncryptedCountry(code.value, name.value)
     }
 
   implicit lazy val arbitraryEncryptedValue: Arbitrary[EncryptedValue] =

@@ -16,7 +16,6 @@
 
 package models
 
-import crypto.EncryptedValue
 import play.api.libs.json._
 
 case class BankDetails (accountName: String, bic: Option[Bic], iban: Iban)
@@ -25,7 +24,7 @@ object BankDetails {
   implicit val format: OFormat[BankDetails] = Json.format[BankDetails]
 }
 
-case class EncryptedBankDetails(accountName: EncryptedValue, bic: Option[EncryptedValue], iban: EncryptedValue)
+case class EncryptedBankDetails(accountName: String, bic: Option[String], iban: String)
 
 object EncryptedBankDetails {
   implicit val format: OFormat[EncryptedBankDetails] = Json.format[EncryptedBankDetails]
