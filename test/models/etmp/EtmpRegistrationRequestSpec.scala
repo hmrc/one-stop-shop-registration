@@ -204,7 +204,7 @@ class EtmpRegistrationRequestSpec extends BaseSpec {
                 )
               )
             ),
-            bankDetails = BankDetails("Account name", Some(bic), iban),
+            bankDetails = BankDetails("Account Foo", Some(bic), iban),
             isOnlineMarketplace = false,
             niPresence = Some(PrincipalPlaceOfBusinessInNi),
             dateOfFirstSale = Some(LocalDate.now),
