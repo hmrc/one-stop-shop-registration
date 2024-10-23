@@ -44,9 +44,9 @@ object EtmpAmendRegistrationRequest {
     EtmpAmendRegistrationRequest(
       administration = EtmpAdministration(etmpMessageType),
       customerIdentification = EtmpCustomerIdentification(registration.vrn),
-      tradingNames = registration.tradingNames.map(EtmpTradingNames(_)),
+      tradingNames = amendedRegistration.tradingNames.map(EtmpTradingNames(_)),
       schemeDetails = schemeDetails(amendedRegistration),
-      bankDetails = registration.bankDetails,
+      bankDetails = amendedRegistration.bankDetails,
       requestedChange = calculateRequestedChange(registration, amendedRegistration),
       exclusionDetails = mapExclusionDetails(amendedRegistration.exclusionDetails)
     )
