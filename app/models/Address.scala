@@ -16,7 +16,6 @@
 
 package models
 
-import crypto.EncryptedValue
 import play.api.libs.json._
 
 sealed trait Address
@@ -100,11 +99,11 @@ object UkAddress {
 }
 
 case class EncryptedUkAddress(
-                               line1: EncryptedValue,
-                               line2: Option[EncryptedValue],
-                               townOrCity: EncryptedValue,
-                               county: Option[EncryptedValue],
-                               postCode: EncryptedValue
+                               line1: String,
+                               line2: Option[String],
+                               townOrCity: String,
+                               county: Option[String],
+                               postCode: String
                              ) extends EncryptedAddress {
 
   val country: Country = Country("GB", "United Kingdom")
@@ -121,11 +120,11 @@ object EncryptedUkAddress {
         if (t == "GB") Reads(_ => JsSuccess(t)) else Reads(_ => JsError("countryCode must be GB"))
     }.andKeep(
       (
-        (__ \ "line1").read[EncryptedValue] and
-          (__ \ "line2").readNullable[EncryptedValue] and
-          (__ \ "townOrCity").read[EncryptedValue] and
-          (__ \ "county").readNullable[EncryptedValue] and
-          (__ \ "postCode").read[EncryptedValue]
+        (__ \ "line1").read[String] and
+          (__ \ "line2").readNullable[String] and
+          (__ \ "townOrCity").read[String] and
+          (__ \ "county").readNullable[String] and
+          (__ \ "postCode").read[String]
         )(EncryptedUkAddress(_, _, _, _, _)
       ))
   }
@@ -162,13 +161,13 @@ object DesAddress {
 }
 
 case class EncryptedDesAddress(
-                                line1: EncryptedValue,
-                                line2: Option[EncryptedValue],
-                                line3: Option[EncryptedValue],
-                                line4: Option[EncryptedValue],
-                                line5: Option[EncryptedValue],
-                                postCode: Option[EncryptedValue],
-                                countryCode: EncryptedValue
+                                line1: String,
+                                line2: Option[String],
+                                line3: Option[String],
+                                line4: Option[String],
+                                line5: Option[String],
+                                postCode: Option[String],
+                                countryCode: String
                               ) extends EncryptedAddress
 
 object EncryptedDesAddress {
@@ -191,11 +190,11 @@ object InternationalAddress {
 }
 
 case class EncryptedInternationalAddress(
-                                          line1: EncryptedValue,
-                                          line2: Option[EncryptedValue],
-                                          townOrCity: EncryptedValue,
-                                          stateOrRegion: Option[EncryptedValue],
-                                          postCode: Option[EncryptedValue],
+                                          line1: String,
+                                          line2: Option[String],
+                                          townOrCity: String,
+                                          stateOrRegion: Option[String],
+                                          postCode: Option[String],
                                           country: Country
                                         ) extends EncryptedAddress
 

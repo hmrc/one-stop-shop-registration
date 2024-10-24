@@ -105,6 +105,8 @@ object Period {
   def writes: Writes[Period] = Writes {
     case s: StandardPeriod => Json.toJson(s)(StandardPeriod.format)
     case p: PartialReturnPeriod => Json.toJson(p)(PartialReturnPeriod.format)
+    case _ =>
+      throw new IllegalArgumentException("Unknown Period type")
   }
 
   def getPeriod(date: LocalDate): Period = {

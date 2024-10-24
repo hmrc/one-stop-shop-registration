@@ -16,7 +16,6 @@
 
 package models
 
-import crypto.EncryptedValue
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
@@ -35,7 +34,7 @@ object VatDetails {
 case class EncryptedVatDetails(
                                 registrationDate: LocalDate,
                                 address: EncryptedAddress,
-                                partOfVatGroup: EncryptedValue,
+                                partOfVatGroup: String,
                                 source: VatDetailSource
                               )
 

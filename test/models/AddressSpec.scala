@@ -17,7 +17,6 @@
 package models
 
 import org.scalacheck.Arbitrary.arbitrary
-import crypto.EncryptedValue
 import generators.Generators
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
@@ -151,7 +150,7 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
 
       "with all optional fields present" in {
 
-        forAll(arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedValue]) {
+        forAll(arbitrary[String], arbitrary[String], arbitrary[String], arbitrary[String], arbitrary[String]) {
           case (line1, line2, town, county, postCode) =>
 
             val address: EncryptedAddress = EncryptedUkAddress(line1, Some(line2), town, Some(county), postCode)
@@ -175,7 +174,7 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
 
       "with all optional fields missing" in {
 
-        forAll(arbitrary[EncryptedValue], arbitrary[EncryptedValue], arbitrary[EncryptedValue]) {
+        forAll(arbitrary[String], arbitrary[String], arbitrary[String]) {
           case (line1, town, postCode) =>
 
             val address: EncryptedAddress = EncryptedUkAddress(line1, None, town, None, postCode)
@@ -201,11 +200,11 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
       "with all optional fields present" in {
 
         val countryGenerator = for {
-          line1 <- arbitrary[EncryptedValue]
-          line2 <- arbitrary[EncryptedValue]
-          town  <- arbitrary[EncryptedValue]
-          state <- arbitrary[EncryptedValue]
-          postCode <- arbitrary[EncryptedValue]
+          line1 <- arbitrary[String]
+          line2 <- arbitrary[String]
+          town  <- arbitrary[String]
+          state <- arbitrary[String]
+          postCode <- arbitrary[String]
           countryCode <- arbitrary[String]
           countryName <- arbitrary[String]
         } yield (line1, line2, town, state, postCode, countryCode, countryName)
@@ -236,8 +235,8 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
 
 
         val countryGenerator = for {
-          line1 <- arbitrary[EncryptedValue]
-          town  <- arbitrary[EncryptedValue]
+          line1 <- arbitrary[String]
+          town  <- arbitrary[String]
           countryCode <- arbitrary[String]
           countryName <- arbitrary[String]
         } yield (line1, town, countryCode, countryName)
@@ -267,13 +266,13 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
       "with all optional fields present" in {
 
         val countryGenerator = for {
-          line1 <- arbitrary[EncryptedValue]
-          line2 <- arbitrary[EncryptedValue]
-          line3 <- arbitrary[EncryptedValue]
-          line4 <- arbitrary[EncryptedValue]
-          line5 <- arbitrary[EncryptedValue]
-          postCode <- arbitrary[EncryptedValue]
-          countryCode <- arbitrary[EncryptedValue]
+          line1 <- arbitrary[String]
+          line2 <- arbitrary[String]
+          line3 <- arbitrary[String]
+          line4 <- arbitrary[String]
+          line5 <- arbitrary[String]
+          postCode <- arbitrary[String]
+          countryCode <- arbitrary[String]
         } yield (line1, line2, line3, line4, line5, postCode, countryCode)
 
         forAll(countryGenerator) {
@@ -299,8 +298,8 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
       "with all optional fields missing" in {
 
         val countryGenerator = for {
-          line1 <- arbitrary[EncryptedValue]
-          countryCode <- arbitrary[EncryptedValue]
+          line1 <- arbitrary[String]
+          countryCode <- arbitrary[String]
         } yield (line1, countryCode)
 
         forAll(countryGenerator) {
