@@ -71,7 +71,7 @@ object EtmpAmendRegistrationRequest {
   private def calculateRequestedChange(registration: Registration, amendedReg: AmendRegistrationRequest): EtmpRequestedChange = {
     EtmpRequestedChange(
       tradingName = amendedReg.tradingNames != registration.tradingNames,
-      fixedEstablishment = amendedReg.niPresence != registration.niPresence,
+      fixedEstablishment = amendedReg.euRegistrations != registration.euRegistrations,
       contactDetails = amendedReg.contactDetails != registration.contactDetails,
       bankDetails = amendedReg.bankDetails != registration.bankDetails,
       reRegistration = amendedReg.rejoin.contains(true),
