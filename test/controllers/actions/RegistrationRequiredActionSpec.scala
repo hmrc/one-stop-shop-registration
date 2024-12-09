@@ -17,8 +17,7 @@
 package controllers.actions
 
 import base.BaseSpec
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.when
 import org.scalatest.EitherValues
 import org.scalatestplus.mockito.MockitoSugar

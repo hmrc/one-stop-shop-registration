@@ -17,7 +17,7 @@
 package services.crypto
 
 import base.BaseSpec
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.should
 import play.api.Configuration
 import play.api.test.Helpers.running
 

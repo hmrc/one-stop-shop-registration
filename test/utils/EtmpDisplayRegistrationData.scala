@@ -28,7 +28,7 @@ object EtmpDisplayRegistrationData extends BaseSpec {
         (__ \ "townOrCity").writeNullable[String] and
         (__ \ "regionOrState").writeNullable[String] and
         (__ \ "postcode").writeNullable[String]
-      ) (unlift(EtmpEuRegistrationDetails.unapply))
+      ) (etmpEuRegistrationDetails => Tuple.fromProductTyped(etmpEuRegistrationDetails))
   }
 
   implicit val writesEtmpSchemeDetails: OWrites[EtmpDisplaySchemeDetails] = {
@@ -47,6 +47,6 @@ object EtmpDisplayRegistrationData extends BaseSpec {
         (__ \ "nonCompliantReturns").writeNullable[String] and
         (__ \ "nonCompliantPayments").writeNullable[String] and
         (__ \ "exclusions").write[Seq[EtmpExclusion]]
-      ) (unlift(EtmpDisplaySchemeDetails.unapply))
+      ) (etmpDisplaySchemeDetails => Tuple.fromProductTyped(etmpDisplaySchemeDetails))
   }
 }
