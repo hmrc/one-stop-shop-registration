@@ -28,6 +28,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, StringContextOps}
+import play.api.libs.ws.writeableOf_JsValue
 
 import java.util.UUID
 import javax.inject.Inject

@@ -27,13 +27,13 @@ class AppConfig @Inject()(config: Configuration) {
   val appName: String = config.get[String]("appName")
 
   val encryptionKey: String = config.get[String]("mongodb.encryption.key")
-  val cacheTtl: Int = config.get[Int]("mongodb.timeToLiveInDays")
-  val registrationStatusTtl: Int = config.get[Int]("mongodb.timeToLiveInHours")
+  val cacheTtl: Long = config.get[Long]("mongodb.timeToLiveInDays")
+  val registrationStatusTtl: Long = config.get[Long]("mongodb.timeToLiveInHours")
 
   val maxRetryCount: Int = config.get[Int]("features.maxRetryCount")
   val delay: Int = config.get[Int]("features.delay")
 
-  val externalEntryTtlDays: Int = config.get[Int]("features.externalEntry.ttlInDays")
+  val externalEntryTtlDays: Long = config.get[Long]("features.externalEntry.ttlInDays")
   val externalEntryJourneyStartReturnUrl: String = config.get[String]("features.externalEntry.urls.journeyStart")
   val externalEntryNoMoreWelshReturnUrl: String = config.get[String]("features.externalEntry.urls.noMoreWelshJourneyStart")
 
@@ -43,7 +43,7 @@ class AppConfig @Inject()(config: Configuration) {
   val historicTradersForEnrolment: Seq[HistoricTraderForEnrolment] = config.get[Seq[HistoricTraderForEnrolment]]("features.enroll-historic-registration.historic-traders")
 
   val registrationCacheEnabled: Boolean = config.get[Boolean]("features.registrationCache.enabled")
-  val registrationCacheTtl: Int = config.get[Int]("features.registrationCache.ttlInMins")
+  val registrationCacheTtl: Long = config.get[Long]("features.registrationCache.ttlInMins")
 
   val cleanupOldCollectionsEnabled: Boolean = config.get[Boolean]("features.cleanupOldCollections.enabled")
   val cleanupOldCollectionsList: Seq[String] = config.get[Seq[String]]("features.cleanupOldCollections.collections")

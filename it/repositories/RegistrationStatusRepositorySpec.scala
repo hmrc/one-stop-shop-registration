@@ -4,11 +4,11 @@ import config.AppConfig
 import models.RegistrationStatus
 import models.etmp.EtmpRegistrationStatus
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
-import org.mockito.MockitoSugar
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, PlayMongoRepositorySupport}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -23,7 +23,7 @@ class RegistrationStatusRepositorySpec extends AnyFreeSpec
   with MockitoSugar {
 
   private val appConfig = mock[AppConfig]
-  protected val repository =
+  protected val repository: RegistrationStatusRepository =
     new RegistrationStatusRepository(
       mongoComponent = mongoComponent,
       appConfig = appConfig

@@ -26,6 +26,7 @@ import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, Repl
 import repositories.MongoErrors.Duplicate
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.MongoComponent
+import org.mongodb.scala.SingleObservableFuture
 
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}

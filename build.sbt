@@ -9,7 +9,7 @@ lazy val microservice = Project(appName, file("."))
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(
     majorVersion                     := 0,
-    scalaVersion                     := "2.13.14",
+    scalaVersion                     := "3.3.4",
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
 
     ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;" +
@@ -29,7 +29,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(inConfig(Test)(testSettings): _*)
   .settings(resolvers += Resolver.jcenterRepo)
   // suppress warnings in generated routes files
-  .settings(scalacOptions += "-Wconf:src=routes/.*:s")
+  .settings(scalacOptions ++= Seq("-Wconf:src=routes/.*:s", "-Wconf:msg=Flag.*repeatedly:s"))
 
 lazy val itSettings = Defaults.itSettings ++ Seq(
   unmanagedSourceDirectories := Seq(
