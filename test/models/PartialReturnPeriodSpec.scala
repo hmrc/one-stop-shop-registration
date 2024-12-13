@@ -3,7 +3,7 @@ package models
 import java.time.LocalDate
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.libs.json.{JsSuccess, Json}
 
 class PartialReturnPeriodSpec extends AnyWordSpec with Matchers {
 

@@ -172,7 +172,6 @@ object Registration extends Logging {
       case SchemeType.OSSNonUnion => PreviousScheme.OSSNU
       case SchemeType.IOSSWithoutIntermediary => PreviousScheme.IOSSWOI
       case SchemeType.IOSSWithIntermediary => PreviousScheme.IOSSWI
-      case _ => throw new Exception("Unknown scheme, unable to convert")
     }
   }
 

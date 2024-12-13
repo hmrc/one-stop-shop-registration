@@ -1,15 +1,10 @@
 package models
 
 import base.BaseSpec
-import models.Period.getPeriod
 import models.Quarter.*
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.{JsSuccess, Json}
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import scala.util.Success
 
 
 class StandardPeriodSpec extends BaseSpec with ScalaCheckPropertyChecks {

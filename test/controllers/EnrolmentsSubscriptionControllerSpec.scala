@@ -5,10 +5,8 @@ import connectors.EnrolmentsConnector
 import models.etmp.EtmpRegistrationStatus
 import models.RegistrationStatus
 import models.enrolments.EnrolmentStatus
-import org.scalacheck.Arbitrary.arbitrary
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, verify, when}
-import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.inject.bind
@@ -65,10 +63,8 @@ class EnrolmentsSubscriptionControllerSpec extends BaseSpec with BeforeAndAfterE
     "must handle failed enrolment correctly" in {
       val subscriptionId = "subscription-987654321"
 
+      val enrolmentStatus = arbitraryFailedEnrolmentStatus.arbitrary.sample.get
 
-      forAll(arbitrary[EnrolmentStatus](arbitraryFailedEnrolmentStatus)) {
-        enrolmentStatus =>
-            reset(mockRegistrationStatusRepository)
             val stateName = enrolmentStatus match {
               case EnrolmentStatus.Failure => EnrolmentStatus.Failure.jsonName
               case EnrolmentStatus.Enrolled => EnrolmentStatus.Enrolled.jsonName
@@ -151,4 +147,3 @@ class EnrolmentsSubscriptionControllerSpec extends BaseSpec with BeforeAndAfterE
     }
 
   }
-}

@@ -3,7 +3,7 @@ package utils
 import base.BaseSpec
 import models.etmp._
 import org.scalacheck.Gen
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{OWrites, __}
 
 object EtmpDisplayRegistrationData extends BaseSpec {
