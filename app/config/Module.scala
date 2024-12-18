@@ -19,12 +19,11 @@ package config
 import com.google.inject.AbstractModule
 import controllers.actions.{AuthAction, AuthActionImpl, AuthenticatedControllerComponents, DefaultAuthenticatedControllerComponents}
 import metrics.{DefaultServiceMetrics, ServiceMetrics}
-import play.api.{Configuration, Environment}
 import services.{CleanupRepositoryService, CleanupRepositoryServiceImpl, HistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentServiceImpl, RegistrationService, RegistrationServiceEtmpImpl}
 
 import java.time.{Clock, ZoneOffset}
 
-class Module(environment: Environment, config: Configuration) extends AbstractModule {
+class Module() extends AbstractModule {
 
   override def configure(): Unit = {
 

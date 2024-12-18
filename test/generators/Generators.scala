@@ -1,8 +1,9 @@
 package generators
 
 import crypto.EncryptedValue
-import models._
-import models.etmp._
+import models.{enrolments, *}
+import models.enrolments.EnrolmentStatus
+import models.etmp.*
 import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.requests.SaveForLaterRequest
 import org.scalacheck.Arbitrary.arbitrary
@@ -496,6 +497,16 @@ trait Generators {
         exclusionReason = exclusionReason,
         effectiveDate = effectiveDate,
         quarantined = quarantined
+      )
+    }
+    
+  implicit lazy val arbitraryFailedEnrolmentStatus: Arbitrary[EnrolmentStatus] =
+    Arbitrary {
+      Gen.oneOf(
+        EnrolmentStatus.Failure,
+        EnrolmentStatus.Enrolled,
+        EnrolmentStatus.EnrolmentError,
+        EnrolmentStatus.AuthRefreshed
       )
     }
 }

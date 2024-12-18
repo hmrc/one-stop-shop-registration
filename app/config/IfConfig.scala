@@ -19,13 +19,11 @@ package config
 import play.api.Configuration
 import play.api.http.HeaderNames._
 
-import java.time.Clock
 import javax.inject.Inject
 
 class IfConfig @Inject()(
                           config: Configuration,
-                          genericConfig: EisGenericConfig,
-                          clock: Clock
+                          genericConfig: EisGenericConfig
                         ) {
 
   val baseUrl: Service = config.get[Service]("microservice.services.if")

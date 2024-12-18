@@ -5,8 +5,7 @@ import controllers.actions.FakeFailingAuthConnector
 import generators.Generators
 import models.SavedUserAnswers
 import models.requests.SaveForLaterRequest
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks

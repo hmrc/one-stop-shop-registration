@@ -60,7 +60,7 @@ class SaveForLaterRepositorySpec
       } yield SavedUserAnswers(vrn, data, now)
     }
 
-  override protected val repository =
+  override protected val repository: SaveForLaterRepository =
     new SaveForLaterRepository(
       mongoComponent = mongoComponent,
       encryptor = encryptor,

@@ -19,6 +19,7 @@ package services
 import config.AppConfig
 import logging.Logging
 import uk.gov.hmrc.mongo.MongoComponent
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

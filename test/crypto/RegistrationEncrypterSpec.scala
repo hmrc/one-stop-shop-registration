@@ -20,11 +20,10 @@ import java.time.{Instant, LocalDate, LocalDateTime}
 class RegistrationEncrypterSpec extends BaseSpec with ScalaCheckPropertyChecks with Generators with MockitoSugar {
 
   private val appConfig = mock[AppConfig]
-  private val cipher    = new AesGCMCrypto
   private val mockConfiguration = mock[Configuration]
   private val mockConfig = mock[Config]
   private val mockEncryptionService: EncryptionService = new EncryptionService(mockConfiguration)
-  private val encrypter = new RegistrationEncrypter(appConfig, cipher, mockEncryptionService, stubClock)
+  private val encrypter = new RegistrationEncrypter(appConfig, mockEncryptionService, stubClock)
   private val secretKey = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
 
   when(mockConfiguration.underlying) thenReturn mockConfig

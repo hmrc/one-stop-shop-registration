@@ -6,7 +6,6 @@ import models.external.{ExternalEntryUrlResponse, ExternalRequest, ExternalRespo
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.inject
 import play.api.libs.json.{JsNull, Json}
 import play.api.test.FakeRequest
