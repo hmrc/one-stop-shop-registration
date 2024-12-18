@@ -65,14 +65,15 @@ class EnrolmentsSubscriptionControllerSpec extends BaseSpec with BeforeAndAfterE
 
       val enrolmentStatus = arbitraryFailedEnrolmentStatus.arbitrary.sample.get
 
-            val stateName = enrolmentStatus match {
+            val statusName = enrolmentStatus match {
               case EnrolmentStatus.Failure => EnrolmentStatus.Failure.jsonName
               case EnrolmentStatus.Enrolled => EnrolmentStatus.Enrolled.jsonName
               case EnrolmentStatus.EnrolmentError => EnrolmentStatus.EnrolmentError.jsonName
               case EnrolmentStatus.AuthRefreshed => EnrolmentStatus.AuthRefreshed.jsonName
+              case _ => fail("Hit unexpected case for test")
             }
 
-            val enrolmentJson = Json.obj("state" -> stateName)
+            val enrolmentJson = Json.obj("state" -> statusName)
 
             when(mockRegistrationStatusRepository.set(any())) thenReturn Future.successful(RegistrationStatus(subscriptionId, EtmpRegistrationStatus.Error))
 
