@@ -20,8 +20,7 @@ import base.BaseSpec
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar.when
-import play.api.http.Status.CREATED
+import org.mockito.Mockito.when
 import play.api.inject.bind
 import play.api.libs.json.Json
 import play.api.test.FakeRequest

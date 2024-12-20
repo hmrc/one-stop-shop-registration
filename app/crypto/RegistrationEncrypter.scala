@@ -28,7 +28,6 @@ import scala.util.Try
 
 class RegistrationEncrypter @Inject()(
                                        appConfig: AppConfig,
-                                       crypto: AesGCMCrypto,
                                        encryptionService: EncryptionService,
                                        clock: Clock
                                      ) {

@@ -91,7 +91,6 @@ object EtmpRegistrationRequest extends Logging {
       case PreviousScheme.OSSNU => SchemeType.OSSNonUnion
       case PreviousScheme.IOSSWOI => SchemeType.IOSSWithoutIntermediary
       case PreviousScheme.IOSSWI => SchemeType.IOSSWithIntermediary
-      case _ => throw new Exception("Unknown scheme, unable to convert")
     }
   }
 

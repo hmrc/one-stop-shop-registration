@@ -18,15 +18,15 @@ package connectors
 
 import base.BaseSpec
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, ok, post, urlEqualTo}
-import models.{EisError, UnexpectedResponseStatus}
-import models.core._
+import models.{EisError, InvalidJson, UnexpectedResponseStatus}
+import models.core.*
 import org.scalacheck.Gen
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 
 import java.time.{Instant, LocalDate}
 
@@ -230,6 +230,27 @@ class ValidateCoreRegistrationConnectorSpec extends BaseSpec with WireMockHelper
         }
       }
     }
+
+    "must return Left(InvalidJson) when the server returns OK with invalid JSON" in {
+
+      val invalidJson = """{ "invalidField": "invalidValue" }"""
+
+      server.stubFor(
+        post(urlEqualTo(s"$getValidateCoreRegistrationUrl"))
+            .willReturn(aResponse()
+                .withStatus(OK)
+                .withBody(invalidJson))
+      )
+
+      running(application) {
+        val connector = application.injector.instanceOf[ValidateCoreRegistrationConnector]
+
+        val result = connector.validateCoreRegistration(coreRegistrationRequest).futureValue
+
+        result mustBe Left(InvalidJson)
+      }
+    }
+
 
   }
 

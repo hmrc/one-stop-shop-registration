@@ -34,7 +34,7 @@ object PreviousRegistration {
 
 sealed trait EncryptedPreviousRegistration
 
-  object EncryptedPreviousRegistration {
+object EncryptedPreviousRegistration {
 
   implicit val reads: Reads[EncryptedPreviousRegistration] =
     EncryptedPreviousRegistrationNew.format.widen[EncryptedPreviousRegistration] orElse

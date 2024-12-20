@@ -26,6 +26,7 @@ import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, StringContextOps}
+import play.api.libs.ws.writeableOf_JsValue
 
 import java.time.LocalDate
 import java.util.UUID

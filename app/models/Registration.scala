@@ -19,10 +19,10 @@ package models
 import logging.Logging
 import models.des.VatCustomerInfo
 import models.etmp.EtmpSchemeDetails.dateFormatter
-import models.etmp._
+import models.etmp.*
 import models.exclusions.ExcludedTrader
 import models.exclusions.ExcludedTrader.fromEtmpExclusion
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{JsObject, JsValue, Json, OFormat, OWrites, Reads, Writes}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Instant, LocalDate, ZoneId}
@@ -172,7 +172,6 @@ object Registration extends Logging {
       case SchemeType.OSSNonUnion => PreviousScheme.OSSNU
       case SchemeType.IOSSWithoutIntermediary => PreviousScheme.IOSSWOI
       case SchemeType.IOSSWithIntermediary => PreviousScheme.IOSSWI
-      case _ => throw new Exception("Unknown scheme, unable to convert")
     }
   }
 
@@ -248,5 +247,32 @@ case class EncryptedRegistration(
 
 object EncryptedRegistration {
 
-  implicit val format: OFormat[EncryptedRegistration] = Json.format[EncryptedRegistration]
+
+  implicit val writes: OWrites[EncryptedRegistration] = new OWrites[EncryptedRegistration] {
+    override def writes(o: EncryptedRegistration): JsObject = {
+      Json.obj(
+        "vrn" -> o.vrn.value,
+        "registeredCompanyName" -> o.registeredCompanyName,
+        "tradingNames" -> o.tradingNames,
+        "vatDetails" -> o.vatDetails,
+        "euRegistrations" -> o.euRegistrations,
+        "contactDetails" -> o.contactDetails,
+        "websites" -> o.websites,
+        "commencementDate" -> o.commencementDate.toString,
+        "previousRegistrations" -> o.previousRegistrations,
+        "bankDetails" -> o.bankDetails,
+        "isOnlineMarketplace" -> o.isOnlineMarketplace
+      ) ++
+          o.niPresence.map(value => Json.obj("niPresence" -> value.toString)).getOrElse(Json.obj()) ++
+          o.submissionReceived.map(value => Json.obj("submissionReceived" -> value.toString)).getOrElse(Json.obj()) ++
+          o.lastUpdated.map(value => Json.obj("lastUpdated" -> value.toString)).getOrElse(Json.obj()) ++
+          o.dateOfFirstSale.map(value => Json.obj("dateOfFirstSale" -> value.toString)).getOrElse(Json.obj()) ++
+          o.nonCompliantReturns.map(value => Json.obj("nonCompliantReturns" -> value)).getOrElse(Json.obj()) ++
+          o.nonCompliantPayments.map(value => Json.obj("nonCompliantPayments" -> value)).getOrElse(Json.obj())
+    }
+  }
+
+    implicit val reads: Reads[EncryptedRegistration] = Json.reads[EncryptedRegistration]
+
+    implicit val format: OFormat[EncryptedRegistration] = OFormat(reads, writes)
 }
