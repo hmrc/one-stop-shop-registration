@@ -4,7 +4,9 @@ import crypto.EncryptedValue
 import models.{enrolments, *}
 import models.enrolments.EnrolmentStatus
 import models.etmp.*
+import models.etmp.channelPreference.ChannelPreferenceRequest
 import models.exclusions.{ExcludedTrader, ExclusionReason}
+import models.external.{Event, EventData}
 import models.requests.SaveForLaterRequest
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
@@ -12,6 +14,7 @@ import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
+import java.util.UUID
 
 trait Generators {
 
@@ -499,8 +502,8 @@ trait Generators {
         quarantined = quarantined
       )
     }
-    
-  implicit lazy val arbitraryFailedEnrolmentStatus: Arbitrary[EnrolmentStatus] =
+
+  implicit lazy val arbitraryFailedEnrolmentStatus: Arbitrary[EnrolmentStatus] = {
     Arbitrary {
       Gen.oneOf(
         EnrolmentStatus.Failure,
@@ -509,4 +512,54 @@ trait Generators {
         EnrolmentStatus.AuthRefreshed
       )
     }
+  }
+
+  implicit lazy val arbitraryChannelPreferenceRequest: Arbitrary[ChannelPreferenceRequest] = {
+    Arbitrary {
+      for {
+        identifier <- arbitrary[Vrn]
+        emailAddress <- arbitrary[String]
+        unusableStatus <- arbitrary[Boolean]
+      } yield {
+        ChannelPreferenceRequest(
+          identifierType = "OSS",
+          identifier = identifier.toString,
+          emailAddress = emailAddress,
+          unusableStatus = unusableStatus
+        )
+      }
+    }
+  }
+
+  implicit lazy val arbitraryEventData: Arbitrary[EventData] = {
+    Arbitrary {
+      for {
+        emailAddress <- arbitrary[String]
+        tag1 <- arbitrary[String]
+        tag2 <- arbitrary[String]
+      } yield {
+        EventData(
+          emailAddress = emailAddress,
+          tags = Map(tag1 -> tag2)
+        )
+      }
+    }
+  }
+
+  implicit lazy val arbitraryEvent: Arbitrary[Event] = {
+    Arbitrary {
+      for {
+        subject <- arbitrary[String]
+        groupId <- arbitrary[String]
+        event <- arbitraryEventData.arbitrary
+      } yield {
+        Event(
+          eventId = UUID.randomUUID(),
+          subject = subject,
+          groupId = groupId,
+          event = event
+        )
+      }
+    }
+  }
 }
