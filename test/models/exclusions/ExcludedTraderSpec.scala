@@ -4,7 +4,7 @@ import base.BaseSpec
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
+import play.api.libs.json.{JsError, JsNull, JsString, JsSuccess, Json}
 
 import java.time.LocalDate
 
@@ -34,6 +34,37 @@ class ExcludedTraderSpec extends BaseSpec with ScalaCheckPropertyChecks {
 
       Json.toJson(expectedResult) mustBe json
       json.validate[ExcludedTrader] mustBe JsSuccess(expectedResult)
+    }
+
+    "must fail to deserialise missing values" in {
+
+      val json = Json.obj()
+
+      json.validate[ExcludedTrader] mustBe a[JsError]
+    }
+
+    "must fail to deserialise invalid values" in {
+
+      val json = Json.obj(
+        "exclusionReason" -> 12345,
+        "effectiveDate" -> LocalDate.of(2023, 2, 1),
+        "vrn" -> genVrn,
+        "quarantined" -> quarantined
+      )
+
+      json.validate[ExcludedTrader] mustBe a[JsError]
+    }
+
+    "must fail to deserialise null values" in {
+
+      val json = Json.obj(
+        "exclusionReason" -> JsNull,
+        "effectiveDate" -> LocalDate.of(2023, 2, 1),
+        "vrn" -> genVrn,
+        "quarantined" -> quarantined
+      )
+
+      json.validate[ExcludedTrader] mustBe a[JsError]
     }
   }
 

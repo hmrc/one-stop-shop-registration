@@ -3,7 +3,7 @@ package models.domain
 import base.BaseSpec
 import crypto.EncryptedValue
 import models.{DesAddress, EncryptedDesAddress}
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsError, JsNull, JsSuccess, Json}
 
 import java.time.LocalDate
 
@@ -38,6 +38,7 @@ class VatCustomerInfoSpec extends BaseSpec {
           singleMarketIndicator = Some(false)
         )
 
+        Json.toJson(expectedResult) mustBe json
         json.validate[VatCustomerInfo] mustEqual JsSuccess(expectedResult)
       }
 
@@ -58,7 +59,49 @@ class VatCustomerInfoSpec extends BaseSpec {
           singleMarketIndicator = None
         )
 
+        Json.toJson(expectedResult) mustBe json
         json.validate[VatCustomerInfo] mustEqual JsSuccess(expectedResult)
+      }
+
+      "when fields are absent" in {
+
+        val json = Json.obj()
+
+        json.validate[VatCustomerInfo] mustBe a[JsError]
+      }
+
+      "when fields are invalid" in {
+
+        val json = Json.obj(
+          "address" -> Json.obj(
+            "line1" -> "line 1",
+            "line2" -> "line 2",
+            "line3" -> "line 3",
+            "line4" -> "line 4",
+            "line5" -> "line 5",
+            "postCode" -> "postcode",
+            "countryCode" -> "CC"
+          ),
+          "registrationDate" -> "2023-12-06",
+          "partOfVatGroup" -> 12345,
+          "organisationName" -> "Test Organisation",
+          "singleMarketIndicator" -> false
+        )
+
+        json.validate[VatCustomerInfo] mustBe a[JsError]
+      }
+
+      "when fields are null" in {
+
+        val json = Json.obj(
+          "address" -> JsNull,
+          "registrationDate" -> "2023-12-06",
+          "partOfVatGroup" -> true,
+          "organisationName" -> "Test Organisation",
+          "singleMarketIndicator" -> false
+        )
+
+        json.validate[VatCustomerInfo] mustBe a[JsError]
       }
     }
   }
@@ -121,9 +164,51 @@ class VatCustomerInfoSpec extends BaseSpec {
           singleMarketIndicator = None,
         )
 
+        Json.toJson(expectedResult) mustBe json
         json.validate[EncryptedVatCustomerInfo] mustEqual JsSuccess(expectedResult)
       }
 
+    }
+
+    "when fields are absent" in {
+
+      val json = Json.obj()
+
+      json.validate[EncryptedVatCustomerInfo] mustBe a[JsError]
+    }
+
+    "when fields are invalid" in {
+
+      val json = Json.obj(
+        "address" -> Json.obj(
+          "line1" -> "line 1",
+          "line2" -> "line 2",
+          "line3" -> "line 3",
+          "line4" -> "line 4",
+          "line5" -> "line 5",
+          "postCode" -> "postcode",
+          "countryCode" -> "CC"
+        ),
+        "registrationDate" -> "2023-12-06",
+        "partOfVatGroup" -> 12345,
+        "organisationName" -> "Test Organisation",
+        "singleMarketIndicator" -> false
+      )
+
+      json.validate[EncryptedVatCustomerInfo] mustBe a[JsError]
+    }
+
+    "when fields are null" in {
+
+      val json = Json.obj(
+        "address" -> JsNull,
+        "registrationDate" -> "2023-12-06",
+        "partOfVatGroup" -> true,
+        "organisationName" -> "Test Organisation",
+        "singleMarketIndicator" -> false
+      )
+
+      json.validate[EncryptedVatCustomerInfo] mustBe a[JsError]
     }
   }
 }

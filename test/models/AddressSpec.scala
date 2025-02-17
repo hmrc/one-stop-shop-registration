@@ -22,7 +22,7 @@ import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsError, JsNull, JsSuccess, Json}
 
 class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with Generators with OptionValues {
 
@@ -67,6 +67,48 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
         Json.toJson(address) mustEqual expectedJson
         expectedJson.validate[Address] mustEqual JsSuccess(address)
       }
+
+      "with all fields missing" in {
+
+        val expectedJson = Json.obj(
+        )
+
+        expectedJson.validate[Address] mustBe a[JsError]
+      }
+
+      "with invalid fields" in {
+
+        val expectedJson = Json.obj(
+          "line1"       -> "line 1",
+          "line2"       -> "line 2",
+          "townOrCity"  -> "town",
+          "county"      -> "county",
+          "postCode"    -> "AA11 1AA",
+          "country"     -> Json.obj(
+            "code" -> 12345,
+            "name" -> "United Kingdom"
+          )
+        )
+
+        expectedJson.validate[Address] mustBe a[JsError]
+      }
+
+      "with null fields" in {
+
+        val expectedJson = Json.obj(
+          "line1"       -> "line 1",
+          "line2"       -> "line 2",
+          "townOrCity"  -> "town",
+          "county"      -> "county",
+          "postCode"    -> "AA11 1AA",
+          "country"     -> Json.obj(
+            "code" -> JsNull,
+            "name" -> "United Kingdom"
+          )
+        )
+
+        expectedJson.validate[Address] mustBe a[JsError]
+      }
     }
 
     "must serialise and deserialise from and to an International address" - {
@@ -107,6 +149,48 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
         Json.toJson(address) mustEqual expectedJson
         expectedJson.validate[Address] mustEqual JsSuccess(address)
       }
+
+      "with all fields missing" in {
+
+        val expectedJson = Json.obj(
+        )
+
+        expectedJson.validate[InternationalAddress] mustBe a[JsError]
+      }
+
+      "with invalid fields" in {
+
+        val expectedJson = Json.obj(
+          "line1"         -> "line 1",
+          "line2"         -> "line 2",
+          "townOrCity"    -> "town",
+          "stateOrRegion" -> "region",
+          "postCode"      -> "AA11 1AA",
+          "country"       -> Json.obj(
+            "code" -> 12345,
+            "name" -> "France"
+          )
+        )
+
+        expectedJson.validate[InternationalAddress] mustBe a[JsError]
+      }
+
+      "with null fields" in {
+
+        val expectedJson = Json.obj(
+          "line1" -> "line 1",
+          "line2" -> "line 2",
+          "townOrCity" -> "town",
+          "stateOrRegion" -> "region",
+          "postCode" -> "AA11 1AA",
+          "country" -> Json.obj(
+            "code" -> JsNull,
+            "name" -> "France"
+          )
+        )
+
+        expectedJson.validate[InternationalAddress] mustBe a[JsError]
+      }
     }
 
     "must serialise / deserialise from and to a DES address" - {
@@ -140,6 +224,44 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
 
         Json.toJson(address) mustEqual expectedJson
         expectedJson.validate[Address] mustEqual JsSuccess(address)
+      }
+
+      "with all fields missing" in {
+
+        val expectedJson = Json.obj(
+        )
+
+        expectedJson.validate[DesAddress] mustBe a[JsError]
+      }
+
+      "with invalid fields" in {
+
+        val expectedJson = Json.obj(
+          "line1"       -> "line 1",
+          "line2"       -> "line 2",
+          "line3"       -> "line 3",
+          "line4"       -> "line 4",
+          "line5"       -> "line 5",
+          "postCode"    -> "postcode",
+          "countryCode" -> 12345
+        )
+
+        expectedJson.validate[DesAddress] mustBe a[JsError]
+      }
+
+      "with null fields" in {
+
+        val expectedJson = Json.obj(
+          "line1"       -> "line 1",
+          "line2"       -> "line 2",
+          "line3"       -> "line 3",
+          "line4"       -> "line 4",
+          "line5"       -> "line 5",
+          "postCode"    -> "postcode",
+          "countryCode" -> JsNull
+        )
+
+        expectedJson.validate[DesAddress] mustBe a[JsError]
       }
     }
   }
@@ -193,6 +315,49 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
             expectedJson.validate[EncryptedAddress] mustEqual JsSuccess(address)
         }
       }
+
+      "with all fields missing" in {
+
+        val expectedJson = Json.obj(
+        )
+
+        expectedJson.validate[EncryptedAddress] mustBe a[JsError]
+      }
+
+      "with invalid fields" in {
+
+        val expectedJson = Json.obj(
+          "line1" -> "line 1",
+          "line2" -> "line 2",
+          "townOrCity" -> "town",
+          "county" -> "county",
+          "postCode" -> "AA11 1AA",
+          "country" -> Json.obj(
+            "code" -> 12345,
+            "name" -> "United Kingdom"
+          )
+        )
+
+        expectedJson.validate[EncryptedAddress] mustBe a[JsError]
+      }
+
+      "with null fields" in {
+
+        val expectedJson = Json.obj(
+          "line1" -> "line 1",
+          "line2" -> "line 2",
+          "townOrCity" -> "town",
+          "county" -> "county",
+          "postCode" -> "AA11 1AA",
+          "country" -> Json.obj(
+            "code" -> JsNull,
+            "name" -> "United Kingdom"
+          )
+        )
+
+        expectedJson.validate[EncryptedAddress] mustBe a[JsError]
+      }
+
     }
 
     "must serialise and deserialise from and to an International address" - {
@@ -259,6 +424,48 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
             expectedJson.validate[EncryptedAddress] mustEqual JsSuccess(address)
         }
       }
+
+      "with all fields missing" in {
+
+        val expectedJson = Json.obj(
+        )
+
+        expectedJson.validate[EncryptedInternationalAddress] mustBe a[JsError]
+      }
+
+      "with invalid fields" in {
+
+        val expectedJson = Json.obj(
+          "line1" -> "line 1",
+          "line2" -> "line 2",
+          "townOrCity" -> "town",
+          "stateOrRegion" -> "region",
+          "postCode" -> "AA11 1AA",
+          "country" -> Json.obj(
+            "code" -> 12345,
+            "name" -> "France"
+          )
+        )
+
+        expectedJson.validate[EncryptedInternationalAddress] mustBe a[JsError]
+      }
+
+      "with null fields" in {
+
+        val expectedJson = Json.obj(
+          "line1" -> "line 1",
+          "line2" -> "line 2",
+          "townOrCity" -> "town",
+          "stateOrRegion" -> "region",
+          "postCode" -> "AA11 1AA",
+          "country" -> Json.obj(
+            "code" -> JsNull,
+            "name" -> "France"
+          )
+        )
+
+        expectedJson.validate[EncryptedInternationalAddress] mustBe a[JsError]
+      }
     }
 
     "must serialise / deserialise from and to a DES address" - {
@@ -315,6 +522,44 @@ class AddressSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
             Json.toJson(address) mustEqual expectedJson
             expectedJson.validate[EncryptedAddress] mustEqual JsSuccess(address)
         }
+      }
+
+      "with all fields missing" in {
+
+        val expectedJson = Json.obj(
+        )
+
+        expectedJson.validate[EncryptedDesAddress] mustBe a[JsError]
+      }
+
+      "with invalid fields" in {
+
+        val expectedJson = Json.obj(
+          "line1" -> "line 1",
+          "line2" -> "line 2",
+          "line3" -> "line 3",
+          "line4" -> "line 4",
+          "line5" -> "line 5",
+          "postCode" -> "postcode",
+          "countryCode" -> 12345
+        )
+
+        expectedJson.validate[EncryptedDesAddress] mustBe a[JsError]
+      }
+
+      "with null fields" in {
+
+        val expectedJson = Json.obj(
+          "line1" -> "line 1",
+          "line2" -> "line 2",
+          "line3" -> "line 3",
+          "line4" -> "line 4",
+          "line5" -> "line 5",
+          "postCode" -> "postcode",
+          "countryCode" -> JsNull
+        )
+
+        expectedJson.validate[EncryptedDesAddress] mustBe a[JsError]
       }
     }
   }
