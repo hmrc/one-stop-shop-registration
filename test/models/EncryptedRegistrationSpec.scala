@@ -36,7 +36,7 @@ class EncryptedRegistrationSpec extends BaseSpec {
 
 
             val json = Json.toJson(encryptedRegistration)
-            println(json)
+            
             val expectedJson = Json.obj(
                 "vrn" -> "123456789",
                 "registeredCompanyName" -> "Foo",

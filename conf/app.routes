@@ -22,3 +22,5 @@ POST        /validate-core-registration                       controllers.Valida
 
 POST        /external-entry                                   controllers.external.ExternalEntryController.onExternal(lang: Option[String] ?= None)
 GET         /external-entry                                   controllers.external.ExternalEntryController.getExternalEntry()
+
+POST        /process/bounce                                   controllers.external.EventController.processBouncedEmailEvent()
