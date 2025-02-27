@@ -47,6 +47,7 @@ case class Registration(
                          transferringMsidEffectiveFromDate: Option[LocalDate] = None,
                          nonCompliantReturns: Option[String] = None,
                          nonCompliantPayments: Option[String] = None,
+                         unusableStatus: Option[Boolean] = None,
                          adminUse: AdminUse
                        )
 
@@ -95,6 +96,7 @@ object Registration extends Logging {
       nonCompliantReturns = schemeDetails.nonCompliantReturns,
       nonCompliantPayments = schemeDetails.nonCompliantPayments,
       excludedTrader = schemeDetails.exclusions.headOption.map(etmpExclusion => fromEtmpExclusion(vrn, etmpExclusion)),
+      unusableStatus = schemeDetails.unusableStatus,
       adminUse = adminUse
     )
   }

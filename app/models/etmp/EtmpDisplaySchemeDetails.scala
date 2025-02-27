@@ -35,7 +35,8 @@ case class EtmpDisplaySchemeDetails(
                               businessEmailId: String,
                               nonCompliantReturns: Option[String],
                               nonCompliantPayments: Option[String],
-                              exclusions: Seq[EtmpExclusion]
+                              exclusions: Seq[EtmpExclusion],
+                              unusableStatus: Option[Boolean]
                             )
 
 object EtmpDisplaySchemeDetails {
@@ -56,7 +57,8 @@ object EtmpDisplaySchemeDetails {
                                               businessEmailAddress: String,
                                               nonCompliantReturns: Option[String],
                                               nonCompliantPayments: Option[String],
-                                              exclusions: Option[Seq[EtmpExclusion]]
+                                              exclusions: Option[Seq[EtmpExclusion]],
+                                              unusableStatus: Option[Boolean]
                                             ): EtmpDisplaySchemeDetails =
     EtmpDisplaySchemeDetails(
       commencementDate = commencementDate,
@@ -72,7 +74,8 @@ object EtmpDisplaySchemeDetails {
       businessEmailId = businessEmailAddress,
       nonCompliantReturns = nonCompliantReturns,
       nonCompliantPayments = nonCompliantPayments,
-      exclusions = exclusions.fold(Seq.empty[EtmpExclusion])(a => a)
+      exclusions = exclusions.fold(Seq.empty[EtmpExclusion])(a => a),
+      unusableStatus = unusableStatus
     )
 
   implicit val reads: Reads[EtmpDisplaySchemeDetails] =
@@ -90,7 +93,8 @@ object EtmpDisplaySchemeDetails {
         (__ \ "contactDetails" \ "businessEmailAddress").read[String] and
         (__ \ "nonCompliantReturns").readNullable[String] and
         (__ \ "nonCompliantPayments").readNullable[String] and
-        (__ \ "exclusions").readNullable[Seq[EtmpExclusion]]
+        (__ \ "exclusions").readNullable[Seq[EtmpExclusion]] and
+        (__ \ "unusableStatus").readNullable[Boolean]
       )(EtmpDisplaySchemeDetails.fromDisplayRegistrationPayload _)
 
   implicit val writes: OWrites[EtmpDisplaySchemeDetails] =
