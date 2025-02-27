@@ -1,7 +1,7 @@
 package models
 
-import models.etmp.{AdminUse, EtmpDisplaySchemeDetails, Website}
 import base.BaseSpec
+import models.etmp.{AdminUse, EtmpDisplaySchemeDetails, Website}
 import org.scalatest.matchers.should.Matchers.should
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Vrn
@@ -11,7 +11,9 @@ import java.time.LocalDate
 class RegistrationSpec extends BaseSpec {
 
     "fromEtmpRegistration" - {
+        
         "should return a Registration correctly from EtmpRegistration data" in {
+            
             val vrn = Vrn("123456789")
             val vatDetails = vatCustomerInfo
             val adminUse = AdminUse(None)
@@ -28,6 +30,7 @@ class RegistrationSpec extends BaseSpec {
                 nonCompliantReturns = None,
                 nonCompliantPayments = None,
                 exclusions = Seq.empty,
+                unusableStatus = None
             )
 
             val result = Registration.fromEtmpRegistration(
@@ -38,17 +41,18 @@ class RegistrationSpec extends BaseSpec {
                 etmpRegistrationRequest.bankDetails,
                 adminUse)
 
-            result.vrn mustBe vrn
-            result.registeredCompanyName mustBe "Company name"
-            result.tradingNames mustBe Seq("Foo")
-            result.vatDetails mustBe VatDetails(vatDetails.registrationDate.get, vatDetails.address, vatDetails.partOfVatGroup, VatDetailSource.Etmp)
-            result.contactDetails.fullName mustBe "Joe Bloggs"
+            result.vrn `mustBe` vrn
+            result.registeredCompanyName `mustBe` "Company name"
+            result.tradingNames `mustBe` Seq("Foo")
+            result.vatDetails `mustBe` VatDetails(vatDetails.registrationDate.get, vatDetails.address, vatDetails.partOfVatGroup, VatDetailSource.Etmp)
+            result.contactDetails.fullName `mustBe` "Joe Bloggs"
             result.websites should contain("website2")
 
         }
 
 
         "throw an exception if no organisation name or individual name is provided" in {
+
             val vrn = Vrn("123456789")
             val vatDetails = vatCustomerInfo.copy(individualName = None, organisationName = None)
             val adminUse = AdminUse(None)
@@ -65,14 +69,16 @@ class RegistrationSpec extends BaseSpec {
                 nonCompliantReturns = None,
                 nonCompliantPayments = None,
                 exclusions = Seq.empty,
+                unusableStatus = None
             )
 
-            an[IllegalStateException] mustBe thrownBy {
+            an[IllegalStateException] `mustBe` thrownBy {
                 Registration.fromEtmpRegistration(vrn, vatDetails, etmpRegistrationRequest.tradingNames, schemeDetails,  etmpRegistrationRequest.bankDetails, adminUse)
             }
         }
 
         "serialize and deserialize to/from JSON correctly" in {
+
             val registration = Registration(
                 vrn = Vrn("123456789"),
                 registeredCompanyName = "Test Company",
@@ -94,13 +100,14 @@ class RegistrationSpec extends BaseSpec {
                 dateOfFirstSale = Some(LocalDate.now()),
                 submissionReceived = None,
                 lastUpdated = None,
+                unusableStatus = None,
                 adminUse = AdminUse(None)
             )
 
             val json = Json.toJson(registration)
             val result = json.as[Registration]
 
-            result mustBe registration
+            result `mustBe` registration
         }
     }
 }

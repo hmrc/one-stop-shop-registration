@@ -36,7 +36,6 @@ class ValidateCoreRegistrationController @Inject()(
 
   def post: Action[CoreRegistrationRequest] = cc.authAndRequireVat()(parse.json[CoreRegistrationRequest]).async {
     implicit request =>
-
       validateCoreRegistrationConnector.validateCoreRegistration(request.body).map {
         case Left(value) => InternalServerError(Json.toJson(value.body))
         case Right(value) =>

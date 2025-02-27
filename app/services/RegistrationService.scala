@@ -18,42 +18,15 @@ package services
 
 import controllers.actions.{AuthorisedMandatoryRegistrationRequest, AuthorisedMandatoryVrnRequest}
 import logging.Logging
-import models.requests.{AmendRegistrationRequest, RegistrationRequest}
 import models.Registration
-import models.etmp.AdminUse
 import models.repository.{AmendResult, InsertResult}
+import models.requests.{AmendRegistrationRequest, RegistrationRequest}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.{Clock, Instant, LocalDateTime}
 import scala.concurrent.Future
 
 trait RegistrationService extends Logging {
-
-  def buildRegistration(request: RegistrationRequest, clock: Clock): Registration = {
-    val now = Instant.now(clock)
-
-    Registration(
-      vrn = request.vrn,
-      registeredCompanyName = request.registeredCompanyName,
-      tradingNames = request.tradingNames,
-      vatDetails = request.vatDetails,
-      euRegistrations = request.euRegistrations,
-      contactDetails = request.contactDetails,
-      websites = request.websites,
-      commencementDate = request.commencementDate,
-      previousRegistrations = request.previousRegistrations,
-      bankDetails = request.bankDetails,
-      isOnlineMarketplace = request.isOnlineMarketplace,
-      niPresence = request.niPresence,
-      dateOfFirstSale = request.dateOfFirstSale,
-      submissionReceived = Some(request.submissionReceived.getOrElse(now)),
-      lastUpdated = Some(now),
-      nonCompliantReturns = request.nonCompliantReturns,
-      nonCompliantPayments = request.nonCompliantPayments,
-      adminUse = AdminUse(Some(LocalDateTime.ofInstant(now, clock.getZone)))
-    )
-  }
 
   def createRegistration(registrationRequest: RegistrationRequest)
                         (implicit hc: HeaderCarrier, request: AuthorisedMandatoryVrnRequest[_]): Future[InsertResult]

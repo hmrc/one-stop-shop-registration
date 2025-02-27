@@ -431,20 +431,21 @@ trait Generators {
         exclusions <- Gen.listOfN(1, arbitraryEtmpExclusion.arbitrary)
       } yield
         EtmpDisplaySchemeDetails(
-          commencementDate,
-          firstSaleDate,
-          None,
-          None,
-          euRegistrationDetails,
-          previousEURegistrationDetails,
-          onlineMarketPlace,
-          websites,
-          contactName,
-          businessTelephoneNumber,
-          businessEmailId,
-          nonCompliantReturns,
-          nonCompliantPayments,
-          exclusions
+          commencementDate = commencementDate,
+          firstSaleDate = firstSaleDate,
+          requestDate = None,
+          registrationDate = None,
+          euRegistrationDetails = euRegistrationDetails,
+          previousEURegistrationDetails = previousEURegistrationDetails,
+          onlineMarketPlace = onlineMarketPlace,
+          websites = websites,
+          contactName = contactName,
+          businessTelephoneNumber = businessTelephoneNumber,
+          businessEmailId = businessEmailId,
+          nonCompliantReturns = nonCompliantReturns,
+          nonCompliantPayments = nonCompliantPayments,
+          exclusions = exclusions,
+          unusableStatus = None
         )
     }
   }
@@ -472,7 +473,7 @@ trait Generators {
         commencementDate <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
         isOnlineMarketplace <- arbitrary[Boolean]
         adminUse <- arbitrary[AdminUse]
-      } yield Registration(vrn, name, Nil, vatDetails, Nil, contactDetails, Nil, commencementDate, Nil, bankDetails, isOnlineMarketplace, None, None, None, None, None, None, None, None, adminUse)
+      } yield Registration(vrn, name, Nil, vatDetails, Nil, contactDetails, Nil, commencementDate, Nil, bankDetails, isOnlineMarketplace, None, None, None, None, None, None, None, None, None, adminUse)
     }
 
   implicit val arbitraryStandardPeriod: Arbitrary[StandardPeriod] =
