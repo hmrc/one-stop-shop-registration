@@ -1,7 +1,7 @@
 package utils
 
 import base.BaseSpec
-import models.etmp._
+import models.etmp.*
 import org.scalacheck.Gen
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{OWrites, __}
@@ -46,7 +46,8 @@ object EtmpDisplayRegistrationData extends BaseSpec {
         (__ \ "contactDetails" \ "businessEmailAddress").write[String] and
         (__ \ "nonCompliantReturns").writeNullable[String] and
         (__ \ "nonCompliantPayments").writeNullable[String] and
-        (__ \ "exclusions").write[Seq[EtmpExclusion]]
+        (__ \ "exclusions").write[Seq[EtmpExclusion]] and
+        (__ \ "unusableStatus").writeNullable[Boolean]
       ) (etmpDisplaySchemeDetails => Tuple.fromProductTyped(etmpDisplaySchemeDetails))
   }
 }

@@ -1,15 +1,15 @@
 package testutils
 
+import models.*
 import models.EuTaxIdentifierType.{Other, Vat}
 import models.VatDetailSource.{Etmp, UserEntered}
-import models._
+import models.etmp.*
 import models.etmp.EtmpSchemeDetails.dateFormatter
-import models.etmp._
 import models.requests.{AmendRegistrationRequest, RegistrationRequest}
 import repositories.RegistrationWrapper
 import uk.gov.hmrc.domain.Vrn
 
-import java.time._
+import java.time.*
 
 object RegistrationData {
 
@@ -400,7 +400,8 @@ object RegistrationData {
         businessEmailId = "email@email.com",
         nonCompliantReturns = Some("1"),
         nonCompliantPayments = Some("2"),
-        exclusions = Seq.empty
+        exclusions = Seq.empty,
+        unusableStatus = None
       ),
       bankDetails = BankDetails("Account name", Some(bic), iban),
       adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
@@ -423,7 +424,8 @@ object RegistrationData {
         businessEmailId = "test@testEmail.com",
         None,
         None,
-        Seq.empty
+        Seq.empty,
+        None
       ),
       bankDetails = BankDetails(
         accountName = "Bank Account Name",

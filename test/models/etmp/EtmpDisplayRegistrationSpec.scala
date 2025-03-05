@@ -125,7 +125,8 @@ class EtmpDisplayRegistrationSpec extends BaseSpec {
               effectiveDate = LocalDate.parse("2024-02-25"),
               decisionDate = LocalDate.parse("2024-04-25"),
               quarantine = true
-            ))
+            )),
+            unusableStatus = None
           ),
           bankDetails = BankDetails(
             accountName = "Bank Account Name",
@@ -179,7 +180,8 @@ class EtmpDisplayRegistrationSpec extends BaseSpec {
             businessEmailId = "test@testEmail.com",
             None,
             None,
-            exclusions = Seq.empty
+            exclusions = Seq.empty,
+            unusableStatus = None
           ),
           bankDetails = BankDetails(
             accountName = "Bank Account Name",
