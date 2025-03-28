@@ -125,6 +125,7 @@ class RegistrationServiceEtmpImpl @Inject()(
                               auditBlock: (EtmpDisplayRegistration, Registration) => Unit)(implicit hc: HeaderCarrier): Future[Option[Registration]] = {
     registrationConnector.get(vrn).flatMap {
       case Right(etmpRegistration) =>
+
         getVatInfoConnector.getVatCustomerDetails(vrn).flatMap {
           case Right(vatDetails) =>
 
