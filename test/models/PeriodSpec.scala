@@ -51,7 +51,8 @@ class PeriodSpec extends BaseSpec with ScalaCheckPropertyChecks {
     }
 
     "must return false if the payment deadline has not passed" in {
-      val period = StandardPeriod(2025, Q1)
+      val nextYear = LocalDate.now(stubClock).plusYears(1).getYear
+      val period = StandardPeriod(nextYear, Q1)
 
       period.isOverdue(stubClock) mustBe false
     }
