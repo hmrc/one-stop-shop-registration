@@ -50,6 +50,26 @@ class ChannelPreferenceServiceSpec extends BaseSpec with BeforeAndAfterEach {
         verify(mockChannelPreferenceConnector, times(1)).updatePreferences(eqTo(expectedRequest))(any())
       }
 
+      "must call channel preference with correct VRN with spaces and reply when successful" in {
+
+        val enrolmentStringWithSpaces = s"HMRC-OSS-ORG~VRN~123 4567 89"
+
+        val updatedEvent = event.copy(event = event.event.copy(tags = Map("enrolment" -> enrolmentStringWithSpaces)))
+        val httpResponse = HttpResponse(OK, "")
+
+        when(mockChannelPreferenceConnector.updatePreferences(any())(any())) thenReturn httpResponse.toFuture
+
+        val service = new ChannelPreferenceService(mockChannelPreferenceConnector)
+
+        val result = service.updatePreferences(updatedEvent).futureValue
+
+        val expectedRequest = ChannelPreferenceRequest("VRN", vrn.toString, event.event.emailAddress, unusableStatus = true)
+
+        result `mustBe` true
+        
+        verify(mockChannelPreferenceConnector, times(1)).updatePreferences(eqTo(expectedRequest))(any())
+      }
+
       "must reply with false when failed" in {
 
         val updatedEvent = event.copy(event = event.event.copy(tags = Map("enrolment" -> enrolmentString)))

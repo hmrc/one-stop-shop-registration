@@ -56,7 +56,10 @@ class ChannelPreferenceService @Inject()(
 
     tags.get("enrolment") match {
       case Some(enrolment) =>
-        enrolment.substring(enrolmentMatcherString.length)
+        enrolment
+          .trim
+          .replaceAll(" ", "")
+          .substring(enrolmentMatcherString.length)
       case _ =>
         val exception = new IllegalStateException(s"Unable to get enrolment from event with tags $tags")
         logger.error(exception.getMessage, exception)
