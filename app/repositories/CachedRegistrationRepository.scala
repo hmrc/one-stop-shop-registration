@@ -19,12 +19,13 @@ package repositories
 import config.AppConfig
 import models.Registration
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model._
+import org.mongodb.scala.model.*
 import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import org.mongodb.scala.SingleObservableFuture
+import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Clock, Instant}
 import java.util.concurrent.TimeUnit
@@ -55,18 +56,23 @@ class CachedRegistrationRepository @Inject()(
 
   private def byId(id: String): Bson = Filters.equal("_id", id)
 
-  def get(id: String): Future[Option[RegistrationWrapper]] =
+  private def cachedKey(userId: String, vrn: Option[Vrn]): String =
+    vrn match
+      case Some(value) => s"$userId-${value}"
+      case None => userId
+
+  def get(userId: String, vrn: Option[Vrn]): Future[Option[RegistrationWrapper]] =
     collection
-      .find(byId(id))
+      .find(byId(cachedKey(userId, vrn)))
       .headOption()
 
-  def set(userId: String, registration: Option[Registration]): Future[Boolean] = {
+  def set(userId: String, vrn: Option[Vrn], registration: Option[Registration]): Future[Boolean] = {
 
-    val wrapper = RegistrationWrapper(userId, registration, Instant.now(clock))
+    val wrapper = RegistrationWrapper(cachedKey(userId, vrn), registration, Instant.now(clock))
 
     collection
       .replaceOne(
-        filter      = byId(userId),
+        filter      = byId(wrapper.userId),
         replacement = wrapper,
         options     = ReplaceOptions().upsert(true)
       )
@@ -74,11 +80,11 @@ class CachedRegistrationRepository @Inject()(
       .map(_ => true)
   }
 
-  def clear(id: String): Future[Boolean] = {
+  def clear(id: String, vrn: Option[Vrn]): Future[Boolean] = {
 
     collection
       .deleteOne(
-        filter = byId(id)
+        filter = byId(cachedKey(id, vrn))
       )
       .toFuture()
       .map(_ => true)

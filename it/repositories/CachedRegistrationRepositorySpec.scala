@@ -47,7 +47,7 @@ class CachedRegistrationRepositorySpec
 
       val expectedResult = RegistrationWrapper(userId, Some(registration), Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
-      val setResult = repository.set(userId, Some(registration)).futureValue
+      val setResult = repository.set(userId, None, Some(registration)).futureValue
       val dbRecord  = find(Filters.equal("_id", userId)).futureValue.headOption.value
 
       setResult mustEqual true
@@ -64,7 +64,7 @@ class CachedRegistrationRepositorySpec
         val wrapper = RegistrationWrapper(userId, Some(registration), Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
         insert(wrapper).futureValue
 
-        val result = repository.get(userId).futureValue
+        val result = repository.get(userId, None).futureValue
 
         result.value mustEqual wrapper
       }
@@ -74,7 +74,7 @@ class CachedRegistrationRepositorySpec
 
       "must return None" in {
 
-        repository.get(userId).futureValue must not be defined
+        repository.get(userId, None).futureValue must not be defined
       }
     }
   }

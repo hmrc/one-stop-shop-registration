@@ -90,7 +90,7 @@ class RegistrationServiceEtmpImpl @Inject()(
     }
 
     if (appConfig.registrationCacheEnabled) {
-      cachedRegistrationRepository.clear(request.userId)
+      cachedRegistrationRepository.clear(request.userId, None)
     }
     creationResponse
   }
@@ -100,12 +100,12 @@ class RegistrationServiceEtmpImpl @Inject()(
       auditService.audit(EtmpDisplayRegistrationAuditModel.build(EtmpRegistrationAuditType.DisplayRegistration, etmpRegistration, registration))
 
     if (appConfig.registrationCacheEnabled) {
-      cachedRegistrationRepository.get(request.userId).flatMap {
+      cachedRegistrationRepository.get(request.userId, Some(vrn)).flatMap {
         case Some(cachedRegistration) =>
           Future.successful(cachedRegistration.registration)
         case _ =>
           getRegistration(vrn, auditBlock).map { maybeRegistration =>
-            cachedRegistrationRepository.set(request.userId, maybeRegistration)
+            cachedRegistrationRepository.set(request.userId, Some(vrn), maybeRegistration)
             maybeRegistration
           }
       }
@@ -199,7 +199,7 @@ class RegistrationServiceEtmpImpl @Inject()(
     )
 
     if (appConfig.registrationCacheEnabled) {
-      cachedRegistrationRepository.clear(request.userId)
+      cachedRegistrationRepository.clear(request.userId, None)
     }
     amendmentResult
   }
