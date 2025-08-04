@@ -54,25 +54,25 @@ class CachedRegistrationRepository @Inject()(
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
-  private def byId(id: String): Bson = Filters.equal("_id", id)
+  private def byIdAndVrn(id: String, vrn: Vrn): Bson =
+    Filters.and(
+      Filters.equal("_id", id),
+      Filters.equal("registration.vrn", vrn.vrn)
+    )
 
-  private def cachedKey(userId: String, vrn: Option[Vrn]): String =
-    vrn match
-      case Some(value) => s"$userId-${value}"
-      case None => userId
 
-  def get(userId: String, vrn: Option[Vrn]): Future[Option[RegistrationWrapper]] =
+  def get(userId: String, vrn: Vrn): Future[Option[RegistrationWrapper]] =
     collection
-      .find(byId(cachedKey(userId, vrn)))
+      .find(byIdAndVrn(userId, vrn))
       .headOption()
 
-  def set(userId: String, vrn: Option[Vrn], registration: Option[Registration]): Future[Boolean] = {
+  def set(userId: String, vrn: Vrn, registration: Option[Registration]): Future[Boolean] = {
 
-    val wrapper = RegistrationWrapper(cachedKey(userId, vrn), registration, Instant.now(clock))
+    val wrapper = RegistrationWrapper(userId, registration, Instant.now(clock))
 
     collection
       .replaceOne(
-        filter      = byId(wrapper.userId),
+        filter      = byIdAndVrn(userId, vrn),
         replacement = wrapper,
         options     = ReplaceOptions().upsert(true)
       )
@@ -80,11 +80,11 @@ class CachedRegistrationRepository @Inject()(
       .map(_ => true)
   }
 
-  def clear(id: String, vrn: Option[Vrn]): Future[Boolean] = {
+  def clear(id: String, vrn: Vrn): Future[Boolean] = {
 
     collection
       .deleteOne(
-        filter = byId(cachedKey(id, vrn))
+        filter = byIdAndVrn(id, vrn)
       )
       .toFuture()
       .map(_ => true)
