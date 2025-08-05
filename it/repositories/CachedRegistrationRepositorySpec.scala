@@ -11,6 +11,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.{Clock, Instant, ZoneId}
@@ -28,9 +29,10 @@ class CachedRegistrationRepositorySpec
     with Generators {
 
   private val userId  = "id-123"
+  private val vrn  = Vrn("123456789")
   private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-  private val registration: Registration = arbitrary[Registration].sample.value
+  private val registration: Registration = arbitrary[Registration].sample.value.copy(vrn = vrn)
 
   private val mockAppConfig = mock[AppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1L
@@ -47,7 +49,7 @@ class CachedRegistrationRepositorySpec
 
       val expectedResult = RegistrationWrapper(userId, Some(registration), Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
-      val setResult = repository.set(userId, Some(registration)).futureValue
+      val setResult = repository.set(userId, vrn, Some(registration)).futureValue
       val dbRecord  = find(Filters.equal("_id", userId)).futureValue.headOption.value
 
       setResult mustEqual true
@@ -64,7 +66,7 @@ class CachedRegistrationRepositorySpec
         val wrapper = RegistrationWrapper(userId, Some(registration), Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
         insert(wrapper).futureValue
 
-        val result = repository.get(userId).futureValue
+        val result = repository.get(userId, vrn).futureValue
 
         result.value mustEqual wrapper
       }
@@ -74,7 +76,7 @@ class CachedRegistrationRepositorySpec
 
       "must return None" in {
 
-        repository.get(userId).futureValue must not be defined
+        repository.get(userId, vrn).futureValue must not be defined
       }
     }
   }

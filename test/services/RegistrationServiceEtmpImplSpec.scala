@@ -142,12 +142,12 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
           Right(EtmpEnrolmentResponse(LocalDateTime.now(), vrn.vrn, "test")))
         when(registrationStatusRepository.delete(any())) thenReturn Future.successful(true)
         when(registrationStatusRepository.insert(any())) thenReturn successful(InsertSucceeded)
-        when(cachedRegistrationRepository.clear(any())) thenReturn Future.successful(true)
+        when(cachedRegistrationRepository.clear(any(), any())) thenReturn Future.successful(true)
         when(retryService.getEtmpRegistrationStatus(any(), any(), any())) thenReturn successful(EtmpRegistrationStatus.Success)
 
         registrationService.createRegistration(registrationRequest).futureValue mustEqual InsertSucceeded
         verify(auditService, times(1)).audit(any())(any(), any())
-        verify(cachedRegistrationRepository, times(1)).clear(any())
+        verify(cachedRegistrationRepository, times(1)).clear(any(), any())
       }
 
       "must create a registration from the request, save it and return the result of the save operation and not clear cache if disabled" in {
@@ -225,7 +225,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       )
 
       when(appConfig.registrationCacheEnabled) thenReturn true
-      when(cachedRegistrationRepository.get(any())) thenReturn Future.successful(None)
+      when(cachedRegistrationRepository.get(any(), any())) thenReturn Future.successful(None)
       when(registrationConnector.get(any())) thenReturn Future.successful(Right(displayRegistration))
       when(getVatInfoConnector.getVatCustomerDetails(any())(any())) thenReturn Future.successful(Right(vatCustomerInfo))
       when(coreValidationService.searchScheme(any(), any(), any(), any())) thenReturn Future.successful(Some(searchSchemeMatch))
@@ -233,16 +233,16 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
       registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
       verify(registrationConnector, times(1)).get(Vrn("123456789"))
       verify(getVatInfoConnector, times(1)).getVatCustomerDetails(Vrn("123456789"))
-      verify(cachedRegistrationRepository, times(1)).get(any())
+      verify(cachedRegistrationRepository, times(1)).get(any(), any())
     }
 
     "must return cached registration value when cached" in {
       when(appConfig.registrationCacheEnabled) thenReturn true
-      when(cachedRegistrationRepository.get(any())) thenReturn Future.successful(Some(wrappedCachedRegistration))
+      when(cachedRegistrationRepository.get(any(), any())) thenReturn Future.successful(Some(wrappedCachedRegistration))
       registrationService.get(Vrn("123456789")).futureValue mustBe Some(fromEtmpRegistration)
       verifyNoInteractions(registrationConnector)
       verifyNoInteractions(getVatInfoConnector)
-      verify(cachedRegistrationRepository, times(1)).get(any())
+      verify(cachedRegistrationRepository, times(1)).get(any(), any())
     }
 
     "must return Some(registration) when both connectors return right and doesn't call cache when not enabled" in {
@@ -358,11 +358,11 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
         when(registrationConnector.amendRegistration(any())) thenReturn Future.successful(
           Right(AmendRegistrationResponse(LocalDateTime.now(), "formBundle1", vrn.vrn, "bpnumber-1")))
         when(serviceMetrics.startTimer(any())).thenReturn(new Timer().time)
-        when(cachedRegistrationRepository.clear(any())) thenReturn Future.successful(true)
+        when(cachedRegistrationRepository.clear(any(), any())) thenReturn Future.successful(true)
 
         registrationService.amend(amendRegistrationRequest).futureValue mustEqual AmendSucceeded
         verify(auditService, times(1)).audit(any())(any(), any())
-        verify(cachedRegistrationRepository, times(1)).clear(any())
+        verify(cachedRegistrationRepository, times(1)).clear(any(), any())
       }
 
       "must throw EtmpException when connector returns an error" in {

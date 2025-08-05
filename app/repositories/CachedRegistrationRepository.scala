@@ -19,12 +19,13 @@ package repositories
 import config.AppConfig
 import models.Registration
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model._
+import org.mongodb.scala.model.*
 import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import org.mongodb.scala.SingleObservableFuture
+import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Clock, Instant}
 import java.util.concurrent.TimeUnit
@@ -53,20 +54,25 @@ class CachedRegistrationRepository @Inject()(
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
-  private def byId(id: String): Bson = Filters.equal("_id", id)
+  private def byIdAndVrn(id: String, vrn: Vrn): Bson =
+    Filters.and(
+      Filters.equal("_id", id),
+      Filters.equal("registration.vrn", vrn.vrn)
+    )
 
-  def get(id: String): Future[Option[RegistrationWrapper]] =
+
+  def get(userId: String, vrn: Vrn): Future[Option[RegistrationWrapper]] =
     collection
-      .find(byId(id))
+      .find(byIdAndVrn(userId, vrn))
       .headOption()
 
-  def set(userId: String, registration: Option[Registration]): Future[Boolean] = {
+  def set(userId: String, vrn: Vrn, registration: Option[Registration]): Future[Boolean] = {
 
     val wrapper = RegistrationWrapper(userId, registration, Instant.now(clock))
 
     collection
       .replaceOne(
-        filter      = byId(userId),
+        filter      = byIdAndVrn(userId, vrn),
         replacement = wrapper,
         options     = ReplaceOptions().upsert(true)
       )
@@ -74,11 +80,11 @@ class CachedRegistrationRepository @Inject()(
       .map(_ => true)
   }
 
-  def clear(id: String): Future[Boolean] = {
+  def clear(id: String, vrn: Vrn): Future[Boolean] = {
 
     collection
       .deleteOne(
-        filter = byId(id)
+        filter = byIdAndVrn(id, vrn)
       )
       .toFuture()
       .map(_ => true)
