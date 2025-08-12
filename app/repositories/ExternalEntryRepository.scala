@@ -19,13 +19,12 @@ package repositories
 import config.AppConfig
 import logging.Logging
 import models.external.ExternalEntry
-import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.bson.conversions._
 import org.mongodb.scala.model._
 import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
-import org.mongodb.scala.SingleObservableFuture
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
