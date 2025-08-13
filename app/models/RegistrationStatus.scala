@@ -25,7 +25,7 @@ import java.time.Instant
 case class RegistrationStatus(
                                subscriptionId: String,
                                status        : EtmpRegistrationStatus,
-                               lastUpdated: Instant = Instant.now
+                               lastUpdated   : Instant = Instant.now
                              )
 
 object RegistrationStatus {
