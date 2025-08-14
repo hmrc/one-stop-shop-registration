@@ -51,6 +51,6 @@ object RegistrationStatus {
       )(registrationStatus => Tuple.fromProductTyped(registrationStatus))
   }
 
-  implicit val format: OFormat[RegistrationStatus] = Json.format[RegistrationStatus]
+  implicit val format: OFormat[RegistrationStatus] = OFormat(reads, writes)
 
 }
