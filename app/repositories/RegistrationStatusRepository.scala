@@ -21,12 +21,11 @@ import logging.Logging
 import models.RegistrationStatus
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.repository.InsertResult
-import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.bson.conversions._
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions}
 import repositories.MongoErrors.Duplicate
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.MongoComponent
-import org.mongodb.scala.SingleObservableFuture
 
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
@@ -49,6 +48,11 @@ class RegistrationStatusRepository @Inject()(
         IndexOptions()
           .name("subscriptionIdIndex")
           .unique(true)
+      ),
+      IndexModel (
+        Indexes.ascending("lastUpdated"),
+        IndexOptions()
+          .name("lastUpdatedIdx")
           .expireAfter(appConfig.registrationStatusTtl, TimeUnit.HOURS)
 
       )

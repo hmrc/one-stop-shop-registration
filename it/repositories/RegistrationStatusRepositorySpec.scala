@@ -11,6 +11,8 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, PlayMongoRepositorySupport}
 
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RegistrationStatusRepositorySpec extends AnyFreeSpec
@@ -30,7 +32,7 @@ class RegistrationStatusRepositorySpec extends AnyFreeSpec
     )
 
   val registrationStatus: RegistrationStatus = RegistrationStatus("100000001-id",
-    EtmpRegistrationStatus.Success)
+    EtmpRegistrationStatus.Success, Instant.now.truncatedTo(ChronoUnit.MILLIS))
 
   ".insert" - {
 

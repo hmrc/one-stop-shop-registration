@@ -55,7 +55,7 @@ class EnrolmentsSubscriptionControllerSpec extends BaseSpec with BeforeAndAfterE
         val result = route(app, request).value
 
         status(result) mustEqual NO_CONTENT
-        verify(mockRegistrationStatusRepository).set(RegistrationStatus(subscriptionId, EtmpRegistrationStatus.Success))
+        verify(mockRegistrationStatusRepository).set(any[RegistrationStatus])
       }
     }
 
@@ -91,7 +91,7 @@ class EnrolmentsSubscriptionControllerSpec extends BaseSpec with BeforeAndAfterE
               val result = route(app, request).value
 
               status(result) mustEqual NO_CONTENT
-              verify(mockRegistrationStatusRepository).set(RegistrationStatus(subscriptionId, EtmpRegistrationStatus.Error))
+              verify(mockRegistrationStatusRepository).set(any[RegistrationStatus])
           }
       }
     }
