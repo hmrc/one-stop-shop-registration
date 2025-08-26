@@ -16,17 +16,19 @@
 
 package repositories
 
+
 import config.AppConfig
 import logging.Logging
 import models.RegistrationStatus
-import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.repository.InsertResult
-import org.mongodb.scala.bson.conversions._
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions}
+import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
+import org.mongodb.scala.bson.conversions.*
+import org.mongodb.scala.model.*
 import repositories.MongoErrors.Duplicate
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import java.time.{Duration, Instant}
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,19 +39,19 @@ class RegistrationStatusRepository @Inject()(
                                               mongoComponent: MongoComponent,
                                               appConfig: AppConfig
                                             )(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[RegistrationStatus] (
+  extends PlayMongoRepository[RegistrationStatus](
     collectionName = "registration-status",
     mongoComponent = mongoComponent,
-    domainFormat   = RegistrationStatus.format,
+    domainFormat = RegistrationStatus.format,
     replaceIndexes = true,
-    indexes        = Seq(
+    indexes = Seq(
       IndexModel(
         Indexes.ascending("subscriptionId"),
         IndexOptions()
           .name("subscriptionIdIndex")
           .unique(true)
       ),
-      IndexModel (
+      IndexModel(
         Indexes.ascending("lastUpdated"),
         IndexOptions()
           .name("lastUpdatedIdx")
@@ -94,4 +96,15 @@ class RegistrationStatusRepository @Inject()(
       .deleteOne(bySubscriptionId(subscriptionId))
       .toFuture()
       .map(_ => true)
+
+  def findAll(): Future[Seq[RegistrationStatus]] = {
+    collection
+      .find()
+      .toFuture()
+      .map(_.filter
+        (regStatus =>
+          Instant.now().minus(Duration.ofHours(1)).isBefore(regStatus.lastUpdated)
+        )
+      )
+  }
 }
