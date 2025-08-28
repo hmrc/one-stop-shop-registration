@@ -42,7 +42,7 @@ class CronControllerSpec extends AnyFreeSpec with MockitoSugar with Matchers {
         system = testSystem,
         cronService = mockCronService,
         initialDelay = 0.seconds,
-        interval = 10.millis,
+        interval = 30.millis,
         appConfig = mockAppConfig)
 
       Thread.sleep(1000)

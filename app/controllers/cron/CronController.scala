@@ -55,6 +55,6 @@ class CronController @Inject()(
         logger.info("ExpiryScheduler disabled; not starting.")
         cancellable.cancel()
       }
-
     }
+    
 }
