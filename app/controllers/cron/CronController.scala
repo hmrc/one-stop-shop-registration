@@ -16,6 +16,7 @@
 
 package controllers.cron
 
+import config.AppConfig
 import logging.Logging
 import org.apache.pekko.actor.{ActorSystem, Cancellable}
 import services.cron.CronService
@@ -28,10 +29,11 @@ import scala.concurrent.duration.*
 class CronController @Inject()(
                                 system: ActorSystem,
                                 cronService: CronService,
+                                appConfig: AppConfig,
                                 initialDelay: FiniteDuration = 10.seconds,
                                 interval: FiniteDuration = 5.hours
                               )(implicit ec: ExecutionContext) extends Logging {
-  
+
   private var runCount: Int = 0
 
   private val cancellable: Cancellable =
@@ -39,14 +41,20 @@ class CronController @Inject()(
       initialDelay = initialDelay,
       interval = interval
     ) { () =>
-      cronService.fixExpiryDates().map { entriesChanged =>
-        runCount += 1
-        logger.info(s"Implementing TTL: $entriesChanged documents were read as last updated now and set to current date & time.")
+      if (appConfig.lastUpdatedFeatureSwitch) {
+        cronService.fixExpiryDates().map { entriesChanged =>
+          runCount += 1
+          logger.info(s"Implementing TTL: $entriesChanged documents were read as last updated now and set to current date & time.")
 
-        if (runCount >= 2) {
-          logger.info("The TTL updating job has run twice. Scheduler cancelled.")
-          cancellable.cancel()
+          if (runCount >= 2) {
+            logger.info("The TTL updating job has run twice. Scheduler cancelled.")
+            cancellable.cancel()
+          }
         }
+      } else {
+        logger.info("ExpiryScheduler disabled; not starting.")
+        cancellable.cancel()
       }
+
     }
 }

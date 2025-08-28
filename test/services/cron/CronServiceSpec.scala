@@ -3,8 +3,7 @@ package services.cron
 import models.RegistrationStatus
 import models.etmp.EtmpRegistrationStatus
 import org.mockito.ArgumentMatchers.any
-import org.mockito.InOrder
-import org.mockito.Mockito.{times, verify, when, inOrder as Ordered}
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
