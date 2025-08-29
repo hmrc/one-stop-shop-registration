@@ -24,7 +24,7 @@ class CronControllerSpec extends AnyFreeSpec with MockitoSugar with Matchers {
 
   "CronController" - {
 
-    "should run twice and stop when the feature switch is true" in {
+    "should run once and stop when the feature switch is true" in {
       when(mockAppConfig.lastUpdatedFeatureSwitch).thenReturn(true)
 
       val mockCronService = mock[CronService]
