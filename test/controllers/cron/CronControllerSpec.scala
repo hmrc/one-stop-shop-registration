@@ -42,16 +42,13 @@ class CronControllerSpec extends AnyFreeSpec with MockitoSugar with Matchers {
         system = testSystem,
         cronService = mockCronService,
         initialDelay = 0.seconds,
-        interval = 30.millis,
         appConfig = mockAppConfig)
 
       Thread.sleep(1000)
 
-      verify(mockCronService, times(2)).fixExpiryDates()
+      verify(mockCronService, times(1)).fixExpiryDates()
       logs must not be empty
-      logs.get(0).getMessage mustEqual "Implementing TTL: 20 documents were read as last updated now and set to current date & time."
-      logs.get(1).getMessage mustEqual "Implementing TTL: 20 documents were read as last updated now and set to current date & time."
-      logs.get(2).getMessage mustEqual "The TTL updating job has run twice. Scheduler cancelled."
+      logs.get(0).getMessage mustEqual "Implementing TTL: 20 documents were read as last updated Instant.now and set to current date & time."
 
       logger.detachAppender(listAppender)
       testSystem.terminate()
@@ -75,7 +72,6 @@ class CronControllerSpec extends AnyFreeSpec with MockitoSugar with Matchers {
         system = testSystem,
         cronService = mockCronService,
         initialDelay = 0.seconds,
-        interval = 10.millis,
         appConfig = mockAppConfig)
 
       Thread.sleep(1000)
