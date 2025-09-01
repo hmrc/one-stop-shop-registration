@@ -7,8 +7,9 @@ import com.mongodb.client.result.UpdateResult
 import connectors.RegistrationConnector
 import models.RegistrationStatus
 import models.etmp.EtmpRegistrationStatus
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.{atLeastOnce, reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -49,6 +50,7 @@ class CronServiceSpec
       lastUpdated = Instant.now())
   }
 
+
   override def beforeEach(): Unit = {
     reset(mockRegistrationConnector)
     reset(mockHistoricalRegistrationEnrolmentService)
@@ -78,9 +80,10 @@ class CronServiceSpec
         serviceLogger.addAppender(appender)
         serviceLogger.setLevel(Level.INFO)
 
-        Thread.sleep(100)
+
+        Thread.sleep(1000)
         appender.messages.head mustBe "Implementing TTL: 1 documents were read as last updated Instant.now and set to current date & time."
-        verify(mockRegistrationStatusRepository, times(1)).fixAllDocuments()
+        verify(mockRegistrationStatusRepository, times(1)).fixAllDocuments(any())
         serviceLogger.detachAppender(appender)
       }
     }
@@ -103,7 +106,7 @@ class CronServiceSpec
         serviceLogger.addAppender(appender)
         serviceLogger.setLevel(Level.INFO)
 
-        Thread.sleep(100)
+        Thread.sleep(1000)
         appender.messages.head mustBe "ExpiryScheduler disabled; not starting."
         verify(mockRegistrationStatusRepository, times(0)).fixAllDocuments()
         serviceLogger.detachAppender(appender)
