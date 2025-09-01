@@ -18,9 +18,9 @@ package config
 
 import models.binders.Format.eisDateTimeFormatter
 import play.api.http.MimeTypes
-import play.api.http.HeaderNames._
+import play.api.http.HeaderNames.*
 
-import java.time.{Clock, LocalDateTime}
+import java.time.{Clock, LocalDateTime, ZoneOffset}
 import javax.inject.Inject
 
 class EisGenericConfig @Inject()(clock: Clock) {
@@ -30,7 +30,7 @@ class EisGenericConfig @Inject()(clock: Clock) {
   def eisEtmpGenericHeaders(correlationId: String): Seq[(String, String)] = Seq(
     CONTENT_TYPE -> MimeTypes.JSON,
     ACCEPT -> MimeTypes.JSON,
-    DATE -> eisDateTimeFormatter.format(LocalDateTime.now(clock)),
+    DATE -> eisDateTimeFormatter.format(LocalDateTime.now(clock).atOffset(ZoneOffset.UTC)),
     XCorrelationId -> correlationId,
     X_FORWARDED_HOST -> "MDTP"
   )
