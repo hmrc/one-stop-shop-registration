@@ -16,19 +16,33 @@
 
 package services.cron
 
+import config.AppConfig
+import logging.Logging
+import org.apache.pekko.actor.ActorSystem
 import repositories.RegistrationStatusRepository
 
 import javax.inject.*
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.*
 
-@Singleton
-class CronService @Inject()(
-                             registrationStatusRepository: RegistrationStatusRepository
-                           )(implicit ec: ExecutionContext) {
+trait CronService
 
-  def fixExpiryDates(): Future[Int] = {
-    registrationStatusRepository.fixAllDocuments().map { fixedDocuments =>
-      fixedDocuments.size
+class CronServiceImpl @Inject()(
+                                 system: ActorSystem,
+                                 appConfig: AppConfig,
+                                 registrationStatusRepository: RegistrationStatusRepository
+                               )(implicit ec: ExecutionContext) extends Logging with CronService {
+
+  system.scheduler.scheduleOnce(
+    delay = appConfig.delay.microseconds
+  ) {
+    println(appConfig.lastUpdatedFeatureSwitch)
+    if (appConfig.lastUpdatedFeatureSwitch) {
+      registrationStatusRepository.fixAllDocuments().map { entriesChanged =>
+        logger.info(s"Implementing TTL: ${entriesChanged.size} documents were read as last updated Instant.now and set to current date & time.")
+      }
+    } else {
+      logger.info("ExpiryScheduler disabled; not starting.")
     }
   }
 }
