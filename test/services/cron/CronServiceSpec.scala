@@ -11,6 +11,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.{atLeastOnce, reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
@@ -80,11 +81,14 @@ class CronServiceSpec
         serviceLogger.addAppender(appender)
         serviceLogger.setLevel(Level.INFO)
 
+        Thread.sleep(4000)
 
-        Thread.sleep(1000)
-        appender.messages.head mustBe "Implementing TTL: 1 documents were read as last updated Instant.now and set to current date & time."
-        verify(mockRegistrationStatusRepository, times(1)).fixAllDocuments(any())
-        serviceLogger.detachAppender(appender)
+        eventually {
+          appender.messages.head mustBe "Implementing TTL: 1 documents were read as last updated Instant.now and set to current date & time."
+          verify(mockRegistrationStatusRepository, times(1)).fixAllDocuments(any())
+          serviceLogger.detachAppender(appender)
+
+        }
       }
     }
 
@@ -106,10 +110,12 @@ class CronServiceSpec
         serviceLogger.addAppender(appender)
         serviceLogger.setLevel(Level.INFO)
 
-        Thread.sleep(1000)
-        appender.messages.head mustBe "ExpiryScheduler disabled; not starting."
-        verify(mockRegistrationStatusRepository, times(0)).fixAllDocuments()
-        serviceLogger.detachAppender(appender)
+        Thread.sleep(4000)
+        eventually {
+          appender.messages.head mustBe "ExpiryScheduler disabled; not starting."
+          verify(mockRegistrationStatusRepository, times(0)).fixAllDocuments()
+          serviceLogger.detachAppender(appender)
+        }
       }
     }
   }
