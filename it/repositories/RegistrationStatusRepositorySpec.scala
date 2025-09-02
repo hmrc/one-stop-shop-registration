@@ -97,4 +97,5 @@ class RegistrationStatusRepositorySpec extends AnyFreeSpec
       result mustEqual true
     }
   }
+
 }
