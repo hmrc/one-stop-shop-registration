@@ -14,6 +14,7 @@ import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, PlayMongoRepositoryS
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.*
 
 class RegistrationStatusRepositorySpec extends AnyFreeSpec
   with Matchers
@@ -95,6 +96,63 @@ class RegistrationStatusRepositorySpec extends AnyFreeSpec
       val result = repository.delete(registrationStatus.subscriptionId).futureValue
 
       result mustEqual true
+    }
+  }
+  
+  ".fixAllDocuments" - {
+
+    def makeRegStatus(id: String, lastUpdated: Instant) = {RegistrationStatus(id,
+      EtmpRegistrationStatus.Success, lastUpdated.truncatedTo(ChronoUnit.MILLIS))}
+
+    "must find and set all records with a lastUpdated now" in {
+
+      val timeBeforeMethodRuns = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+
+      val testRegStatus1 = makeRegStatus("1", Instant.now())
+
+      insert(testRegStatus1).futureValue
+
+      val result = repository.fixAllDocuments(timeBeforeMethodRuns).futureValue
+
+      result.size mustEqual 1
+    }
+    
+    "must return no record if none LastUpdated now" in {
+      val timeBeforeMethodRuns = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+
+      val futureRegistrationStatus5Hours = makeRegStatus("uniqueId1", Instant.now().minus(5, ChronoUnit.HOURS))
+      val futureRegistrationStatus7Hours = makeRegStatus("uniqueId2", Instant.now().minus(7, ChronoUnit.HOURS))
+      val futureRegistrationStatus9Hours = makeRegStatus("uniqueId3", Instant.now().minus(9, ChronoUnit.HOURS))
+      
+      insert(futureRegistrationStatus5Hours).futureValue
+      insert(futureRegistrationStatus7Hours).futureValue
+      insert(futureRegistrationStatus9Hours).futureValue
+
+      val result = repository.fixAllDocuments(timeBeforeMethodRuns).futureValue
+
+      result.size mustEqual 0
+    }
+
+    "must return and set all records that have lastUpdated as Instant.now()" in {
+
+      val timeBeforeMethodRuns = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+
+      val testRegStatus1 = makeRegStatus("1", Instant.now())
+      val testRegStatus2 = makeRegStatus("2", Instant.now())
+      val testRegStatus3 = makeRegStatus("3", Instant.now().minus(2, ChronoUnit.HOURS))
+
+      insert(testRegStatus1).futureValue
+      insert(testRegStatus2).futureValue
+      insert(testRegStatus3).futureValue
+
+      val result = repository.fixAllDocuments(timeBeforeMethodRuns).futureValue
+
+      result.size mustEqual 2
+      result.foreach{result =>
+      val timeSetRight: Boolean = timeBeforeMethodRuns == result._1.lastUpdated || timeBeforeMethodRuns.isBefore(result._1.lastUpdated)
+      timeSetRight mustBe true
+      result._2.wasAcknowledged() mustBe true
+      }
     }
   }
 }
