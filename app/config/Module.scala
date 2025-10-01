@@ -19,7 +19,6 @@ package config
 import com.google.inject.AbstractModule
 import controllers.actions.{AuthAction, AuthActionImpl, AuthenticatedControllerComponents, DefaultAuthenticatedControllerComponents}
 import metrics.{DefaultServiceMetrics, ServiceMetrics}
-import services.cron.{CronService, CronServiceImpl}
 import services.{CleanupRepositoryService, CleanupRepositoryServiceImpl, HistoricalRegistrationEnrolmentService, HistoricalRegistrationEnrolmentServiceImpl, RegistrationService, RegistrationServiceEtmpImpl}
 
 import java.time.{Clock, ZoneOffset}
@@ -37,6 +36,5 @@ class Module() extends AbstractModule {
     bind(classOf[RegistrationService]).to(classOf[RegistrationServiceEtmpImpl]).asEagerSingleton()
     bind(classOf[HistoricalRegistrationEnrolmentService]).to(classOf[HistoricalRegistrationEnrolmentServiceImpl]).asEagerSingleton()
     bind(classOf[CleanupRepositoryService]).to(classOf[CleanupRepositoryServiceImpl]).asEagerSingleton()
-    bind(classOf[CronService]).to(classOf[CronServiceImpl]).asEagerSingleton()
   }
 }
