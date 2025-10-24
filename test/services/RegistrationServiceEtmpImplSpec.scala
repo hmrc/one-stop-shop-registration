@@ -22,17 +22,17 @@ import config.AppConfig
 import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
 import controllers.actions.{AuthorisedMandatoryRegistrationRequest, AuthorisedMandatoryVrnRequest}
 import metrics.ServiceMetrics
-import models._
-import models.core.{EisDisplayErrorDetail, EisDisplayErrorResponse, Match, MatchType}
+import models.*
+import models.core.{EisDisplayErrorDetail, EisDisplayErrorResponse, Match, TraderId}
 import models.enrolments.EtmpEnrolmentResponse
-import models.etmp._
+import models.etmp.*
 import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import models.requests.AmendRegistrationRequest
 import org.apache.pekko.http.scaladsl.util.FastFuture.successful
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
@@ -213,8 +213,7 @@ class RegistrationServiceEtmpImplSpec extends BaseSpec with BeforeAndAfterEach {
     "must return Some(registration) when both connectors return right and no cache value" in {
 
       val searchSchemeMatch: Match = Match(
-        matchType = MatchType.OtherMSNETPQuarantinedNETP,
-        traderId = "123456789",
+        traderId = TraderId("123456789"),
         intermediary = None,
         memberState = "DE",
         exclusionStatusCode = None,

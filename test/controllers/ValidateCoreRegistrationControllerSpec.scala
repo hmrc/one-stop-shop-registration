@@ -2,13 +2,13 @@ package controllers
 
 import base.BaseSpec
 import connectors.ValidateCoreRegistrationConnector
-import models.core.{CoreRegistrationRequest, CoreRegistrationValidationResult, Match, MatchType, SourceType}
+import models.core.{CoreRegistrationRequest, CoreRegistrationValidationResult, Match, SourceType, TraderId}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import play.api.inject.bind
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -26,8 +26,7 @@ class ValidateCoreRegistrationControllerSpec extends BaseSpec {
         "FR",
         true,
         Seq(Match(
-          MatchType.FixedEstablishmentQuarantinedNETP,
-          "IM0987654321",
+          TraderId("IM0987654321"),
           Some("444444444"),
           "DE",
           Some(3),

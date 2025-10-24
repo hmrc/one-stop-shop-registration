@@ -19,12 +19,13 @@ package services
 import config.AppConfig
 import connectors.{EnrolmentsConnector, GetVatInfoConnector, RegistrationConnector}
 import controllers.actions.{AuthorisedMandatoryRegistrationRequest, AuthorisedMandatoryVrnRequest}
-import models._
+import models.*
 import models.amend.EtmpAmendRegistrationRequest
-import models.audit.{EtmpAmendRegistrationAuditModel, EtmpDisplayRegistrationAuditModel, EtmpRegistrationAuditModel, EtmpRegistrationAuditType, SubmissionResult}
-import models.core.{EisDisplayErrorResponse, MatchType}
+import models.audit.*
+import models.core.EisDisplayErrorResponse
 import models.enrolments.EtmpEnrolmentErrorResponse
-import models.etmp._
+import models.etmp.*
+import models.exclusions.ExclusionReason
 import models.repository.{AmendResult, InsertResult}
 import models.repository.AmendResult.AmendSucceeded
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
@@ -160,8 +161,7 @@ class RegistrationServiceEtmpImpl @Inject()(
 
     if (hasPreviousRegistration) {
       val filteredPreviousRegistrations = registration.previousRegistrations.collectFirst {
-        case previousRegistration: PreviousRegistrationNew if
-          previousRegistration.previousSchemesDetails.exists(_.previousScheme == PreviousScheme.OSSU) =>
+        case previousRegistration: PreviousRegistrationNew if previousRegistration.previousSchemesDetails.exists(_.previousScheme == PreviousScheme.OSSU) =>
           previousRegistration
       }
       filteredPreviousRegistrations.map { previousRegistration =>
@@ -172,7 +172,7 @@ class RegistrationServiceEtmpImpl @Inject()(
             intermediaryNumber = None,
             countryCode = previousRegistration.country.code
           ).map {
-            case Some(coreRegistrationMatch) if coreRegistrationMatch.matchType == MatchType.TransferringMSID =>
+            case Some(coreRegistrationMatch) if coreRegistrationMatch.exclusionStatusCode.contains(ExclusionReason.TransferringMSID) =>
               coreRegistrationMatch.exclusionEffectiveDate.map(LocalDate.parse)
             case _ =>
               None
