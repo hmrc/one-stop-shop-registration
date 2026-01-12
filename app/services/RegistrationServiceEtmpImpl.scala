@@ -172,7 +172,7 @@ class RegistrationServiceEtmpImpl @Inject()(
             intermediaryNumber = None,
             countryCode = previousRegistration.country.code
           ).map {
-            case Some(coreRegistrationMatch) if coreRegistrationMatch.exclusionStatusCode.contains(ExclusionReason.TransferringMSID) =>
+            case Some(coreRegistrationMatch) if coreRegistrationMatch.exclusionStatusCode.contains(ExclusionReason.TransferringMSID.numberValue) =>
               coreRegistrationMatch.exclusionEffectiveDate.map(LocalDate.parse)
             case _ =>
               None
