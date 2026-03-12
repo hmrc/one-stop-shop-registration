@@ -31,11 +31,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
           "microservice.services.enrolments.host" -> "127.0.0.1",
           "microservice.services.enrolments.port" -> server.port,
           "microservice.services.enrolments.authorizationToken" -> "auth-token",
-          "microservice.services.enrolments.basePath" -> basePath,
-          "features.enroll-historic-registration.enabled" -> false,
-          "features.enroll-historic-registration.historic-traders.1.vrn" -> "123456789",
-          "features.enroll-historic-registration.historic-traders.1.groupId" -> "group-1",
-          "features.enroll-historic-registration.historic-traders.1.userId" -> "user-1"
+          "microservice.services.enrolments.basePath" -> basePath
         )
         .build()
 
@@ -94,11 +90,7 @@ class EnrolmentsConnectorSpec extends BaseSpec with WireMockHelper {
           "microservice.services.enrolment-store-proxy.host" -> "127.0.0.1",
           "microservice.services.enrolment-store-proxy.port" -> server.port,
           "microservice.services.enrolment-store-proxy.authorizationToken" -> "auth-token",
-          "microservice.services.enrolment-store-proxy.basePath" -> basePath,
-          "features.enroll-historic-registration.enabled" -> false,
-          "features.enroll-historic-registration.historic-traders.1.vrn" -> "123456789",
-          "features.enroll-historic-registration.historic-traders.1.groupId" -> "group-1",
-          "features.enroll-historic-registration.historic-traders.1.userId" -> "user-1"
+          "microservice.services.enrolment-store-proxy.basePath" -> basePath
         )
         .build()
 
