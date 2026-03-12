@@ -24,13 +24,10 @@ import models.repository.InsertResult
 import models.repository.InsertResult.{AlreadyExists, InsertSucceeded}
 import org.mongodb.scala.bson.conversions.*
 import org.mongodb.scala.model.*
-import org.mongodb.scala.result.UpdateResult
 import repositories.MongoErrors.Duplicate
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.mongo.transaction.{TransactionConfiguration, Transactions}
 
-import java.time.Instant
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

@@ -38,7 +38,12 @@ class RegistrationConnectorSpec extends BaseSpec with WireMockHelper with Genera
         "microservice.services.display-registration.environment" -> "test-environment",
         "microservice.services.amend-registration.host" -> "127.0.0.1",
         "microservice.services.amend-registration.port" -> server.port,
-        "microservice.services.amend-registration.authorizationToken" -> "reallySecret"
+        "microservice.services.amend-registration.authorizationToken" -> "reallySecret",
+        "features.enroll-historic-registration.enabled" -> false,
+        "features.enroll-historic-registration.historic-traders.1.vrn" -> "123456789",
+        "features.enroll-historic-registration.historic-traders.1.groupId" -> "group-1",
+        "features.enroll-historic-registration.historic-traders.1.userId" -> "user-1"
+
       )
       .build()
 

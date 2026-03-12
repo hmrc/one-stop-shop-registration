@@ -42,6 +42,12 @@ class ValidateCoreRegistrationConnectorSpec extends BaseSpec with WireMockHelper
     new GuiceApplicationBuilder()
       .configure("microservice.services.core-validation.port" -> server.port)
       .configure("microservice.services.core-validation.authorizationToken" -> "auth-token")
+      .configure(
+        "features.enroll-historic-registration.enabled" -> false,
+        "features.enroll-historic-registration.historic-traders.1.vrn" -> "123456789",
+        "features.enroll-historic-registration.historic-traders.1.groupId" -> "group-1",
+        "features.enroll-historic-registration.historic-traders.1.userId" -> "user-1"
+      )
       .build()
 
   private val validCoreRegistrationResponse: CoreRegistrationValidationResult =
