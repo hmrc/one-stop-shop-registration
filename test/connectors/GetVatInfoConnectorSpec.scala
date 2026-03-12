@@ -24,11 +24,7 @@ class GetVatInfoConnectorSpec extends BaseSpec with WireMockHelper {
         "microservice.services.get-vat-info.host" -> "127.0.0.1",
         "microservice.services.get-vat-info.port" -> server.port,
         "microservice.services.get-vat-info.authorizationToken" -> "auth-token",
-        "microservice.services.get-vat-info.environment" -> "test-environment",
-        "features.enroll-historic-registration.enabled" -> false,
-        "features.enroll-historic-registration.historic-traders.1.vrn" -> "123456789",
-        "features.enroll-historic-registration.historic-traders.1.groupId" -> "group-1",
-        "features.enroll-historic-registration.historic-traders.1.userId" -> "user-1"
+        "microservice.services.get-vat-info.environment" -> "test-environment"
       )
       .build()
 

@@ -59,12 +59,6 @@ class SaveForLaterControllerSpec
 
       val app =
         new GuiceApplicationBuilder()
-          .configure(
-            "features.enroll-historic-registration.enabled" -> false,
-            "features.enroll-historic-registration.historic-traders.1.vrn" -> "123456789",
-            "features.enroll-historic-registration.historic-traders.1.groupId" -> "group-1",
-            "features.enroll-historic-registration.historic-traders.1.userId" -> "user-1"
-          )
           .overrides(bind[AuthConnector].toInstance(new FakeFailingAuthConnector(new MissingBearerToken)))
           .build()
 

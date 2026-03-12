@@ -24,11 +24,7 @@ class ChannelPreferenceConnectorSpec extends BaseSpec with WireMockHelper {
           "microservice.services.channel-preference.host" -> "127.0.0.1",
           "microservice.services.channel-preference.port" -> server.port,
           "microservice.services.channel-preference.authorizationToken" -> "auth-token",
-          "microservice.services.channel-preference.basePath" -> basePath,
-          "features.enroll-historic-registration.enabled" -> false,
-          "features.enroll-historic-registration.historic-traders.1.vrn" -> "123456789",
-          "features.enroll-historic-registration.historic-traders.1.groupId" -> "group-1",
-          "features.enroll-historic-registration.historic-traders.1.userId" -> "user-1"
+          "microservice.services.channel-preference.basePath" -> basePath
         ).build()
 
       val url: String = s"/${basePath}income-tax/customer/OSS/contact-preference"
