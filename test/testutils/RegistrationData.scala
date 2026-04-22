@@ -6,7 +6,6 @@ import models.VatDetailSource.{Etmp, UserEntered}
 import models.etmp.*
 import models.etmp.EtmpSchemeDetails.dateFormatter
 import models.requests.{AmendRegistrationRequest, RegistrationRequest}
-import repositories.RegistrationWrapper
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.*
@@ -317,7 +316,7 @@ object RegistrationData {
       adminUse = AdminUse(Some(LocalDateTime.now(stubClock)))
     )
 
-  val wrappedCachedRegistration: RegistrationWrapper = RegistrationWrapper(userId, Some(fromEtmpRegistration), Instant.now(stubClock))
+  val wrappedCachedRegistration: CachedRegistrationWrapper = CachedRegistrationWrapper(userId, Some(fromEtmpRegistration), Instant.now(stubClock))
 
   val displayRegistration: EtmpDisplayRegistration =
     EtmpDisplayRegistration(
