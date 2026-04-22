@@ -17,7 +17,8 @@
 package repositories
 
 import config.AppConfig
-import models.Registration
+import crypto.CachedRegistrationEncryptor
+import models.{CachedRegistrationWrapper, EncryptedCachedRegistrationWrapper, Registration}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
 import play.api.libs.json.Format
@@ -34,13 +35,14 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class CachedRegistrationRepository @Inject()(
                                               mongoComponent: MongoComponent,
+                                              encryptor: CachedRegistrationEncryptor,
                                               appConfig: AppConfig,
                                               clock: Clock
                                       )(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[RegistrationWrapper](
+  extends PlayMongoRepository[EncryptedCachedRegistrationWrapper](
     collectionName = "cachedRegistrations",
     mongoComponent = mongoComponent,
-    domainFormat   = RegistrationWrapper.format,
+    domainFormat   = EncryptedCachedRegistrationWrapper.format,
     indexes        = Seq(
       IndexModel(
         Indexes.ascending("lastUpdated"),
@@ -56,23 +58,26 @@ class CachedRegistrationRepository @Inject()(
   private def byIdAndVrn(id: String, vrn: Vrn): Bson =
     Filters.and(
       Filters.equal("_id", id),
-      Filters.equal("registration.vrn", vrn.vrn)
+      Filters.equal("vrn", vrn.vrn)
     )
 
-
-  def get(userId: String, vrn: Vrn): Future[Option[RegistrationWrapper]] =
+  def get(userId: String, vrn: Vrn): Future[Option[CachedRegistrationWrapper]] =
     collection
       .find(byIdAndVrn(userId, vrn))
       .headOption()
+      .map(_.map(encryptedWrapper =>
+        encryptor.decryptRegistration(encryptedWrapper)
+      ))
 
   def set(userId: String, vrn: Vrn, registration: Option[Registration]): Future[Boolean] = {
 
-    val wrapper = RegistrationWrapper(userId, registration, Instant.now(clock))
+    val wrapper = CachedRegistrationWrapper(userId, registration, Instant.now(clock))
+    val encryptedWrapper = encryptor.encryptRegistration(wrapper, vrn)
 
     collection
       .replaceOne(
         filter      = byIdAndVrn(userId, vrn),
-        replacement = wrapper,
+        replacement = encryptedWrapper,
         options     = ReplaceOptions().upsert(true)
       )
       .toFuture()

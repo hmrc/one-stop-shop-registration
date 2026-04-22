@@ -14,36 +14,39 @@
  * limitations under the License.
  */
 
-package repositories
+package models
 
-import models.Registration
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant
 
-final case class RegistrationWrapper(
+final case class EncryptedCachedRegistrationWrapper(
                                       userId: String,
-                                      registration: Option[Registration],
+                                      vrn: Vrn,
+                                      data: Option[String],
                                       lastUpdated: Instant
                                     )
 
-object RegistrationWrapper {
+object EncryptedCachedRegistrationWrapper {
 
-  val reads: Reads[RegistrationWrapper] =
+  val reads: Reads[EncryptedCachedRegistrationWrapper] =
     (
       (__ \ "_id").read[String] and
-      (__ \ "registration").readNullable[Registration] and
+      (__ \ "vrn").read[Vrn] and
+      (__ \ "data").readNullable[String] and
       (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
-    ) (RegistrationWrapper.apply _)
+    ) (EncryptedCachedRegistrationWrapper.apply _)
 
-  val writes: OWrites[RegistrationWrapper] =
+  val writes: OWrites[EncryptedCachedRegistrationWrapper] =
     (
       (__ \ "_id").write[String] and
-      (__ \ "registration").writeNullable[Registration] and
+      (__ \ "vrn").write[Vrn] and
+      (__ \ "data").writeNullable[String] and
       (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
     ) (registrationWrapper => Tuple.fromProductTyped(registrationWrapper))
 
-  implicit val format: OFormat[RegistrationWrapper] = OFormat(reads, writes)
+  implicit val format: OFormat[EncryptedCachedRegistrationWrapper] = OFormat(reads, writes)
 }
