@@ -20,9 +20,9 @@ import config.AppConfig
 import connectors.EnrolmentsConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.{EtmpException, RegistrationStatus}
 import models.enrolments.EnrolmentStatus
 import models.etmp.EtmpRegistrationStatus
+import models.{EtmpException, RegistrationStatus}
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, AnyContent}
 import repositories.RegistrationStatusRepository
@@ -79,7 +79,7 @@ class EnrolmentsSubscriptionController @Inject()(
               throw EtmpException(s"Failed to add enrolment - ${enrolmentResponse.body}")
           }
         }
-      }.getOrElse{
+      }.getOrElse {
         logger.error(s"No subscription id was found for user ${request.vrn}")
         Future.successful(NotFound("No subscription id found"))
       }
